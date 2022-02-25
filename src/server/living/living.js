@@ -32,16 +32,38 @@ function testHandler(message) {
 
 class living {
     constructor() {
+        this.start()
+    }
+    start() {
         switch (platform.toLowerCase()) {
-            case "bilibili":
-                this.live_bili = new bilibiliLive(id, { chat: chatHandler, gift: giftHandler, test: testHandler })
+            case "bilibili": {
+                this.live_bilibili = new bilibiliLive(id)
+                this.liveEvent(this.live_bilibili)
                 break
-            case "acfun":
-                this.live_acfun = new acfunLive(id, { chat: chatHandler, gift: giftHandler, test: testHandler })
+            }
+            case "acfun": {
+                this.live_acfun = new acfunLive(id)
+                this.liveEvent(this.live_acfun)
                 break
-            default:
+            }
+            default: {
                 console.log("living: 未找到相应直播平台")
+            }
         }
+    }
+    liveEvent(live) {
+        live.on('msg', this.msgProcess.bind(this))
+        live.on('gift', this.giftProcess.bind(this))
+        live.on('test', this.testProcess.bind(this))
+    }
+    msgProcess(msg) {
+        chatHandler(msg)
+    }
+    giftProcess(msg) {
+        giftHandler(msg)
+    }
+    testProcess(msg) {
+        testHandler(msg)
     }
 }
 

@@ -1,5 +1,6 @@
 const { LiveWS } = require('bilibili-live-ws')
 const axios = require('axios')
+const { EventEmitter } = require('events')
 
 class bilibiliLive {
     constructor (id, callbacks = {}, conf = {}) {
@@ -7,7 +8,7 @@ class bilibiliLive {
         this.uid = 0        // 主播uid
         this.roomid = 0     // 直播间room_id
         this.conf = conf    // 配置
-        this.callbacks = callbacks      // 回调函数
+        this.event = new EventEmitter() // 事件触发器
         this.init()         // 初始化
         this.giftBuffer = new Map()     // 礼物缓冲池，用于处理连击礼物
     }
@@ -55,13 +56,13 @@ class bilibiliLive {
         this.event.emit(eventName, ...args)
     }
     toChat(data) {       // 数据由chat模块处理
-        if (this.callbacks.chat) this.callbacks.chat(data)
+        this.emit('msg', data)
     }
     toGift(data) {       // 数据由gift模块处理
-        if (this.callbacks.gift) this.callbacks.gift(data)
+        this.emit('gift', data)
     }
     toTest(data) {       // 数据由test模块处理
-        if (this.callbacks.test) this.callbacks.test(data)
+        this.emit('test', data)
     }
     msg_DANMU_MSG(msg) {     // 获取弹幕消息
         let text = msg.info[1]

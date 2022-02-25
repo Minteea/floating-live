@@ -1,12 +1,13 @@
 const AcClient = require("ac-danmu")
+const { EventEmitter } = require('events')
 
 class acfunLive {
-    constructor (id, callbacks = {}, conf = {}) {
+    constructor (id, conf = {}) {
         this.id = id        // 直播间号
         this.uid = 0        // 主播uid
         this.conf = conf
+        this.event = new EventEmitter() // 事件触发器
         this.init(id)
-        this.callbacks = callbacks
         console.log("连接直播间")
     }
     async init(id) {
@@ -39,6 +40,12 @@ class acfunLive {
             console.log("acfunLive: 直播已结束或中断")
         })
         this.openTest(id)
+    }
+    on(eventName, func) {   // 监听事件
+        this.event.on(eventName, func)
+    }
+    emit(eventName, ...args) {  // 触发事件
+        this.event.emit(eventName, ...args)
     }
     msg_danmaku(data) {
         let date = parseInt(data.sendTimeMs)
@@ -130,11 +137,14 @@ class acfunLive {
     msg_live_info(data) {
         // this.toData(msg)
     }
-    toChat(msg) {       // 数据由chat模块处理
-        if (this.callbacks.chat) this.callbacks.chat(msg)
+    toChat(data) {       // 数据由chat模块处理
+        this.emit('msg', data)
     }
-    toTest(msg) {       // 数据由test模块处理
-        if (this.callbacks.test) this.callbacks.test(msg)
+    toGift(data) {       // 数据由gift模块处理
+        this.emit('gift', data)
+    }
+    toTest(data) {       // 数据由test模块处理
+        this.emit('test', data)
     }
     openTest() {
         this.client.on("recent-comment", (comments) => {   //当前弹幕列表
