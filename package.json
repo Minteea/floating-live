@@ -1,0 +1,13 @@
+{ "name": "floating-living",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node ./src/server/server.js"
+  },
+  "dependencies": {
+    "ac-danmu": "^0.5.8",
+    "axios": "^0.26.0",
+    "bilibili-live-ws": "^6.0.3",
+    "ws": "^8.5.0"
+  }
+}
