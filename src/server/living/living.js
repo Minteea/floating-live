@@ -1,8 +1,9 @@
 const bilibiliLive = require("./platform/bilibiliLive.js")
 const acfunLive = require("./platform/acfunLive.js")
+const chat = require("./chat/chat.js")
 const fs = require("fs")
 
-const id = 254992
+const id = 22445644 //254992
 const platform = "bilibili"
 const date = Number(new Date())
 const dateObj = new Date(date)
@@ -30,8 +31,17 @@ function testHandler(message) {
     })
 }
 
+function cmdHandler(message) {
+    console.log(message)
+    fs.writeFile(`./save/${fileName}-cmd.txt`, (JSON.stringify(message) + ','), { encoding: 'utf8', flag: 'a' }, err => {
+        if (err) throw err;
+    })
+}
+
 class living {
     constructor() {
+        this.chat = new chat()
+        this.chat.on('command', this.cmdProcess.bind(this))
         this.start()
     }
     start() {
@@ -57,6 +67,7 @@ class living {
         live.on('test', this.testProcess.bind(this))
     }
     msgProcess(msg) {
+        this.chat.process(msg)
         chatHandler(msg)
     }
     giftProcess(msg) {
@@ -64,6 +75,9 @@ class living {
     }
     testProcess(msg) {
         testHandler(msg)
+    }
+    cmdProcess(msg) {
+        cmdHandler(msg)
     }
 }
 

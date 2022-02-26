@@ -20,15 +20,57 @@
   ```
   即可接收来自平台的直播弹幕，弹幕保存在 `save` 文件夹中
 
-## 感谢
-* [bilibili-live-ws](https://github.com/simon300000/bilibili-live-ws/) / by Simon300000：与bilibili直播建立Websocket连接并解码数据包
-* [ac-danmu](https://github.com/ACFUN-FOSS/ac-danmu.js) / by ACFUN-FOSS：与AcFun直播建立Websocket连接并解码数据包
+### 屏蔽列表&命令列表配置
+``` javascript
+// src/server/chat/chat.js
+
+let filterList = [
+    {
+        type: "abuse",        // String 屏蔽种类
+        name: "人身攻击",     // String 屏蔽名称
+        open: true,           // Boolean 是否启用该屏蔽，若无该属性则不启用
+        keyword: [],          // String Array 关键词库，目前仅支持关键词屏蔽
+        mode: "hide",         // String 屏蔽模式，此处为隐藏(在前端以隐藏提示代替)
+        reason: "不当用语",   // String 隐藏原因
+        showUser: false,      // Boolean 是否显示用户信息
+    },
+    {
+        type: "aggressive",   // String 屏蔽种类
+        name: "引战",         // String 屏蔽名称
+        open: true,           // Boolean 是否启用该屏蔽
+        keyword: [],          // String Array 关键词库
+        mode: "block",        // String 屏蔽模式，此处为屏蔽(不会传入应用前端)
+    },
+    {
+        type: "test",         // String 屏蔽种类
+        name: "测试",         // String 屏蔽名称
+        open: false,          // Boolean 是否启用该屏蔽
+        keyword: [],          // String Array 关键词库
+        mode: "replace",      // 更换用语(以灰色文本显示)
+        replace: "<测试>"
+    },
+]
+
+let commandList = [
+    {
+        command: "song",            // String 指令名称
+        pattern: /^[点點]歌(.*)/,   // RegExp 符合指令格式的正则表达式
+        // Function 回调函数，msg: 输入的聊天数据，cmd: 输出的命令数据，pattern: 正则表达式
+        callback: (msg, cmd, pattern) => {    
+            let text = msg.data.text
+            text.replace(pattern, (match, p1) => {
+                cmd.data.song = p1
+            })
+        },
+    },
+]
+```
 
 ## TODO
-* 添加弹幕过滤功能
-* 添加命令提取功能
-* 可读取json配置文件
-* 实现数据包发送服务
+* ✅ 添加弹幕过滤功能 
+* ✅ 添加命令提取功能 
+* ⬜ 可读取json配置文件
+* ⬜ 实现数据包发送服务
 
 ## 开发路线
 #### 🟢 Alpha @danmaku 
@@ -47,3 +89,11 @@
 * 实现Electron后台界面
 #### ⚪ 4.x @floating
 * 实现Electron界面舞台和UI组件
+
+## 感谢
+### 开源库
+* [bilibili-live-ws](https://github.com/simon300000/bilibili-live-ws/) / by Simon300000：与bilibili直播建立Websocket连接并解码数据包
+* [ac-danmu](https://github.com/ACFUN-FOSS/ac-danmu.js) / by ACFUN-FOSS：与AcFun直播建立Websocket连接并解码数据包
+### 直播间聊天数据
+* [live.bilibili.com/254992](https://live.bilibili.com/254992)
+* [live.bilibili.com/22445644](https://live.bilibili.com/22445644)

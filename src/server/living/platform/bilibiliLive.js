@@ -48,6 +48,7 @@ class bilibiliLive {
         client.on('INTERACT_WORD', this.msg_INTERACT_WORD.bind(this))
         client.on('SEND_GIFT', this.msg_SEND_GIFT.bind(this))
         client.on('COMBO_SEND', this.msg_COMBO_SEND.bind(this))
+        client.on('ROOM_BLOCK_MSG', this.msg_ROOM_BLOCK_MSG.bind(this))
     }
     on(eventName, func) {   // 监听事件
         this.event.on(eventName, func)
@@ -232,6 +233,9 @@ class bilibiliLive {
     msg_GUARD_BUY(msg) {     // 舰长购买
 
     }
+    msg_ROOM_BLOCK_MSG(msg) {   // 禁言
+
+    }
     bufGift(data, combo) {   // 将礼物信息放入缓冲池
         let buf = {
             gift: data,
@@ -312,4 +316,3 @@ class bilibiliLive {
 }
 
 module.exports = bilibiliLive
-
