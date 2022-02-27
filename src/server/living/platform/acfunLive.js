@@ -24,6 +24,9 @@ class acfunLive {
         client.on("danmaku", (danmaku) => {     //收到的弹幕
             this.msg_danmaku(danmaku)
         });
+        client.on("like", (like) => {     //收到的点赞
+            this.msg_like(like)
+        });
         client.on("gift", (gift) => {           //收到的礼物
             this.msg_gift(gift)
         });
@@ -73,6 +76,32 @@ class acfunLive {
             },
         }
         this.toChat(danmaku)
+    }
+    msg_like(data) {
+        let date = parseInt(data.sendTimeMs)
+        let medal = null
+        let identity = data.userInfo.userIdentity
+        if (data.userInfo.badge) {
+            let medalInfo = (JSON.parse(data.userInfo.badge)).medalInfo
+            medal = {
+                name: medalInfo.clubName,
+                uid: medalInfo.uperId,
+                level: medalInfo.level,
+            }
+        }
+        let like = {
+            platform: "acfun",
+            type: "like",
+            timestamp: date,
+            data: {
+                user: data.userInfo.nickname,           // 用户名
+                uid: parseInt(data.userInfo.userId),    // 用户uid
+                date: date,
+                medal: medal,
+            },
+            identity: identity
+        }
+        this.toChat(like)
     }
     msg_gift(data) {
         let date = parseInt(data.sendTimeMs)
@@ -137,14 +166,14 @@ class acfunLive {
     msg_live_info(data) {
         // this.toData(msg)
     }
-    toChat(data) {       // 数据由chat模块处理
+    toChat(data) {       // 一般消息
         this.emit('msg', data)
     }
-    toGift(data) {       // 数据由gift模块处理
+    toGift(data) {       // 礼物消息
         this.emit('gift', data)
     }
-    toTest(data) {       // 数据由test模块处理
-        this.emit('test', data)
+    toTest(data) {       // 源消息
+        this.emit('origin', data)
     }
     openTest() {
         this.client.on("recent-comment", (comments) => {   //当前弹幕列表
@@ -152,6 +181,9 @@ class acfunLive {
         });
         this.client.on("danmaku", (danmaku) => {    //收到的弹幕
             this.toTest({type: "chat", data: danmaku})
+        });
+        this.client.on("like", (like) => {          //收到的点赞
+            this.toTest({type: "like", data: like})
         });
         this.client.on("gift", (gift) => {          //收到的礼物
             this.toTest({type: "gift", data: gift})

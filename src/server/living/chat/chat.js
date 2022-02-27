@@ -17,7 +17,7 @@ class chat {
     process(msg) {
         if (this.filter) this.filter.filter(msg)
         if (this.command) this.command.filter(msg)
-        this.event.emit("chat", msg)
+        this.event.emit("msg", msg)
     }
     on(eventName, func) {
         this.event.on(eventName, func)

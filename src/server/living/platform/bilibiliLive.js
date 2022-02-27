@@ -20,7 +20,7 @@ class bilibiliLive {
             this.uid = data.uid
             console.log("bilibiliLive.js: 已获取房间信息")
             this.createWS()
-            this.getGuardList()
+            // this.getGuardList()
         })
         .catch(error => {
             console.error(error)
@@ -56,14 +56,14 @@ class bilibiliLive {
     emit(eventName, ...args) {  // 触发事件
         this.event.emit(eventName, ...args)
     }
-    toChat(data) {       // 数据由chat模块处理
+    toChat(data) {       // 一般消息
         this.emit('msg', data)
     }
-    toGift(data) {       // 数据由gift模块处理
+    toGift(data) {       // 礼物消息
         this.emit('gift', data)
     }
-    toTest(data) {       // 数据由test模块处理
-        this.emit('test', data)
+    toTest(data) {       // 源消息
+        this.emit('origin', data)
     }
     msg_DANMU_MSG(msg) {     // 获取弹幕消息
         let text = msg.info[1]
@@ -224,7 +224,7 @@ class bilibiliLive {
         let combo = {
             batch_combo_id: data.batch_combo_id,    // 礼物发送标识码，用于合并连续送礼
         }
-        this.toGift(gift)
+        this.toChat(gift)
         this.bufGift(gift, combo)
     }
     msg_COMBO_SEND(msg) {    // 礼物combo
