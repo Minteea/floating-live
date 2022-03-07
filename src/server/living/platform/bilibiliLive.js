@@ -3,7 +3,7 @@ const axios = require('axios')
 const { EventEmitter } = require('events')
 
 class bilibiliLive {
-    constructor (id, callbacks = {}, conf = {}) {
+    constructor(id, callbacks = {}, conf = {}) {
         this.id = id        // 直播间号
         this.uid = 0        // 主播uid
         this.roomid = 0     // 直播间room_id
@@ -14,17 +14,17 @@ class bilibiliLive {
     }
     async init() {
         axios.post(`https://api.live.bilibili.com/room/v1/Room/room_init?id=${this.id}`)    // 获取直播间信息
-        .then(res => {
-            let data = res.data.data
-            this.roomid = data.room_id
-            this.uid = data.uid
-            console.log("bilibiliLive.js: 已获取房间信息")
-            this.createWS()
-            // this.getGuardList()
-        })
-        .catch(error => {
-            console.error(error)
-        })
+            .then(res => {
+                let data = res.data.data
+                this.roomid = data.room_id
+                this.uid = data.uid
+                console.log("bilibiliLive.js: 已获取房间信息")
+                this.createWS()
+                // this.getGuardList()
+            })
+            .catch(error => {
+                console.error(error)
+            })
     }
     async createWS() {      // 与Websocket服务器连接
         console.log("bilibili-live-ws: 开始连接bilibili直播服务器")
@@ -74,7 +74,8 @@ class bilibiliLive {
         let date = msg.info[0][4]
         let medal = null
         let identity = null
-        switch (msg.info[0][1]){
+        let mark = null
+        switch (msg.info[0][1]) {
             case 1:
                 mode = "left"  // 滚动弹幕
                 break;
@@ -85,6 +86,9 @@ class bilibiliLive {
                 mode = "top"  // 顶部弹幕
                 break;
         }
+        if (msg.info[7]) {  // 舰长级别
+            mark = `guard-${msg.info[7]}`
+        }
         if (msg.info[3].length) {
             medal = {
                 level: msg.info[3][0],
@@ -93,27 +97,20 @@ class bilibiliLive {
                 uid: msg.info[3][12],
                 mark: null,
             }
-            switch (msg.info[3][10]){
-                case 1:
-                    medal.mark = "guard-1"  // 舰长
-                    break;
-                case 2:
-                    medal.mark = "guard-2"  // 提督
-                    break;
-                case 3:
-                    medal.mark = "guard-3"  // 总督
-                    break;
+            if (msg.info[3][10]) {  // 粉丝牌舰长级别
+                medal.mark = `guard-${msg.info[3][10]}`
             }
         }
-        if (msg.info[2][2]){
+        if (msg.info[2][2]) {
             identity = "admin"
-        } else if (uid == this.uid)  {
+        } else if (uid == this.uid) {
             identity = "anchor"
         }
         let danmaku = {
             platform: "bilibili",
             type: "text",
             timestamp: date,
+            localtime: (new Date()).valueOf(),
             data: {
                 text: text,
                 mode: mode,
@@ -123,33 +120,67 @@ class bilibiliLive {
                 date: date,
                 medal: medal,
                 identity: identity,
+                mark: mark,
             }
         }
         this.toChat(danmaku)
     }
-    msg_ENTRY_EFFECT(msg) {      // 进入直播间特效
+    async msg_ENTRY_EFFECT(msg) {      // 进入直播间特效
         let data = msg.data
-        let labels = []
-        switch (data.id) {
-            case 4: // 舰长
-            case 2: // 提督
-
-        }
         let date = parseInt(data.trigger_time / 1000000)
-        let text = data.copy_writing
-        let user = text.match(/<%(.*?)%>/)
         let uid = data.uid
-        let medal = undefined
+        let medal = null
+        let label
+        let labelText
+        switch (data.id) {
+            case 1: // 总督
+                label = "guard-1"
+                break
+            case 2: // 提督
+                label = "guard-2"
+                break
+            case 4: // 舰长
+                label = "guard-3"
+                break
+
+            case 135: // 榜1
+                label = "rank-1"
+                break
+            case 136: // 榜2
+                label = "rank-2"
+                break
+            case 137: // 榜3
+                label = "rank-3"
+                break
+
+            default:
+                label = null
+        }
+        let userInfoGet = await axios.get(`https://api.bilibili.com/x/space/acc/info?mid=${uid}`)
+        let userData = userInfoGet.data.data
+        let user = userData.name
+        if (userData.fans_medal.medal) {
+            medal = {
+                level: userData.fans_medal.medal.level,
+                name: userData.fans_medal.medal.medal_name,
+                uid: userData.fans_medal.medal.target_id,
+                mark: null,
+            }
+            if (userData.fans_medal.medal.guard_level) {    // 粉丝牌舰长级别
+                medal.mark = `guard-${userData.fans_medal.medal.guard_level}`
+            }
+        }
         let entry = {
             platform: "bilibili",
             type: "entry_effect",
             timestamp: date,
+            localtime: (new Date()).valueOf(),
             data: {
-                text: text,
                 user: user,
                 uid: uid,
                 date: date,
                 medal: medal,
+                label: label,
             }
         }
         this.toChat(entry)
@@ -168,7 +199,7 @@ class bilibiliLive {
                 uid: data.fans_medal.target_id,
             }
         }
-        switch (data.msg_type){
+        switch (data.msg_type) {
             case 1:
                 type = "entry"  // 进入直播间
                 break;
@@ -178,13 +209,14 @@ class bilibiliLive {
             case 3:
                 type = "share"  // 分享直播间
                 break;
-            default :
+            default:
                 type = "interact"   // 进行互动操作
         }
         let interact = {
             platform: "bilibili",
             type: type,
             timestamp: date,
+            localtime: (new Date()).valueOf(),
             data: {
                 user: user,
                 uid: uid,
@@ -196,19 +228,28 @@ class bilibiliLive {
     }
     msg_SEND_GIFT(msg) {     // 送礼
         let data = msg.data
-        let date = data.timestamp
+        let date = data.timestamp * 1000
         let medal = null
+        let mark = null
+        if (data.guard_level) { // 舰长级别
+            mark = `guard-${data.guard_level}`
+        }
         if (data.medal_info && data.medal_info.medal_level) {
             medal = {
                 level: data.medal_info.medal_level,
                 name: data.medal_info.medal_name,
                 uid: data.medal_info.target_id,
+                mark: null
+            }
+            if (data.medal_info.guard_level) {  // 粉丝牌舰长级别
+                medal.mark = `guard-${data.medal_info.guard_level}`
             }
         }
         let gift = {
             platform: "bilibili",
             type: "gift",
             timestamp: date,
+            localtime: (new Date()).valueOf(),
             data: {
                 name: data.giftName,        // 礼物名称
                 giftId: data.giftId,        // 礼物id
@@ -219,6 +260,7 @@ class bilibiliLive {
                 uid: data.uid,              // 用户uid
                 date: date,                 // 日期(ms时间戳)
                 medal: medal,               // 粉丝勋章
+                mark: mark                  // 标识
             }
         }
         let combo = {
@@ -240,7 +282,7 @@ class bilibiliLive {
         let buf = {
             gift: data,
             combo: combo,
-            timer: setTimeout(()=>{}, 10000),
+            timer: setTimeout(() => { }, 10000),
         }
     }
     endBufGift(batch_combo_id) {       // 结束礼物缓冲
@@ -277,28 +319,28 @@ class bilibiliLive {
         }
         let getGuardsByPage = async (p) => {
             axios.get(`https://api.live.bilibili.com/xlive/app-room/v2/guardTab/topList?roomid=${this.roomid}&page=${p}&ruid=${this.uid}&page_size=29`)
+                .then(res => {
+                    let data = res.data.data
+                    data.list.forEach(guardDataTransform)
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+        }
+        axios.get(`https://api.live.bilibili.com/xlive/app-room/v2/guardTab/topList?roomid=${this.roomid}&page=1&ruid=${this.uid}&page_size=29`)
             .then(res => {
                 let data = res.data.data
+                guardNumber = data.info.num
+                pages = data.info.page
+                data.top3.forEach(guardDataTransform)
                 data.list.forEach(guardDataTransform)
             })
             .catch(error => {
                 console.error(error)
             })
-        }
-        axios.get(`https://api.live.bilibili.com/xlive/app-room/v2/guardTab/topList?roomid=${this.roomid}&page=1&ruid=${this.uid}&page_size=29`)
-        .then(res => {
-            let data = res.data.data
-            guardNumber = data.info.num
-            pages = data.info.page
-            data.top3.forEach(guardDataTransform)
-            data.list.forEach(guardDataTransform)
-        })
-        .catch(error => {
-            console.error(error)
-        })
-        let axiosTimeout = setTimeout(()=>{
+        let axiosTimeout = setTimeout(() => {
             let i = 2
-            let axiosInterval = setInterval(()=>{
+            let axiosInterval = setInterval(() => {
                 if (i > pages) {
                     clearInterval(axiosInterval)
                     clearTimeout(axiosTimeout)
