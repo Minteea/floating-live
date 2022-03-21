@@ -1,6 +1,7 @@
 const http = require("http")
 const living = require("./living/living.js")
 const WebSocket = require('ws')
+const { futimesSync } = require("fs")
 const WebSocketServer = WebSocket.Server
 
 // 创建living实例
@@ -43,7 +44,7 @@ wss.on('connection', (ws, req) => {
             break
     }
     ws.on('message', (message) => {
-        console.log(JSON.parse(JSON.stringify(message)));
+        clientMessage(message.toString(), ws)
     });
 });
 wss.on('close', (ws) => {
@@ -55,3 +56,23 @@ livingServer.on("message", (data) => {
 livingServer.on("command", (data) => {
     wss.broadcast(JSON.stringify(data), "/command")
 })
+
+function clientMessage(message, ws) {
+    let msg = JSON.parse(message)
+    switch (msg.type) {
+        case "eval":
+            evalCmd(msg.eval)
+    }
+}
+
+function evalCmd(str) {
+    try {
+        eval(str)
+        console.log('floating-living: 成功执行指令')
+        console.log('> ' + str)
+    } catch (error) {
+        console.log('floating-living: 指令执行错误')
+        console.log('> ' + str)
+        console.log(`${error.name}: ${error.message}`)
+    }
+}

@@ -1,0 +1,6 @@
+{
+    "server": {
+        "chatFilter": "/server/chatFilterList.js",
+        "chatCommand": "/server/chatCommandList.js"
+    }
+}

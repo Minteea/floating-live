@@ -7,13 +7,13 @@ class acfunLive {
         this.uid = 0        // 主播uid
         this.conf = conf
         this.event = new EventEmitter() // 事件触发器
-        this.init(id)
+        this.open(id)
         console.log("连接直播间")
     }
-    async init(id) {
-        const client = await AcClient(id)
-        this.client = client
+    async open(id) {
+        this.client = await AcClient(id)
         //启动websocket连接
+        let client = this.client        
         client.wsStart();
         client.on("enter", () => {
             console.log("acfunLive: 已连接AcFun直播间");
@@ -50,6 +50,9 @@ class acfunLive {
     emit(eventName, ...args) {  // 触发事件
         this.event.emit(eventName, ...args)
     }
+    close() {
+        console.log("acfunLive: 暂不支持手动关闭客户端")
+    }
     msg_danmaku(data) {
         let date = parseInt(data.sendTimeMs)
         let medal = null
@@ -64,6 +67,7 @@ class acfunLive {
         }
         let danmaku = {
             platform: "acfun",
+            room: this.id,
             type: "text",
             timeStamp: date,
             data: {
@@ -91,6 +95,7 @@ class acfunLive {
         }
         let like = {
             platform: "acfun",
+            room: this.id,
             type: "like",
             timestamp: date,
             data: {
@@ -117,6 +122,7 @@ class acfunLive {
         }
         let gift = {
             platform: "acfun",
+            room: this.id,
             type: "gift",
             timeStamp: date,
             data: {
@@ -148,6 +154,7 @@ class acfunLive {
         }
         let entry = {
             platform: "acfun",
+            room: this.id,
             type: "entry",
             timestamp: date,
             data: {
