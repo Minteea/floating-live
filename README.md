@@ -5,6 +5,8 @@
 
 项目仍在开发中，功能尚未完善，目前除了记录保存直播弹幕外暂时没有别的用处啦，敬请期待。
 
+注意：当前项目未进入正式版本阶段，程序结构及导出数据结构可能随时改动，**非常不建议用于正式项目中**。
+
 ## 使用方法
 * 下载并安装 `Node.js` ，建议下载最新LTS版本（如果已经安装可跳过这一步）。
 * 下载该项目的zip压缩包，解压，并在项目根目录下新建一个名为 `save` 的文件夹
@@ -12,7 +14,7 @@
   ```
   npm install
   ```
-* 打开 `living.js` ，修改 `roomList` 的值，示例：
+* 打开 `server.js` ，修改 `roomList` 的值，示例：
   ``` javascript
   let roomList = [
       {
@@ -85,7 +87,9 @@ chatCommandList = [
 * ⬜ 可读取json配置文件
 
 ## 开发路线
-当前版本 v0.4.0
+当前版本 v0.5.0
+
+**注意：自v0.6开始将使用TypeScript开发，并将对导出数据结构作出较大改动。**
 
 #### 🟢 Alpha @danmaku 
 * 写一段Nodejs代码，用于记录保存bilibili的直播弹幕
@@ -93,21 +97,10 @@ chatCommandList = [
 * 支持不同的消息类型和不同的平台
 * 模块化、配置化
 * 实现数据包发送服务
-#### ⚪ 1.x @stage
-* 搭建前端界面，实现聊天板功能
-* 添加多种UI组件
-#### ⚪ 2.x @backstage
-* 添加后台控制界面
-* 实现多个界面舞台
-#### ⚪ 3.x @electron
-* 实现Electron后台界面
-#### ⚪ 4.x @floating
-* 实现Electron界面舞台和UI组件
+#### ⚪ 0.x @electron
+* 添加Electron后台控制界面
 
 ## 感谢
 ### 开源库
 * [bilibili-live-ws](https://github.com/simon300000/bilibili-live-ws/) / by Simon300000：与bilibili直播建立Websocket连接并解码数据包
 * [ac-danmu](https://github.com/ACFUN-FOSS/ac-danmu.js) / by ACFUN-FOSS：与AcFun直播建立Websocket连接并解码数据包
-### 直播间聊天数据
-* [live.bilibili.com/254992](https://live.bilibili.com/254992)
-* [live.bilibili.com/22445644](https://live.bilibili.com/22445644)

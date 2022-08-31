@@ -1,26 +1,17 @@
 const bilibiliLive = require("./platform/bilibiliLive.js")
 const acfunLive = require("./platform/acfunLive.js")
 const chat = require("./chat/chat.js")
-const fs = require("fs")
 const { EventEmitter } = require("events")
 const msgSave = require("./tool/msgSave.js")
 const chatPrint = require("./tool/chatPrint.js")
 
-let roomList = [
-    {
-        platform: "bilibili",
-        id: 22445644,
-    },
-]
-
 let liveId = false
-const date = Number(new Date())
-const dateObj = new Date(date)
-const fileName = `${dateObj.getFullYear()}${(dateObj.getMonth() + 1).toString().padStart(2, '0')}${dateObj.getDate().toString().padStart(2, '0')}_${dateObj.getHours().toString().padStart(2, '0')}${dateObj.getMinutes().toString().padStart(2, '0')}${dateObj.getSeconds().toString().padStart(2, '0')}-${liveId ? liveId : roomList[0].id}`
 
 class living {
-    constructor() {
+    constructor(roomList, config = {}) {
         this.roomList = roomList
+        let startDate = new Date()
+        let fileName = `${startDate.getFullYear()}${(startDate.getMonth() + 1).toString().padStart(2, '0')}${startDate.getDate().toString().padStart(2, '0')}_${startDate.getHours().toString().padStart(2, '0')}${startDate.getMinutes().toString().padStart(2, '0')}${startDate.getSeconds().toString().padStart(2, '0')}-${liveId ? liveId : roomList[0].id}`
         this.roomMap = new Map()
         this.event = new EventEmitter()     // 事件对象
         this.chat = new chat()              // 消息互动处理对象
@@ -36,7 +27,6 @@ class living {
         this.roomList.forEach(room => {
             this.newRoom(room)    // 创建平台live消息处理实例
         })
-
     }
     newRoom(room) {
         let liveRoom = null

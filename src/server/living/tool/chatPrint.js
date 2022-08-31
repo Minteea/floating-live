@@ -37,6 +37,35 @@ class chatPrint{
                 console.log(`${"\x1b[32m"}${medal}${"\x1b[36m"}${mark}${"\x1b[95m"}${identity}${"\x1b[33m"}${message.data.user}${"\x1b[0m"}: ${message.data.text}`)
                 break
             }
+            case "image": {
+                let medal = ""
+                let mark = ""
+                let identity = ""
+                if (message.data.medal) {
+                    medal = `[${message.data.medal.name}(${message.data.medal.level})] `
+                }
+                switch (message.data.mark) {
+                    case "guard-1":
+                        mark = "[总督]"
+                        break
+                    case "guard-2":
+                        mark = "[提督]"
+                        break
+                    case "guard-3":
+                        mark = "[舰长]"
+                        break
+                }
+                switch (message.data.identity) {
+                    case "admin":
+                        identity = "[房]"
+                        break
+                    case "anchor":
+                        identity = "[主播]"
+                        break
+                }
+                console.log(`${"\x1b[32m"}${medal}${"\x1b[36m"}${mark}${"\x1b[95m"}${identity}${"\x1b[33m"}${message.data.user}${"\x1b[0m"}: [img]${message.data.text}`)
+                break
+            }
             case "like": {
                 let medal = ""
                 if (message.data.medal) {
@@ -122,6 +151,14 @@ class chatPrint{
             }
             case "ban": {
                 console.log(`用户 ${"\x1b[40;33m"}${message.data.user}${"\x1b[0m"} 已被管理员禁言`)
+                break
+            }
+            case "live_start": {
+                console.log(`直播间${"\x1b[40;33m"} ${message.platform}-${message.room} ${"\x1b[0m"}已开播`)
+                break
+            }
+            case "live_cut": {
+                console.log(`${"\x1b[1;31m"}直播间${"\x1b[40;33m"} ${message.platform}-${message.room} ${"\x1b[1;31m"}被管理员切断${"\x1b[0m"}: ${message.text}`)
                 break
             }
         }

@@ -1,11 +1,16 @@
 const http = require("http")
 const living = require("./living/living.js")
 const WebSocket = require('ws')
-const { futimesSync } = require("fs")
 const WebSocketServer = WebSocket.Server
 
 // 创建living实例
-const livingServer = new living()
+const live = new living(
+[
+    {
+        platform: "bilibili",
+        id: 2064239
+    },
+])
 
 // http 服务器
 const server = http.createServer()
@@ -50,10 +55,10 @@ wss.on('connection', (ws, req) => {
 wss.on('close', (ws) => {
     console.log('server: 有客户端断开WebSocket服务器')
 })
-livingServer.on("message", (data) => {
+live.on("message", (data) => {
     wss.broadcast(JSON.stringify(data), "/message")
 })
-livingServer.on("command", (data) => {
+live.on("command", (data) => {
     wss.broadcast(JSON.stringify(data), "/command")
 })
 

@@ -52,6 +52,8 @@ class bilibiliLive {
         //client.on('COMBO_SEND', this.msg_COMBO_SEND.bind(this))
         client.on('ROOM_BLOCK_MSG', this.msg_ROOM_BLOCK_MSG.bind(this))
         client.on('SUPER_CHAT_MESSAGE', this.msg_SUPER_CHAT_MESSAGE.bind(this))
+        client.on('CUT_OFF', this.msg_CUT_OFF.bind(this))
+        client.on('LIVE', this.msg_LIVE.bind(this))
     }
     on(eventName, func) {   // 监听事件
         this.event.on(eventName, func)
@@ -112,22 +114,47 @@ class bilibiliLive {
         } else if (uid == this.uid) {
             identity = "anchor"
         }
-        let danmaku = {
-            platform: "bilibili",
-            room: this.id,
-            type: "text",
-            timestamp: date,
-            localtime: (new Date()).valueOf(),
-            data: {
-                text: text,
-                mode: mode,
-                color: color,
-                user: user,
-                uid: uid,
-                date: date,
-                medal: medal,
-                identity: identity,
-                mark: mark,
+        let danmaku = {}
+        if (msg.info[0][12]) {
+            danmaku = {
+                platform: "bilibili",
+                room: this.id,
+                type: "image",
+                timestamp: date,
+                localtime: (new Date()).valueOf(),
+                data: {
+                    id: msg.info[0][13].emoticon_unique,
+                    image: msg.info[0][13].url,
+                    size: [msg.info[0][13].width, msg.info[0][13].height],
+                    text: text,
+                    mode: mode,
+                    color: color,
+                    user: user,
+                    uid: uid,
+                    date: date,
+                    medal: medal,
+                    identity: identity,
+                    mark: mark,
+                }
+            }
+        } else {
+            danmaku = {
+                platform: "bilibili",
+                room: this.id,
+                type: "text",
+                timestamp: date,
+                localtime: (new Date()).valueOf(),
+                data: {
+                    text: text,
+                    mode: mode,
+                    color: color,
+                    user: user,
+                    uid: uid,
+                    date: date,
+                    medal: medal,
+                    identity: identity,
+                    mark: mark,
+                }
             }
         }
         this.toChat(danmaku)
@@ -369,6 +396,33 @@ class bilibiliLive {
             }
         }
         this.toChat(ban)
+    }
+    msg_LIVE(msg) {          // 直播间开播
+        if (msg.live_time) {
+            let live = {
+                platform: "bilibili",
+                room: this.id,
+                type: "live_start",
+                timestamp: msg.live_time * 1000,
+                localtime: (new Date()).valueOf(),
+                data: {
+                    startTime: msg.live_time,
+                }
+            }
+            this.toChat(live)
+        }
+    }
+    msg_CUT_OFF(msg) {      // 直播间被切断
+        let cut = {
+            platform: "bilibili",
+            room: this.id,
+            type: "live_cut",
+            localtime: (new Date()).valueOf(),
+            data: {
+                text: msg.msg
+            }
+        }
+        this.toChat(cut)
     }
     bufGift(data, combo) {   // 将礼物信息放入缓冲池
         let buf = {
