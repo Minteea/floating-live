@@ -1,3 +1,10 @@
 node_modules/
 save/
 test/
+dist/
+
+# 编译生成文件
+*.js
+*.d.ts
+
+*.tgz

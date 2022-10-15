@@ -1,41 +1,43 @@
-const { EventEmitter } = require("events")
+import MessageData from "../Message/MessageData"
+import ChatProcessor from "./ChatProcessor"
 
-class chatCommand {
-    constructor(filterList) {
+class ChatCommand {
+    chatProcessor: ChatProcessor
+    filterList: any[]
+    constructor(chatProcessor: ChatProcessor, filterList: any[]) {
+        this.chatProcessor = chatProcessor
         this.filterList = filterList
-        this.event = new EventEmitter()
     }
-    filter(chat) {
-        if (chat.type == "text" && !chat.filter) {
-            let text = chat.data.text
+    process(msg: MessageData) {
+        if (msg.type == "text" && !msg.block) {
+            let text = msg.info.text
             let filterList = this.filterList
             for (let g = 0; g < filterList.length; g++) {
                 let rule = filterList[g]
                 if (rule.pattern.test(text)) {
                     let command = {
-                        platform: chat.platform,
+                        platform: msg.platform,
                         type: "command",
                         command: rule.command,
-                        timestamp: chat.timestamp,
+                        timestamp: msg.local_timestamp,
                         info: {
                             type: "text",
-                            user: chat.data.user,
-                            uid: chat.data.uid,
+                            user: msg.info.user,
                         },
                         data: {},
                     }
                     if (rule.callback) {
-                        rule.callback(chat, command, rule.pattern)
+                        rule.callback(msg, command, rule.pattern)
                     }
-                    chat.command = {
+                    msg.command = {
                         command: command.command,
                         data: command.data
                     }
-                    this.event.emit("command", command)
+                    this.chatProcessor.emit("command", command)
                 }
             }
         }
     }
 }
 
-module.exports = chatCommand
+export default ChatCommand

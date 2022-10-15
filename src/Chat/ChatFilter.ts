@@ -1,13 +1,17 @@
-const { EventEmitter } = require("events")
+import { EventEmitter } from "events"
+import MessageData from "../Message/MessageData"
+import ChatProcessor from "./ChatProcessor"
 
-class chatFilter {
-    constructor(filterList) {
+class ChatFilter {
+    chatProcessor: ChatProcessor
+    filterList: any[]
+    constructor(chatProcessor: ChatProcessor, filterList: any[]) {
+        this.chatProcessor = chatProcessor
         this.filterList = filterList
-        this.event = new EventEmitter()
     }
-    filter(chat) {
-        if (chat.type == "text") {
-            let text = chat.data.text
+    process(msg: MessageData) {
+        if (msg.type == "text" && msg.info.text) {
+            let text = msg.info.text
             let filterList = this.filterList
             fgroup: for (let g = 0; g < filterList.length; g++) {
                 let group = filterList[g]
@@ -15,7 +19,7 @@ class chatFilter {
                     for (let i = 0; i < group.keyword.length; i++) {
                         if (text.includes(group.keyword[i])) {
                             let keyword = group.keyword[i]
-                            chat.filter = {
+                            msg.block = {
                                 type: group.type,
                                 name: group.name,
                                 keyword: keyword,
@@ -23,22 +27,16 @@ class chatFilter {
                             }
                             switch (group.mode) {
                                 case "hide": {
-                                    chat.filter.reason = group.reason
-                                    chat.filter.showUser = group.showUser
-                                    break
-                                }
-                                case "block": {
-                                    chat.filter.keyword = keyword
-                                    chat.block = true
+                                    msg.block.reason = group.reason
                                     break
                                 }
                                 case "replace": {
-                                    chat.filter.replace = group.replace
-                                    chat.showText = group.replace
+                                    msg.block.reason = group.reason
+                                    msg.block.replace = group.replace
                                     break
                                 }
                             }
-                            this.event.emit("filter", chat)
+                            this.chatProcessor.emit("filter", msg)
                             break fgroup
                         }
                     }
@@ -48,4 +46,4 @@ class chatFilter {
     }
 }
 
-module.exports = chatFilter
+export default ChatFilter

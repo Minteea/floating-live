@@ -1,13 +1,26 @@
-{ "name": "floating-living",
-  "version": "0.5.0",
-  "private": true,
+{
+  "name": "floating-living",
+  "version": "0.6.0",
+  "type": "commonjs",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "author": "Minteea",
+  "license": "MIT",
   "scripts": {
-    "start": "node ./src/server/server.js"
+    "tsc": "tsc -b",
+    "clear": "rimraf index.js index.d.ts src/**/*.js src/**/*.d.ts tools/**/*.js tools/**/*.d.ts",
+    "test": "npm run clear && ts-node demo/demo.ts",
+    "build-test": "npm run build && node demo/demo.js",
+    "build": "npm run clear && npm run tsc",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "ac-danmu": "^0.5.8",
     "axios": "^0.26.0",
     "bilibili-live-ws": "^6.0.3",
     "ws": "^8.5.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.3"
   }
 }
