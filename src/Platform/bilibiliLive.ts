@@ -25,12 +25,10 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
   public anchor: UserInfo = { name: "", id: 0 }
   /** 是否持续保持连接 */
   readonly keep_connection: boolean = true
-  /** 是否正在直播 */
-  public living: boolean = false
+  /** 直播状态 */
+  public status: RoomInfo["status"] = "off"
   /** 开始直播时间 */
   public start_time: number = 0
-  /** 直播间是否被封禁 */
-  public banned: boolean = false
   /** 直播间弹幕api模块 */
   public client: LiveWS | null = null
   /** 是否为持续监听状态 */
@@ -52,8 +50,8 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
       .then((res) => {
         let data = res.data.data;
         this.roomid = data.room_id;
-        this.living = data.live_status == 1;
-        this.start_time = this.living ? data.live_time * 1000 : 0;
+        this.status = data.live_status == 1 ? "live" : "off";
+        this.start_time = this.status == "live" ? data.live_time * 1000 : 0;
         this.anchor.id = data.uid;
       })
       .catch((error) => {

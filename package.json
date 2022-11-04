@@ -18,6 +18,7 @@
     "ac-danmu": "^0.5.8",
     "axios": "^0.26.0",
     "bilibili-live-ws": "^6.0.3",
+    "floating-living": "^0.6.2",
     "ws": "^8.5.0"
   },
   "devDependencies": {

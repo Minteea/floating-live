@@ -15,10 +15,8 @@ export default interface RoomInfo {
   anchor: UserInfo
   /** 是否持续保持连接 */
   keep_connection: boolean;
-  /** 是否正在直播 */
-  living: boolean
+  /** 直播状态(直播/关播/轮播/封禁) */
+  status: "live" | "off" | "round" | "banned"
   /** 开始直播时间 */
   start_time: number;
-  /** 直播间是否被封禁 */
-  banned?: boolean
 }

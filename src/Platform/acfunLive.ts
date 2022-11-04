@@ -22,12 +22,10 @@ class acfunLive extends EventEmitter implements LiveRoom {
   public anchor: UserInfo = { name: "", id: 0 }
   /** 是否持续保持连接 */
   readonly keep_connection: boolean = false
-  /** 是否正在直播 */
-  public living: boolean = false
+  /** 直播状态 */
+  public status: RoomInfo["status"] = "off"
   /** 开始直播时间 */
   public start_time: number = 0
-  /** 直播间是否被封禁 */
-  public banned: boolean = false
   /** 直播间弹幕api模块 */
   public client: any = null
   /** 是否为持续监听状态 */
