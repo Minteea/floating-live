@@ -33,6 +33,7 @@ class LiveRoomController extends EventEmitter {
     let { key, room }: { key: string; room: LiveRoom } = keyRoom
     if (this.roomMap.has(key)) {
       console.log(`[LiveRoomController] 房间已存在: ${key}`)
+      this.emit("room", {status: "exist", roomKey: key})
       return
     }
     this.roomMap.set(key, room);
@@ -42,33 +43,47 @@ class LiveRoomController extends EventEmitter {
     room.on("origin", (data) => {
       this.emit("origin", data)
     })
+    room.on("connect", (data) => {
+      this.emit("room", {status: "connected", roomKey: key})
+    })
+    room.on("disconnect", (data) => {
+      this.emit("room", {status: "disconnected", roomKey: key})
+    })
     console.log(`[LiveRoomController] 已添加房间: ${key}`)
+    this.emit("room", {status: "added", roomKey: key})
   }
   /** 添加房间监听对象 */
   public addLiveRoom(room: LiveRoom, open?: boolean) {
     let roomKey = `${room.platform}:${room.id}`
     if (this.roomMap.has(roomKey)) {
       console.log(`[LiveRoomController] 房间已存在: ${roomKey}`)
+      this.emit("room", {status: "exist", roomKey})
       return
     }
     this.roomMap.set(roomKey, room);
     room.on("msg", (data) => {
       this.emit("msg", data)
     })
+    room.on("origin", (data) => {
+      this.emit("origin", data)
+    })
     if(open) {
       room.open()
     }
+    this.emit("room", {status: "added", roomKey})
   }
   /** 移除房间 */
   public removeRoom(roomKey: string) {
     if (!this.roomMap.has(roomKey)) {
       console.log(`[LiveRoomController] 房间不存在: ${roomKey}:`)
+      this.emit("room", {status: "unexist", roomKey})
       return
     }
     let room = this.roomMap.get(roomKey);
     this.roomMap.delete(roomKey)  // 从表中删除房间
     room?.destory() // 销毁房间监听实例
     console.log(`[LiveRoomController] 已移除房间: ${roomKey}:`)
+    this.emit("room", {status: "removed", roomKey})
   }
   /** 获取房间 */
   public getRoom(r: string | { platform: string; id: string | number }) {

@@ -1,5 +1,6 @@
 import { EventEmitter } from "events";
 import ChatProcessor from "./Chat/ChatProcessor";
+import getRoomInfo from "./LiveRoom/getRoomInfo";
 import LiveRoom from "./LiveRoom/LiveRoom";
 import LiveRoomController from "./LiveRoom/LiveRoomController";
 
@@ -25,6 +26,9 @@ class FloatingLiving extends EventEmitter {
     this.liveRoomController.on("origin", (msg) => {
       this.emit("origin", msg);
     });
+    this.liveRoomController.on("room", (msg) => {
+      this.emit("room", msg);
+    });
   }
   /** 添加房间 */
   public addRoom(r: string | { platform: string; id: string | number; }, open?: boolean) {
@@ -40,15 +44,20 @@ class FloatingLiving extends EventEmitter {
   }
   /** 打开房间监听 */
   public openRoom(roomKey: string) {
-    this.liveRoomController.getRoom(roomKey)?.open()
+    let room = this.liveRoomController.getRoom(roomKey)
+    room?.open()
+    this.emit("room", {status: room ? "opened" : "unexist", roomKey})
   }
   /** 关闭房间监听 */
   public closeRoom(roomKey: string) {
-    this.liveRoomController.getRoom(roomKey)?.close()
+    let room = this.liveRoomController.getRoom(roomKey)
+    room?.close()
+    this.emit("room", {status: room ? "closed" : "unexist", roomKey})
   }
   /** 获取房间信息 */
   public getRoomInfo(roomKey: string) {
-    this.liveRoomController.getRoom(roomKey)
+    let room = this.liveRoomController.getRoom(roomKey)
+    if (room) return getRoomInfo(room);
   }
   /** 更新房间信息 */
   public async updateRoomInfo(roomKey: string) {
@@ -58,18 +67,23 @@ class FloatingLiving extends EventEmitter {
   public addPlugin(name: string, pluginFunc: (main: FloatingLiving) => any) {
     let pluginObject = pluginFunc(this)
     this.plugin.set(name, pluginObject)
+    this.emit("plugin", {status: "added", name})
     return pluginObject
   }
   /** 根据名称获取插件 */
   public getPlugin(name: string) {
-    this.plugin.get(name)
+    return this.plugin.get(name)
   }
   /** 移除插件 */
   public removePlugin(name: string) {
-    if (!this.plugin.has(name)) return;
+    if (!this.plugin.has(name)) {
+      this.emit("plugin", {status: "unexist", name})
+      return
+    };
     let pluginObject = this.plugin.get(name)
     this.plugin.delete(name)
     pluginObject.destory && pluginObject.destory()
+    this.emit("plugin", {status: "removed", name})
   }
 }
 export default FloatingLiving

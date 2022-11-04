@@ -112,7 +112,7 @@ class chatPrint {
       case "live_start": {
         let roomKey = `${message.platform}:${message.room}`
         console.log(
-          `直播间${"\x1b[40;33m"} ${roomKey} ${"\x1b[0m"}已开播`
+          `[+] 直播间${"\x1b[40;33m"} ${roomKey} ${"\x1b[0m"}已开播`
         );
         break;
       }
@@ -120,9 +120,15 @@ class chatPrint {
         let roomKey = `${message.platform}:${message.room}`
         let msg = message.info.message
         console.log(
-          `${"\x1b[1;31m"}直播间${"\x1b[40;33m"} ${roomKey} ${"\x1b[1;31m"}被管理员切断${"\x1b[0m"}: ${msg}`
+          `[!] ${"\x1b[1;31m"}直播间${"\x1b[40;33m"} ${roomKey} ${"\x1b[1;31m"}被管理员切断${"\x1b[0m"}: ${msg}`
         );
         break;
+      }
+      case "live_end": {
+        let roomKey = `${message.platform}:${message.room}`
+        console.log(
+          `[=] ${"\x1b[1;31m"}直播间${"\x1b[40;33m"} ${roomKey} ${"\x1b[1;31m"}已结束直播${"\x1b[0m"}`
+        );
       }
     }
   }

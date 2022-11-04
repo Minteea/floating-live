@@ -97,9 +97,11 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
 
     client.on("open", () => {
       console.log("[bilibili-live-ws] 已连接bilibili直播服务器");
+      this.emit("connect")
     });
     client.on("close", () => {
       console.log("[bilibili-live-ws] 与bilibili直播服务器的连接已关闭");
+      this.emit("disconnect")
     });
     client.on("live", () => {
       console.log("[bilibili-live-ws] 目标房间连接成功");
@@ -116,6 +118,7 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
     client.on("ROOM_BLOCK_MSG", this.msg_ROOM_BLOCK_MSG.bind(this));
     client.on("SUPER_CHAT_MESSAGE", this.msg_SUPER_CHAT_MESSAGE.bind(this));
     client.on("CUT_OFF", this.msg_CUT_OFF.bind(this));
+    client.on("PREPARING", this.msg_PREPARING.bind(this));
     client.on("LIVE", this.msg_LIVE.bind(this));
   }
   close() {
@@ -282,6 +285,7 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
           num: data.num,
           value: data.total_coin,
           currency: data.coin_type,
+          action: data.action,
           combo_id: data.batch_combo_id,
         }
       },
@@ -401,6 +405,18 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
       },
     };
     this.emitMsg(cut);
+  }
+  msg_PREPARING(msg: any) {
+    let off = {
+      platform: "bilibili",
+      room: this.id,
+      type: "live_end",
+      local_timestamp: new Date().valueOf(),
+      info: {
+        status: msg.round ? "round" : "off"
+      }
+    }
+    this.emitMsg(off)
   }
 }
 

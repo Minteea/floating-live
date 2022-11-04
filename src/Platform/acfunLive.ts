@@ -98,6 +98,7 @@ class acfunLive extends EventEmitter implements LiveRoom {
   }
   destory() {
     this.close()
+    this.removeAllListeners()
   };
   /** 根据守护徽章字符串获取粉丝牌信息 */
   public getMedal(badge: string): MedalInfo | null {

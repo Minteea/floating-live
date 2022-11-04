@@ -66,6 +66,14 @@ export interface MessageLiveStats extends MessageDataExt {
   type: "live_stats";
   info: LiveStats
 }
+/** 直播结束 */
+export interface MessageLiveEnd extends MessageDataExt {
+  type: "live_end";
+  info: {
+    /** 直播状态 */
+    status: "live" | "off" | "round" | "banned"
+  }
+}
 
 export type MessageType =
   | MessageText
@@ -78,3 +86,4 @@ export type MessageType =
   | MessageLiveStart
   | MessageLiveCut
   | MessageLiveStats
+  | MessageLiveEnd
