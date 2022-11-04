@@ -10,9 +10,8 @@ export default function getRoomInfo(liveroom: LiveRoom): RoomInfo {
     cover,
     anchor,
     keep_connection,
-    living,
+    status,
     start_time,
-    banned,
   } = liveroom
   return {
     platform,
@@ -26,8 +25,7 @@ export default function getRoomInfo(liveroom: LiveRoom): RoomInfo {
       avatar: anchor.avatar
     },
     keep_connection,
-    living,
+    status,
     start_time,
-    banned,
   }
 }
