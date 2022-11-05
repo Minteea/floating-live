@@ -2,7 +2,7 @@ import RoomInfo from "../LiveRoom/RoomInfo";
 import UserInfo from "../Message/Info/UserInfo";
 import { MessageBlock, MessageGift, MessageImage, MessageInteract, MessageSuperchat, MessageText, MessagePrivilege } from "../Message/MessageInterface";
 
-import { LiveWS } from "bilibili-live-ws";
+import { KeepLiveWS } from "bilibili-live-ws";
 import axios from "axios";
 import { EventEmitter } from "events";
 import LiveRoom from "../LiveRoom/LiveRoom";
@@ -30,13 +30,22 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
   /** 开始直播时间 */
   public start_time: number = 0
   /** 直播间弹幕api模块 */
-  public client: LiveWS | null = null
+  public client: KeepLiveWS | null = null
   /** 是否为持续监听状态 */
   public opening: boolean = false
+  /** 断线重连间隔 */
+  public connectInterval: number
 
-  constructor(id: number, open: boolean = false) {
+  constructor(
+    id: number,   // 房间id
+    open: boolean = false,  // 生成房间后是否打开
+    config?: {
+      connectInterval: number   // 断线重连间隔(默认值为100ms)
+    }
+  ) {
     super();
     this.id = id; // 直播间号
+    this.connectInterval = config?.connectInterval || 100
     this.getInfo().then(() => {
       if (open) this.open()
     })
@@ -75,7 +84,7 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
     console.log("[bilibiliLive] 已获取房间信息");
     this.emit("update", this.roomInfo)
   }
-  get roomInfo() {
+  get roomInfo(): RoomInfo {
     return getRoomInfo(this)
   }
   /** 开启直播间监听 */
@@ -87,13 +96,16 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
     }
     this.opening = true
     this.createWS();
+    this.emit("open")
   }
   /** 连接直播服务端 */
   async createWS() {
     // 与Websocket服务器连接
     console.log("[bilibili-live-ws] 开始连接bilibili直播服务器");
-    this.client = new LiveWS(this.roomid);
+    this.client = new KeepLiveWS(this.roomid);
     let client = this.client;
+
+    client.interval = this.connectInterval
 
     client.on("open", () => {
       console.log("[bilibili-live-ws] 已连接bilibili直播服务器");
@@ -125,6 +137,7 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
     if (!this.opening) return
     this.opening = false
     this.client?.close();
+    this.emit("close")
   }
   destory() {
     this.close()
@@ -390,6 +403,7 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
           start_time: msg.live_time * 1000,
         },
       };
+      this.status = "live"
       this.emitMsg(live);
     }
   }
@@ -404,6 +418,7 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
         message: msg.msg,
       },
     };
+    this.status = "off"
     this.emitMsg(cut);
   }
   msg_PREPARING(msg: any) {
@@ -416,6 +431,7 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
         status: msg.round ? "round" : "off"
       }
     }
+    this.status = msg.round ? "round" : "off"
     this.emitMsg(off)
   }
 }
