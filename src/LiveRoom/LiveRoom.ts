@@ -13,6 +13,8 @@ interface LiveRoom extends RoomInfo{
   destory: () => void;
   /** 获取信息 */
   getInfo: () => any;
+  /** 房间信息 */
+  roomInfo: RoomInfo;
   /** 事件监听 */
   on: (eventName: string | symbol, listener: (...args: any[]) => void) => this;
 }

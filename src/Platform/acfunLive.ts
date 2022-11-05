@@ -45,7 +45,7 @@ class acfunLive extends EventEmitter implements LiveRoom {
   public async getInfo() {
 
   }
-  get roomInfo() {
+  get roomInfo(): RoomInfo {
     return getRoomInfo(this)
   }
   /** 开启直播间监听 */
@@ -53,6 +53,7 @@ class acfunLive extends EventEmitter implements LiveRoom {
     if (this.opening) return
     this.opening = true
     this.createWS();
+    this.emit("open")
   }
   /** 连接直播服务端 */
   async createWS() {
@@ -62,6 +63,7 @@ class acfunLive extends EventEmitter implements LiveRoom {
     client.wsStart();
     client.on("enter", () => {
       console.log("acfunLive: 已连接AcFun直播间");
+      this.status = "live"
     });
     client.on("recent-comment", (comments: any) => {
       //当前弹幕列表
@@ -92,11 +94,15 @@ class acfunLive extends EventEmitter implements LiveRoom {
     });
     client.on("liveclose", (end: any) => {
       console.log("acfunLive: 直播已结束或中断");
+      this.status = "off"
     });
     this.initOrigin();
   }
   close() {
-    console.log("acfunLive: 暂不支持手动关闭客户端");
+    // 临时替代方案，解除监听并丢弃client实例
+    this.client.removeAllListeners()
+    this.client = null
+    this.emit("close")
   }
   destory() {
     this.close()
