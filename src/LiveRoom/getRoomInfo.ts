@@ -12,6 +12,7 @@ export default function getRoomInfo(liveroom: LiveRoom): RoomInfo {
     keep_connection,
     status,
     start_time,
+    opening,
   } = liveroom
   return {
     platform,
@@ -27,5 +28,6 @@ export default function getRoomInfo(liveroom: LiveRoom): RoomInfo {
     keep_connection,
     status,
     start_time,
+    opening,
   }
 }

@@ -19,4 +19,6 @@ export default interface RoomInfo {
   status: "live" | "off" | "round" | "banned"
   /** 开始直播时间 */
   start_time: number;
+  /** 房间是否打开 */
+  opening: boolean;
 }

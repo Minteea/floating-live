@@ -7,9 +7,10 @@ class msgSave {
   file: string;
   config: object;
   type: string;
-  paused: boolean = false;
+  paused: boolean;
   listener: (msg: any) => void;
-  constructor(main: FloatingLiving, type: string, file: string, config = { encoding: "utf8", flag: "a" }) {
+  constructor(main: FloatingLiving, type: string, file: string, open: boolean = true, config = { encoding: "utf8", flag: "a" }) {
+    this.paused = !open
     this.main = main
     this.file = file;
     this.config = config;
