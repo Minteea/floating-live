@@ -6,6 +6,7 @@ import LiveRoom from "../liveroom/LiveRoom";
 // @ts-ignore
 import AcClient from "ac-danmu";
 import { EventEmitter } from "events";
+import getRoomInfo from "../LiveRoom/getRoomInfo";
 
 class acfunLive extends EventEmitter implements LiveRoom {
   /** 平台id */
@@ -43,6 +44,9 @@ class acfunLive extends EventEmitter implements LiveRoom {
   }
   public async getInfo() {
 
+  }
+  get roomInfo() {
+    return getRoomInfo(this)
   }
   /** 开启直播间监听 */
   async open() {

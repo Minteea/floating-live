@@ -73,8 +73,10 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
         console.error(error);
       });
     console.log("[bilibiliLive] 已获取房间信息");
-    let roomInfo = getRoomInfo(this)
-    this.emit("update", roomInfo)
+    this.emit("update", this.roomInfo)
+  }
+  get roomInfo() {
+    return getRoomInfo(this)
   }
   /** 开启直播间监听 */
   async open() {

@@ -49,6 +49,9 @@ class LiveRoomController extends EventEmitter {
     room.on("disconnect", (data) => {
       this.emit("room", {status: "disconnected", roomKey: key})
     })
+    room.on("update", (data) => {
+      this.emit("room", {status: "update", roomKey: key, roomInfo: data})
+    })
     console.log(`[LiveRoomController] 已添加房间: ${key}`)
     this.emit("room", {status: "added", roomKey: key})
   }
