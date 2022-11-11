@@ -9,8 +9,8 @@ const WebSocketServer = WebSocket.Server;
 const living = new FloatingLiving({
   rooms: [
     {
-      platform: "bilibili",
-      id: 6,
+      platform: "acfun",
+      id: 12648555,
     },
   ],
   opening: true,

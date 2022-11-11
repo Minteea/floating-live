@@ -9,7 +9,7 @@ export default function getRoomInfo(liveroom: LiveRoom): RoomInfo {
     area,
     cover,
     anchor,
-    keep_connection,
+    available,
     status,
     start_time,
     opening,
@@ -25,7 +25,7 @@ export default function getRoomInfo(liveroom: LiveRoom): RoomInfo {
       id: anchor.id,
       avatar: anchor.avatar
     },
-    keep_connection,
+    available,
     status,
     start_time,
     opening,

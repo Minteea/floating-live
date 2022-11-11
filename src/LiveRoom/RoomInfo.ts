@@ -13,8 +13,8 @@ export default interface RoomInfo {
   cover?: string
   /** 主播信息 */
   anchor: UserInfo
-  /** 是否持续保持连接 */
-  keep_connection: boolean;
+  /** 直播间是否可用 */
+  available: boolean;
   /** 直播状态(直播/关播/轮播/封禁) */
   status: "live" | "off" | "round" | "banned"
   /** 开始直播时间 */

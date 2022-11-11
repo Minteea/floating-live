@@ -5,7 +5,7 @@
   "main": "index.js",
   "types": "index.d.ts",
   "author": "Minteea",
-  "license": "MIT",
+  "license": "GPLv3",
   "scripts": {
     "tsc": "tsc -b",
     "clear": "rimraf index.js index.d.ts src/**/*.js src/**/*.d.ts tools/**/*.js tools/**/*.d.ts",
@@ -15,13 +15,14 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "ac-danmu": "^0.5.8",
+    "acfun-live-danmaku": "^0.6.1",
     "axios": "^0.26.0",
     "bilibili-live-ws": "^6.0.3",
-    "floating-living": "^0.6.2",
     "ws": "^8.5.0"
   },
   "devDependencies": {
-    "@types/ws": "^8.5.3"
+    "@types/ws": "^8.5.3",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.8.4"
   }
 }

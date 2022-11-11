@@ -23,8 +23,8 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
   public cover: string = ""
   /** 主播信息 */
   public anchor: UserInfo = { name: "", id: 0 }
-  /** 是否持续保持连接 */
-  readonly keep_connection: boolean = true
+  /** 直播间是否可用 */
+  public available: boolean = false;
   /** 直播状态 */
   public status: RoomInfo["status"] = "off"
   /** 开始直播时间 */
@@ -53,30 +53,21 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
   /** 获取房间信息 */
   public async getInfo() {
     await axios
-      .post(
-        `https://api.live.bilibili.com/room/v1/Room/room_init?id=${this.id}`
-      ) // 获取直播间信息
-      .then((res) => {
-        let data = res.data.data;
-        this.roomid = data.room_id;
-        this.status = data.live_status == 1 ? "live" : "off";
-        this.start_time = this.status == "live" ? data.live_time * 1000 : 0;
-        this.anchor.id = data.uid;
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-    await axios
       .get(
-        `https://api.live.bilibili.com/xlive/web-room/v1/index/getRoomBaseInfo?room_ids=${this.roomid}&;req_biz=video`
+        `https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=${this.id}`
       ) // 获取直播间信息
       .then((res) => {
-        let data = res.data.data.by_room_ids[String(this.roomid)];
-        this.anchor.name = data.uname
-        this.title = data.title
-        this.area = [data.parent_area_name, data.area_name]
-        this.cover = data.cover
-        this.anchor.avatar = ""
+        let data: any = res.data.data;
+        this.roomid = data.room_info.room_id;
+        this.status = data.room_info.live_status == 1 ? "live" : "off";
+        this.start_time = this.status == "live" ? data.room_info.live_start_time * 1000 : 0;
+        this.title = data.room_info.title
+        this.anchor.id = data.room_info.uid;
+        this.anchor.name = data.anchor_info.base_info.uname
+        this.anchor.avatar = data.anchor_info.base_info.face
+        this.area = [data.room_info.parent_area_name, data.room_info.area_name]
+        this.cover = data.room_info.cover
+        this.available = true
       })
       .catch((error) => {
         console.error(error);
@@ -89,7 +80,7 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
   }
   /** 开启直播间监听 */
   async open() {
-    if (this.opening) return
+    if (this.opening || !this.available) return
     if (!this.roomid) {
       console.log("[bilibili-live-ws] 未获取直播间room_id属性")
       return

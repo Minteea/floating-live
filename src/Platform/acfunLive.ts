@@ -1,12 +1,13 @@
 import RoomInfo from "../LiveRoom/RoomInfo";
 import MedalInfo from "../Message/Info/MedalInfo";
 import UserInfo from "../Message/Info/UserInfo";
-import { MessageInteract, MessageText, MessageGift } from "../Message/MessageInterface";
+import { MessageInteract, MessageText, MessageGift, MessageLiveEnd, MessageLiveCut } from "../Message/MessageInterface";
 import LiveRoom from "../liveroom/LiveRoom";
-// @ts-ignore
-import AcClient from "ac-danmu";
+import getAcClient from "acfun-live-danmaku";
+import AcClient from "acfun-live-danmaku/client";
 import { EventEmitter } from "events";
 import getRoomInfo from "../LiveRoom/getRoomInfo";
+import axios from "axios";
 
 class acfunLive extends EventEmitter implements LiveRoom {
   /** 平台id */
@@ -21,16 +22,20 @@ class acfunLive extends EventEmitter implements LiveRoom {
   public cover: string = ""
   /** 主播信息 */
   public anchor: UserInfo = { name: "", id: 0 }
-  /** 是否持续保持连接 */
-  readonly keep_connection: boolean = false
   /** 直播状态 */
   public status: RoomInfo["status"] = "off"
   /** 开始直播时间 */
   public start_time: number = 0
   /** 直播间弹幕api模块 */
-  public client: any = null
+  public client: AcClient | null = null
   /** 是否为持续监听状态 */
   public opening: boolean = false
+
+  private wsInit: boolean = false
+  /** 直播间是否可用 */
+  public get available(): boolean {
+    return Boolean(this.client)
+  };
 
   constructor(id: number, open: boolean = false) {
     super();
@@ -43,65 +48,72 @@ class acfunLive extends EventEmitter implements LiveRoom {
     console.log("连接直播间");
   }
   public async getInfo() {
-
+    if (!this.client) {
+      this.client = await getAcClient(this.id) || null
+      if (this.client) {
+        this.status = "live"
+        this.start_time = this.client.liveStartTime
+        this.title = this.client.caption as unknown as string // bug
+        this.cover = `https://tx2.a.kwimgs.com/bs2/ztlc/cover_${this.client.liveId}_raw.jpg`
+      }
+      await axios
+        .get(
+          `https://live.acfun.cn/rest/pc-direct/user/userInfo?userId=${this.id}`
+        )
+        .then((res) => {
+          let profile: any = res.data.profile;
+          this.anchor.avatar = profile.headUrl
+          this.anchor.name = profile.name
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+      this.emit("update", this.roomInfo)
+    }
+    // 暂不能在连接房间后更新信息
   }
   get roomInfo(): RoomInfo {
     return getRoomInfo(this)
   }
   /** 开启直播间监听 */
   async open() {
-    if (this.opening) return
+    if (this.opening || !this.available) return
+    if (!this.wsInit) {
+      this.initWS()
+    }
+    //启动websocket连接
     this.opening = true
-    this.createWS();
+    this.client!.wsStart();
     this.emit("open")
   }
-  /** 连接直播服务端 */
-  async createWS() {
-    this.client = await AcClient(this.id);
+  /** 初始化直播服务端监听 */
+  private async initWS() {
+    if (!this.client) return
     let client = this.client;
-    //启动websocket连接
-    client.wsStart();
-    client.on("enter", () => {
-      console.log("acfunLive: 已连接AcFun直播间");
+    client.on("EnterRoomAck", () => {
+      console.log("[acfun-live-danmaku] 已连接AcFun直播间");
       this.status = "live"
     });
-    client.on("recent-comment", (comments: any) => {
+    client.on("RecentComment", (comments: any) => {
       //当前弹幕列表
     });
-    client.on("danmaku", (danmaku: any) => {
+    client.on("Comment", (danmaku: any) => {
       //收到的弹幕
-      this.msg_danmaku(danmaku);
+      this.msg_Comment(danmaku);
     });
-    client.on("gift", (gift: any) => {
-      //收到的礼物
-      this.msg_gift(gift);
-    });
-    client.on("user-enter", (entry: any) => {
-      //用户进入直播间
-      this.msg_interact(entry, "entry");
-    });
-    client.on("like", (like: any) => {
-      //用户点赞
-      this.msg_interact(like, "like");
-    });
-    client.on("join-club", (join: any) => {
-      //用户加入守护团
-      this.msg_interact(join, "join");
-    });
-    client.on("live-info", (info: any) => {
-      //直播间数据状态
-      this.msg_live_info(info);
-    });
-    client.on("liveclose", (end: any) => {
-      console.log("acfunLive: 直播已结束或中断");
-      this.status = "off"
-    });
-    this.initOrigin();
+    client.on("Gift", (gift: any) => { this.msg_Gift(gift); });
+    client.on("UserEnterRoom", (entry: any) => { this.msg_Interact(entry, "entry"); });
+    client.on("Like", (like: any) => { this.msg_Interact(like, "like"); });
+    client.on("JoinClub", (join: any) => { this.msg_Interact(join, "join"); });
+    client.on("DisplayInfo", (info: any) => { this.msg_DisplayInfo(info); });
+    client.on("LiveClosed", (end: any) => { this.msg_LiveClosed() });
+    client.on("LiveBanned", (end: any) => { this.msg_LiveBanned() });
+    this.wsInit = true
   }
   close() {
-    // 临时替代方案，解除监听并丢弃client实例
-    this.client.removeAllListeners()
-    this.client = null
+    if (!this.opening) return
+    this.opening = false
+    this.client?.wsClose();
     this.emit("close")
   }
   destory() {
@@ -121,8 +133,8 @@ class acfunLive extends EventEmitter implements LiveRoom {
       return null;
     }
   }
-  /** 文本信息(danmaku) */
-  public msg_danmaku(data: {
+  /** 文本信息(Comment) */
+  public msg_Comment(data: {
     sendTimeMs: string;
     userInfo: {
       userIdentity: any;
@@ -143,17 +155,16 @@ class acfunLive extends EventEmitter implements LiveRoom {
           name: data.userInfo.nickname,
           id: parseInt(data.userInfo.userId),
           medal: this.getMedal(data.userInfo.badge),
-          admin: data.userInfo.userIdentity,
         },
         timestamp: parseInt(data.sendTimeMs),
       },
     };
     this.emitMsg(danmaku);
   }
-  /** 礼物信息(gift) */
-  public msg_gift(data: {
+  /** 礼物信息(Gift) */
+  public msg_Gift(data: {
     sendTimeMs: string;
-    userInfo: {
+    user: {
       userIdentity: any;
       badge: string;
       nickname: any;
@@ -171,10 +182,9 @@ class acfunLive extends EventEmitter implements LiveRoom {
       local_timestamp: new Date().valueOf(),
       info: {
         user: {
-          name: data.userInfo.nickname,
-          id: parseInt(data.userInfo.userId),
-          medal: this.getMedal(data.userInfo.badge),
-          admin: data.userInfo.userIdentity,
+          name: data.user.nickname,
+          id: parseInt(data.user.userId),
+          medal: this.getMedal(data.user.badge),
         },
         gift: {
           name: data.giftName, // 礼物名称
@@ -189,7 +199,7 @@ class acfunLive extends EventEmitter implements LiveRoom {
     this.emitMsg(gift);
   }
   /** 互动信息 */
-  public msg_interact(
+  public msg_Interact(
     data: {
       sendTimeMs: string;
       userInfo: {
@@ -211,14 +221,41 @@ class acfunLive extends EventEmitter implements LiveRoom {
           name: data.userInfo.nickname,
           id: parseInt(data.userInfo.userId),
           medal: this.getMedal(data.userInfo.badge),
-          admin: data.userInfo.userIdentity,
         },
         timestamp: parseInt(data.sendTimeMs),
       },
     };
     this.emitMsg(like);
   }
-  msg_live_info(data: any) {
+  public msg_LiveClosed() {
+    let off: MessageLiveEnd = {
+      platform: "acfun",
+      room: this.id,
+      type: "live_end",
+      local_timestamp: new Date().valueOf(),
+      info: {
+        status: "off"
+      }
+    }
+    this.status = "off"
+    this.client = null
+    this.emitMsg(off)
+  }
+  public msg_LiveBanned() {
+    let cut: MessageLiveCut = {
+      platform: "acfun",
+      room: this.id,
+      type: "live_cut",
+      local_timestamp: new Date().valueOf(),
+      info: {
+        message: ""
+      }
+    }
+    this.status = "off"
+    this.client = null
+    this.emitMsg(cut)
+  }
+  msg_DisplayInfo(data: any) {
     // this.toData(msg)
   }
   emitMsg(data: any) {
@@ -228,36 +265,6 @@ class acfunLive extends EventEmitter implements LiveRoom {
   emitOrigin(data: any) {
     // 源消息
     this.emit("origin", data);
-  }
-  initOrigin() {
-    this.client.on("recent-comment", (comments: any) => {
-      //当前弹幕列表
-      this.emitOrigin(comments);
-    });
-    this.client.on("danmaku", (danmaku: any) => {
-      //收到的弹幕
-      this.emitOrigin({ type: "danmaku", data: danmaku });
-    });
-    this.client.on("like", (like: any) => {
-      //收到的点赞
-      this.emitOrigin({ type: "like", data: like });
-    });
-    this.client.on("gift", (gift: any) => {
-      //收到的礼物
-      this.emitOrigin({ type: "gift", data: gift });
-    });
-    this.client.on("user-enter", (entry: any) => {
-      //用户进入直播间
-      this.emitOrigin({ type: "user-enter", data: entry });
-    });
-    this.client.on("join-club", (join: any) => {
-      //用户加入守护团
-      this.emitOrigin({ type: "join-club", data: join });
-    });
-    this.client.on("live-info", (info: any) => {
-      //直播间数据状态
-      this.emitOrigin({ type: "live-info", data: info });
-    });
   }
 }
 

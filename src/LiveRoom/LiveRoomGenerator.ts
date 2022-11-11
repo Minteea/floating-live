@@ -6,7 +6,7 @@ type PlatformGenerator = (id: string | number, open?: boolean) => {key: string, 
 
 /** 直播间监听实例生成器 */
 class LiveRoomGenerator {
-  private generatorMap: Map<string, PlatformGenerator> = new Map()
+  private generators: {[platform: string]: PlatformGenerator} = {}
   constructor() {
     this.addPlatform("bilibili", (id: string | number, open?: boolean) => {
       let key = `bilibili:${Number(id)}`
@@ -31,7 +31,7 @@ class LiveRoomGenerator {
       platform = r.platform.toLowerCase()
       id = r.id
     }
-    let platformGenerator = this.generatorMap.get(platform)
+    let platformGenerator = this.generators[platform]
     if (platformGenerator) {
       return platformGenerator(id, open)
     } else {
@@ -39,7 +39,7 @@ class LiveRoomGenerator {
     }
   }
   addPlatform(platform: string, generator: PlatformGenerator) {
-    this.generatorMap.set(platform, generator)
+    this.generators[platform] = generator
   }
 }
 

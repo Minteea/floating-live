@@ -9,3 +9,5 @@ demo/**/*
 # ts源文件
 **/*.ts
 !**/*.d.ts
+
+tsconfig.json
