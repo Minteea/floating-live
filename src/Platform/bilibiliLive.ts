@@ -282,6 +282,7 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
             privilege: data.fans_medal.guard_level,
           } : null,
           privilege: data.guard_level,
+          avatar: data.face
         },
         gift: {
           name: data.giftName,
