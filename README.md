@@ -1,4 +1,4 @@
-# Floating Living
+# Floating Live
 一个用于处理和保存直播弹幕的Node.js小工具，开箱即用。
 
 目前支持bilibili和AcFun的直播弹幕，不同平台的弹幕会转换为同一种格式便于保存。
@@ -10,7 +10,22 @@
 ## 使用方法
 ### npm安装
 ```
-npm install floating-living
+npm install floating-live
+```
+``` javascript
+// 导入FloatingLive
+const FloatingLive = require("floating-live")
+// 导入bilibili房间生成插件
+const bilibili = require("floating-live/plugin/bilibili")   
+
+// 创建一个FloatingLive实例
+const live = new FloatingLive()
+// 注册插件
+live.registerPlugin("bilibili", bilibili)
+// 添加房间
+live.controller.addRoom({platform: "bilibili", id: 6})
+// 打开
+live.controller.start()
 ```
 
 ### 拆包即用模式
@@ -20,28 +35,26 @@ npm install floating-living
   ```
   npm install
   ```
-#### 使用 node 运行Javascript文件
-* 打开demo/demo.js
-  ``` javascript
+#### 运行Demo文件
+* 打开demo/demo.ts
+  ``` typescript
   // ...
-  const living = new FloatingLiving({
+  const config = {
     rooms: [
       {
         platform: "bilibili", // 直播平台
         id: 2064239,          // 直播间号
       },
     ],
-  });
+  };
   // ...
   ```
-* 根据需要修改直播平台和直播间号，目前支持的 `platform` 值有：`acfun`、`bilibili`(注意是小写)
+* 根据需要修改直播平台和直播间号，目前支持的 `platform` 值有：`acfun`、`bilibili`(注意是小写)，也可以通过自定义插件添加直播平台
 * 在项目根目录的控制台输入下列命令：
   ```
-  npm run build-test
+  npm run test
   ```
   即可接收来自平台的直播弹幕。
-#### 使用 ts-node 运行Typescript文件
-* 也可以使用ts-node运行ts版本的demo文件，需要先全局安装ts-node，再使用ts-node运行。
 
 ## 感谢
 ### 开源库

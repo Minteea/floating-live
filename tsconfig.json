@@ -12,9 +12,7 @@
   },
   "include": [
     "src",
-    "tools"
+    "plugin",
   ],
-  "files": [
-    "index.ts"
-  ]
+  "files": ["index.ts"]
 }

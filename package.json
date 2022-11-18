@@ -1,5 +1,5 @@
 {
-  "name": "floating-living",
+  "name": "floating-live",
   "version": "0.7.1",
   "type": "commonjs",
   "main": "index.js",
@@ -8,7 +8,7 @@
   "license": "GPLv3",
   "scripts": {
     "tsc": "tsc -b",
-    "clear": "rimraf index.js index.d.ts src/**/*.js src/**/*.d.ts tools/**/*.js tools/**/*.d.ts",
+    "clear": "rimraf index.js index.d.ts src/**/*.js src/**/*.d.ts plugin/**/*.js plugin/**/*.d.ts",
     "test": "npm run clear && ts-node demo/demo.ts",
     "build-test": "npm run build && node demo/demo.js",
     "build": "npm run clear && npm run tsc",
@@ -17,13 +17,13 @@
   "dependencies": {
     "acfun-live-danmaku": "^0.6.1",
     "axios": "^0.26.0",
-    "bilibili-live-ws": "^6.0.3",
-    "ws": "^8.5.0"
+    "bilibili-live-ws": "^6.0.3"
   },
   "devDependencies": {
     "@types/websocket": "^1.0.5",
     "@types/ws": "^8.5.3",
     "rimraf": "^3.0.2",
+    "ts-node": "^10.9.1",
     "typescript": "^4.8.4"
   }
 }
