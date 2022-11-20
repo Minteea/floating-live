@@ -55,7 +55,7 @@ export default class Controller {
   }
   /** 关闭房间 */
   closeRoom(roomKey: string) {
-    this.room.open(roomKey)
+    this.room.close(roomKey)
   }
   /** 打开所有房间 */
   openAllRooms() {
