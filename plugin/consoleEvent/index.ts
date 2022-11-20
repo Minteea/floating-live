@@ -25,10 +25,10 @@ export = (ctx: FloatingLive) => {
   ctx.on("room_close", (key) => {
     console.log(`[${key}]房间已关闭`)
   })
-  ctx.on("room_open", (key) => {
+  ctx.on("room_add", (key) => {
     console.log(`[room]已添加房间: ${key}`)
   })
-  ctx.on("room_close", (key) => {
+  ctx.on("room_remove", (key) => {
     console.log(`[room]已移除房间: ${key}`)
   })
   ctx.on("room_exist", (key) => {
