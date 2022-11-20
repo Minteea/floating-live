@@ -75,13 +75,13 @@ class Room {
   /** 移除房间 */
   public remove(roomKey: string) {
     if (!this.roomMap.has(roomKey)) {
-      this.main.emit("room", {key: "room_unexist", value: {key: roomKey}})
+      this.main.emit("room_unexist", roomKey)
       return
     }
     let room = this.roomMap.get(roomKey);
     this.roomMap.delete(roomKey)  // 从表中删除房间
     room?.removeAllListeners()    // 移除房间监听实例
-    this.main.emit("room", {key: "room_remove", value: {key: roomKey}})
+    this.main.emit("room_remove", roomKey)
   }
   /** 获取房间 */
   public get(roomKey: string) {
