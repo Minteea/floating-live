@@ -22,10 +22,14 @@ class FloatingLive extends EventEmitter {
   }
   /** 添加插件 */
   public registerPlugin(name: string, pluginFunc: (main: FloatingLive) => any) {
+    if (this.plugin.has(name)) {
+      this.emit("plugin_duplicate")
+      return
+    }
     Registerable.currentPlugin = name;
     let pluginObject = pluginFunc(this);  // 获取插件操作对象
     this.plugin.set(name, pluginObject);
-    this.emit("addPlugin", name);
+    this.emit("plugin_add", name);
     console.log(`已添加插件: ${name}`)
     Registerable.currentPlugin = null;
     return pluginObject;
@@ -37,7 +41,7 @@ class FloatingLive extends EventEmitter {
   /** 移除插件 */
   public removePlugin(name: string) {
     if (!this.plugin.has(name)) {
-      this.emit("pluginUnexist", name);
+      this.emit("plugin_unexist", name);
       return;
     }
     let pluginObject = this.plugin.get(name);
@@ -45,7 +49,7 @@ class FloatingLive extends EventEmitter {
     this.helper.roomGenerator.unregister(name)
     this.helper.messageHandler.unregister(name)
     pluginObject?.destory && pluginObject.destory();
-    this.emit("removePlugin", name);
+    this.emit("plugin_remove", name);
   }
 }
 export default FloatingLive;
