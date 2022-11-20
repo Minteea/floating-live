@@ -25,17 +25,17 @@ export default class Controller {
   start() {
     this.started = true
     this.timestamp = new Date().valueOf()
-    this.main.emit("start")
+    this.main.emit("start", this.timestamp)
   }
   /** 结束 */
   end() {
     this.closeAllRooms()
     this.started = false
-    this.main.emit("end")
+    this.main.emit("end", this.timestamp)
     this.timestamp = 0
   }
   /** 添加房间 */
-  addRoom({platform, id}: {platform: string, id: number}, open?: boolean) {
+  addRoom({platform, id}: {platform: string, id: string | number}, open?: boolean) {
     let generated = this.room.generate({platform, id}, open)
     if (generated) {
       this.room.add(generated.key, generated.room)

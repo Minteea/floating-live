@@ -4,7 +4,7 @@ interface LiveRoom extends RoomInfo {
   /** 直播平台 */
   readonly platform: string;
   /** 房间id */
-  readonly id: number;
+  readonly id: number | string;
   /** 打开连接 */
   open: () => void;
   /** 关闭连接 */

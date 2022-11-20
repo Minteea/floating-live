@@ -5,7 +5,7 @@ export default interface RoomInfo {
   /** 平台id */
   platform: string;
   /** 房间id */
-  id: number;
+  id: number | string;
   /** 直播信息 */
   live: LiveInfo;
   /** 主播信息 */

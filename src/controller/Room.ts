@@ -70,7 +70,7 @@ class Room {
     if(open) {
       room.open()
     }
-    this.main.emit("room_add", {key: key, room: getRoomInfo(room)})
+    this.main.emit("room_add", key, getRoomInfo(room))
   }
   /** 移除房间 */
   public remove(roomKey: string) {
