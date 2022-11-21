@@ -4,7 +4,7 @@ import FloatingLive from "..";
 import getRoomInfo from "../utils/getRoomInfo";
 import Controller from ".";
 import { MessageType } from "../types/message/MessageData";
-import { LiveInfo } from "acfun-live-danmaku/types";
+import { LiveInfo } from "../types/room/LiveInfo";
 
 /** 直播间监听实例控制器 */
 class Room {
@@ -55,9 +55,9 @@ class Room {
     room.on("info", () => {
       this.main.emit("room_info", key, getRoomInfo(room))
     })
-    // 更新直播间信息
-    room.on("update", (data: Partial<LiveInfo>) => {
-      this.main.emit("room_update", key, data)
+    // 直播信息更改
+    room.on("change", (data: Partial<LiveInfo>) => {
+      this.main.emit("room_change", key, data)
     })
     // 房间被打开
     room.on("open", () => {
@@ -88,7 +88,7 @@ class Room {
     return this.roomMap.get(roomKey);
   }
   /** 获取房间信息 */
-  public getInfo(roomKey: string) {
+  public info(roomKey: string) {
     let room = this.roomMap.get(roomKey)
     return room ? getRoomInfo(room) : undefined
   }

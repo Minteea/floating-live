@@ -7,7 +7,7 @@ import { EventEmitter } from "events";
 import getRoomInfo from "../../src/utils/getRoomInfo";
 import axios from "axios";
 import { LiveInfo } from "../../src/types/room/LiveInfo";
-import { MessageText, MessageGift, MessageInteract, MessageLiveEnd, MessageLiveCut } from "../../src/types/message/MessageData";
+import { MessageText, MessageGift, MessageInteract, MessageLiveEnd, MessageLiveCut, MessageType } from "../../src/types/message/MessageData";
 
 class acfunLive extends EventEmitter implements LiveRoom {
   /** 平台id */
@@ -237,8 +237,8 @@ class acfunLive extends EventEmitter implements LiveRoom {
         status: "off"
       }
     }
-    this.live.status = "off"
     this.client = null
+    this.emit("change", { status: "off" })
     this.emitMsg(off)
   }
   public msg_LiveBanned() {
@@ -251,20 +251,25 @@ class acfunLive extends EventEmitter implements LiveRoom {
         message: ""
       }
     }
-    this.live.status = "off"
     this.client = null
+    this.emit("change", { status: "off" })
     this.emitMsg(cut)
   }
   msg_DisplayInfo(data: any) {
     // this.toData(msg)
   }
-  emitMsg(data: any) {
+  emitMsg(data: MessageType) {
     // 一般消息
     this.emit("msg", data);
   }
   emitOrigin(data: any) {
     // 源消息
     this.emit("origin", data);
+  }
+  emitChange(data: Partial<LiveInfo>) {
+    this.live = Object.assign(this.live, data)
+    // 直播信息
+    this.emit("change", data);
   }
 }
 

@@ -124,6 +124,7 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
     client.on("CUT_OFF", this.msg_CUT_OFF.bind(this));
     client.on("PREPARING", this.msg_PREPARING.bind(this));
     client.on("LIVE", this.msg_LIVE.bind(this));
+    client.on("ROOM_CHANGE", this.msg_ROOM_CHANGE.bind(this))
   }
   close() {
     if (!this.opening) return
@@ -142,6 +143,11 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
   emitOrigin(data: any) {
     // 源消息
     this.emit("origin", data);
+  }
+  emitChange(data: Partial<LiveInfo>) {
+    this.live = Object.assign(this.live, data)
+    // 直播信息
+    this.emit("change", data);
   }
   public getDanmakuMode(n: number): string {
     switch (n) {
@@ -396,7 +402,7 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
           start_time: msg.live_time * 1000,
         },
       };
-      this.live.status = "live"
+      this.emitChange({ status: "live" })
       this.emitMsg(live);
     }
   }
@@ -411,7 +417,7 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
         message: msg.msg,
       },
     };
-    this.live.status = "off"
+    this.emitChange({ status: "off" })
     this.emitMsg(cut);
   }
   msg_PREPARING(msg: any) {
@@ -424,8 +430,21 @@ class bilibiliLive extends EventEmitter implements LiveRoom {
         status: msg.round ? "round" : "off"
       }
     }
-    this.live.status = msg.round ? "round" : "off"
+    this.emitChange({ status: msg.round ? "round" : "off" })
     this.emitMsg(off)
+  }
+  msg_ROOM_CHANGE(msg: any) {
+    let change = {
+      platform: "bilibili",
+      room: this.id,
+      type: "live_change",
+      info: {
+        title: msg.data.title,
+        area: [msg.data.parent_area_name, msg.data.area_name]
+      }
+    }
+    this.emitChange(change.info)
+    this.emitMsg(change)
   }
 }
 
