@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "fs-extra";
 import FloatingLiving from "../..";
 
 class msgSave {
@@ -19,6 +19,7 @@ class msgSave {
     this.main.on(this.type, this.listener)
   }
   write(message: any) {
+    fs.ensureFileSync(this.file)
     fs.writeFile(
       this.file,
       JSON.stringify(message) + ",",
