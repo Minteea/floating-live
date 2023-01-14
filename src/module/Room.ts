@@ -1,19 +1,14 @@
-import LiveRoom from "../types/room/LiveRoom";
+import { LiveRoom, RoomBaseInfo, RoomStatsInfo, RoomStatus } from "../lib/LiveRoom";
 
-import FloatingLive from "..";
-import getRoomInfo from "../utils/getRoomInfo";
-import Controller from ".";
-import { MessageType } from "../types/message/MessageData";
-import { LiveInfo } from "../types/room/LiveInfo";
+import { FloatingLive } from "..";
+import { MessageData } from "../types/message/MessageData";
 
 /** 直播间监听实例控制器 */
-class Room {
-  readonly controller: Controller
+export class RoomController {
   readonly main: FloatingLive
   private roomMap: Map<string, LiveRoom> = new Map();
-  constructor(controller: Controller) {
-    this.controller = controller
-    this.main = controller.main
+  constructor(main: FloatingLive) {
+    this.main = main
   }
   public generate(r: {platform: string, id: string | number}, open?: boolean) {
     let platform: string
@@ -28,7 +23,8 @@ class Room {
     }
   }
   /** 添加房间监听对象 */
-  public add(key: string, room: LiveRoom, open?: boolean) {
+  public add(room: LiveRoom, open?: boolean) {
+    let key = room.key
     if (this.roomMap.has(key)) {
       this.main.emit("room_exist", key)
       return
@@ -36,8 +32,11 @@ class Room {
     this.roomMap.set(key, room);
     // 添加监听事件
     // 直播消息
-    room.on("msg", (data: MessageType) => {
-      this.controller.message.send(data)
+    room.on("msg", (data: MessageData) => {
+      this.main.helper.messageHandler.getList().forEach((handler) => {
+        handler(data)
+      })
+      this.main.emit("live_message", data)
     })
     // 直播消息源数据
     room.on("origin", (data: any) => {
@@ -53,24 +52,32 @@ class Room {
     })
     // 获取房间信息
     room.on("info", () => {
-      this.main.emit("room_info", key, getRoomInfo(room))
+      this.main.emit("room_info", key, room.info)
     })
     // 直播信息更改
-    room.on("change", (data: Partial<LiveInfo>) => {
+    room.on("change", (data: Partial<RoomBaseInfo>) => {
       this.main.emit("room_change", key, data)
+    })
+    // 直播状态更改
+    room.on("status", (status: RoomStatus, timestamp: number) => {
+      this.main.emit("room_status", key, status, timestamp)
+    })
+    // 统计数据更新
+    room.on("stats", (data: Partial<RoomStatsInfo>) => {
+      this.main.emit("room_stats", key, data)
     })
     // 房间被打开
     room.on("open", () => {
-      this.main.emit("room_open", key, getRoomInfo(room))
+      this.main.emit("room_open", key, room.info)
     })
     // 房间被关闭
     room.on("close", () => {
-      this.main.emit("room_close", key, getRoomInfo(room))
+      this.main.emit("room_close", key, room.info)
     })
     if(open) {
       room.open()
     }
-    this.main.emit("room_add", key, getRoomInfo(room))
+    this.main.emit("room_add", key, room.info)
   }
   /** 移除房间 */
   public remove(roomKey: string) {
@@ -90,7 +97,7 @@ class Room {
   /** 获取房间信息 */
   public info(roomKey: string) {
     let room = this.roomMap.get(roomKey)
-    return room ? getRoomInfo(room) : undefined
+    return room ? room.info : undefined
   }
   /** 更新房间信息 */
   public update(roomKey: string) {
@@ -111,4 +118,3 @@ class Room {
   }
 }
 
-export default Room;

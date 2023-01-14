@@ -1,16 +1,17 @@
 // Plugin System modified from PicGo
+import { FloatingLive } from "..";
 
 /** 插件可注册对象模块 */
-export class Registerable<T> {
-  /** 当前安装插件 */
-  static currentPlugin: string | null;
+export class Reglist<T> {
   /** 功能列表 */
   private readonly list: Map<string, T>;
   /** 插件与功能名称绑定表 */
   private readonly pluginIdMap: Map<string, string[]>;
   private readonly name: string;
+  private readonly main: FloatingLive
 
-  constructor(name: string) {
+  constructor(main: FloatingLive, name: string) {
+    this.main = main
     this.name = name;
     this.list = new Map();
     this.pluginIdMap = new Map();
@@ -25,11 +26,11 @@ export class Registerable<T> {
     // 将组件添加至列表中
     this.list.set(id, item);
     // 将插件名称与注册id关联
-    if (Registerable.currentPlugin) {
-      if (this.pluginIdMap.has(Registerable.currentPlugin)) {
-        this.pluginIdMap.get(Registerable.currentPlugin)?.push(id);
+    if (this.main.plugin.currentPlugin) {
+      if (this.pluginIdMap.has(this.main.plugin.currentPlugin)) {
+        this.pluginIdMap.get(this.main.plugin.currentPlugin)?.push(id);
       } else {
-        this.pluginIdMap.set(Registerable.currentPlugin, [id]);
+        this.pluginIdMap.set(this.main.plugin.currentPlugin, [id]);
       }
     }
   }
@@ -63,14 +64,9 @@ export class Registerable<T> {
   getIdList(): string[] {
     return [...this.list.keys()];
   }
+
+  /** 获取注册id列表 */
+  getIdByPlugin(name: string): string[] {
+    return [...(this.pluginIdMap.get(name) || [])];
+  }
 }
-
-/** 设置当前安装插件名称 */
-export const setCurrentPluginName = (name: string | null = null): void => {
-  Registerable.currentPlugin = name;
-};
-
-/** 获取当前安装插件名称 */
-export const getCurrentPluginName = (): string | null => {
-  return Registerable.currentPlugin;
-};

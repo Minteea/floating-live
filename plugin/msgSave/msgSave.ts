@@ -1,15 +1,15 @@
 import fs from "fs-extra";
-import FloatingLiving from "../..";
+import { FloatingLive } from "../..";
 
 class msgSave {
   /** 主模块 */
-  main: FloatingLiving
+  main: FloatingLive
   file: string;
   config: object;
   type: string;
   paused: boolean;
   listener: (msg: any) => void;
-  constructor(main: FloatingLiving, type: string, file: string, open: boolean = true, config = { encoding: "utf8", flag: "a" }) {
+  constructor(main: FloatingLive, type: string, file: string, open: boolean = true, config = { encoding: "utf8", flag: "a" }) {
     this.paused = !open
     this.main = main
     this.file = file;

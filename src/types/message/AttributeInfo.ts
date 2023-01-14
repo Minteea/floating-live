@@ -8,10 +8,10 @@ export interface UserInfo {
   avatar?: string;
   /** 粉丝勋章 */
   medal?: MedalInfo | null;
-  /** 房管等级(1为主播, 2为管理员) */
-  admin?: number;
+  /** 身份 */
+  identity?: "anchor" | "admin" | null;
   /** 粉丝vip等级 */
-  privilege?: boolean | number;
+  membership?: boolean | number;
   /** vip等级 */
   vip?: boolean | number;
   /** 用户等级 */
@@ -27,7 +27,7 @@ export interface MedalInfo {
   /** 粉丝牌等级 */
   level?: number
   /** 粉丝vip等级 */
-  privilege?: number
+  membership?: number
 }
 
 /** 图像信息 */

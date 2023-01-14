@@ -1,12 +1,12 @@
-import FloatingLiving from "../..";
+import { FloatingLive } from "../..";
 import { UserInfo } from "../../src/types/message/AttributeInfo";
-import { MessageType } from "../../src/types/message/MessageData";
+import { MessageData } from "../../src/types/message/MessageData";
 
-class chatPrint {
+export class chatPrint {
   /** 主模块 */
-  main: FloatingLiving
+  main: FloatingLive
   hideType: Set<string>;
-  constructor(main: FloatingLiving) {
+  constructor(main: FloatingLive) {
     this.main = main
     let hidden: any[] = [];
     this.hideType = new Set(hidden); // 隐藏类型
@@ -18,10 +18,10 @@ class chatPrint {
     let user = message.info.user  // 用户信息
     let name = `${"\x1b[33m"}${user.name}` // 用户名
     let medal = user.medal ? `${"\x1b[32m"}[${user.medal.name}(${user.medal.level})] ` : "" // 粉丝牌
-    let privilege = user.privilege ? `${"\x1b[36m"}[${this.getPriviliegeName(message.platform, user.privilege)}]` : ""  // 特权粉丝
-    let admin = user.admin ? `${"\x1b[95m"}[${["", "主播", "房"][user.admin]}]` : ""  // 房管
+    let membership = user.membership ? `${"\x1b[36m"}[${this.getPriviliegeName(message.platform, user.membership)}]` : ""  // 特权粉丝
+    let identity = user.identity ? `${"\x1b[95m"}[${{admin: "房管", anchor: "主播"}[user.identity]}]` : ""  // 房管
 
-    return `${medal}${privilege}${admin}${name}${"\x1b[0m"}`  //[粉丝牌(等级)] [特权][房管]用户名
+    return `${medal}${membership}${identity}${name}${"\x1b[0m"}`  //[粉丝牌(等级)] [特权][房管]用户名
   }
   /** 获取特权粉丝名称 */
   public getPriviliegeName(platform: string, level: number | boolean) {
@@ -33,21 +33,15 @@ class chatPrint {
     }
   }
   /** 记录在控制台上 */
-  log(message: MessageType) {
+  log(message: MessageData) {
     if (this.hideType.has(message.type)) {
       return;
     }
     switch (message.type) {
-      case "text": {
+      case "chat": {
         let user = this.getUserInfo(message)
-        let text = message.info.text
-        console.log(`${user}: ${text}`)
-        break;
-      }
-      case "image": {
-        let user = this.getUserInfo(message)
-        let image = message.info.image.name || message.info.image.id
-        console.log(`${user}: [img]${image}`)
+        let content = message.info.content
+        console.log(`${user}: ${message.info.image ? "[img]" : ""}${content}`)
         break;
       }
       case "like": {
@@ -63,12 +57,11 @@ class chatPrint {
         console.log(`${user}${"\x1b[0m"} ${action} ${"\x1b[40;33m"}${name} x${num}${"\x1b[0m"}`);
         break;
       }
-      case "privilege": {
+      case "membership": {
         let user = this.getUserInfo(message)
         let name = message.info.name
-        let action = message.info.renew ? ["开通", "续费", "自动续费"][message.info.renew] : "开通"
         console.log(
-          `${user}${"\x1b[1;31m"} ${action}了主播的${"\x1b[33m"}${name}${"\x1b[0m"}`
+          `${user}${"\x1b[1;31m"} 开通了主播的${"\x1b[33m"}${name}${"\x1b[0m"}`
         );
         break;
       }
@@ -103,7 +96,7 @@ class chatPrint {
       }
       case "block": {
         let user = this.getUserInfo(message)
-        let operator = message.info.operator.admin ? ["", "主播", "房管"][message.info.operator.admin] : "管理员"
+        let operator = message.info.operator.identity ? {admin: "房管", anchor: "主播"}[message.info.operator.identity] : "管理员"
         console.log(
           `${user} 已被${operator}禁言`
         );
@@ -133,5 +126,3 @@ class chatPrint {
     }
   }
 }
-
-export default chatPrint;

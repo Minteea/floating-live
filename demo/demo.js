@@ -1,4 +1,4 @@
-const FloatingLive = require("../");
+const { FloatingLive } = require("../");
 const chatPrint = require("../plugin/chatPrint");
 const { messageSave, messageSaveOrigin } = require("../plugin/msgSave");
 const bilibili = require("../plugin/bilibili");
@@ -15,19 +15,19 @@ const config = {
   open: true,
 }
 
-// 创建living实例
+// 创建live实例
 const live = new FloatingLive();
-live.registerPlugin("consoleEvent", consoleEvent)
-live.registerPlugin("bilibiliLive", bilibili)
-live.registerPlugin("acfun", acfun)
+live.plugin.register("consoleEvent", consoleEvent)
+live.plugin.register("bilibili", bilibili)
+live.plugin.register("acfun", acfun)
 
 // 初始化内置插件
-live.registerPlugin("chatPrint", chatPrint)
-live.registerPlugin("messageSave", messageSave)
-live.registerPlugin("messageSaveOrigin", messageSaveOrigin)
+live.plugin.register("chatPrint", chatPrint)
+live.plugin.register("messageSave", messageSave)
+live.plugin.register("messageSaveOrigin", messageSaveOrigin)
 
 config.rooms.forEach((room) => {
-  live.controller.addRoom(room, config.open)
+  live.addRoom(room, config.open)
 })
 
 console.log("Floating Live is on :)");

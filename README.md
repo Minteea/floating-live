@@ -7,6 +7,8 @@
 
 注意：当前项目未进入正式版本阶段，程序结构及导出数据结构可能随时改动，**非常不建议用于正式项目中**。
 
+GUI版本：[Minteea/floating-live-gui](https://github.com/Minteea/floating-live-gui)
+
 ## 使用方法
 ### npm安装
 ```
@@ -14,18 +16,18 @@ npm install floating-live
 ```
 ``` javascript
 // 导入FloatingLive
-const FloatingLive = require("floating-live")
+const { FloatingLive } = require("floating-live")
 // 导入bilibili房间生成插件
 const bilibili = require("floating-live/plugin/bilibili")   
 
 // 创建一个FloatingLive实例
 const live = new FloatingLive()
 // 注册插件
-live.registerPlugin("bilibili", bilibili)
+live.plugin.register("bilibili", bilibili)
 // 添加房间
-live.controller.addRoom({platform: "bilibili", id: 6})
+live.addRoom({platform: "bilibili", id: 6})
 // 打开
-live.controller.start()
+live.start()
 ```
 
 ### 拆包即用模式

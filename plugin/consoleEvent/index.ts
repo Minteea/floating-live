@@ -1,11 +1,11 @@
-import FloatingLive from "../../src";
+import { FloatingLive } from "../../src";
 
 export = (ctx: FloatingLive) => {
   ctx.on("start", () => {
-    console.log(`[controller]记录已开始: ${ctx.controller.timestamp}`)
+    console.log(`[controller]记录已开始: ${ctx.timestamp}`)
   })
   ctx.on("end", () => {
-    console.log(`[controller]记录已结束: ${ctx.controller.timestamp}`)
+    console.log(`[controller]记录已结束: ${ctx.timestamp}`)
   })
   ctx.on("room_connect", (key) => {
     console.log(`[${key}]已连接到直播服务器`)
@@ -36,5 +36,17 @@ export = (ctx: FloatingLive) => {
   })
   ctx.on("room_unexist", (key) => {
     console.log(`[room]房间不存在: ${key}`)
+  })
+  ctx.on("plugin_add", (name) => {
+    console.log(`[plugin]已添加插件: ${name}`)
+  })
+  ctx.on("plugin_remove", (name) => {
+    console.log(`[plugin]已移除插件: ${name}`)
+  })
+  ctx.on("plugin_unexist", (name) => {
+    console.log(`[plugin]插件不存在: ${name}`)
+  })
+  ctx.on("plugin_duplicate", (name) => {
+    console.log(`[plugin]插件名称重复: ${name}`)
   })
 }

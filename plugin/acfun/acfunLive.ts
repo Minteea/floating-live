@@ -1,31 +1,23 @@
-import RoomInfo from "../../src/types/room/RoomInfo";
 import { MedalInfo, UserInfo } from "../../src/types/message/AttributeInfo";
-import LiveRoom from "../../src/types/room/LiveRoom";
 import getAcClient from "acfun-live-danmaku";
 import AcClient from "acfun-live-danmaku/client";
-import { EventEmitter } from "events";
-import getRoomInfo from "../../src/utils/getRoomInfo";
 import axios from "axios";
-import { LiveInfo } from "../../src/types/room/LiveInfo";
-import { MessageText, MessageGift, MessageInteract, MessageLiveEnd, MessageLiveCut, MessageType } from "../../src/types/message/MessageData";
+import { MessageChat, MessageGift, MessageInteract, MessageLiveEnd, MessageLiveCut } from "../../src/types/message/MessageData";
+import { LiveRoom, RoomBaseInfo } from "../../src/lib/LiveRoom";
 
-class acfunLive extends EventEmitter implements LiveRoom {
+class acfunLive extends LiveRoom {
   /** 平台id */
   readonly platform: string = "acfun"
   /** 房间id */
   readonly id: number
   /** 直播信息 */
-  public live: LiveInfo = {
+  public base: RoomBaseInfo = {
     /** 直播标题 */
     title: "",
     /** 分区 */
     area: [],
     /** 封面 */
     cover: "",
-    /** 直播状态 */
-    status: "off",
-    /** 开始直播时间 */
-    start_time: 0
   }
   /** 主播信息 */
   public anchor: UserInfo = { name: "", id: 0 }
@@ -33,6 +25,8 @@ class acfunLive extends EventEmitter implements LiveRoom {
   public client: AcClient | null = null
   /** 是否为打开状态 */
   public opening: boolean = false
+  /** 是否连接上服务器 */
+  public connected: boolean = false
 
   private wsInit: boolean = false
   /** 直播间是否可用 */
@@ -54,10 +48,10 @@ class acfunLive extends EventEmitter implements LiveRoom {
     if (!this.client) {
       this.client = await getAcClient(this.id) || null
       if (this.client) {
-        this.live.status = "live"
-        this.live.start_time = this.client.liveStartTime
-        this.live.title = this.client.caption as unknown as string // bug
-        this.live.cover = `https://tx2.a.kwimgs.com/bs2/ztlc/cover_${this.client.liveId}_raw.jpg`
+        this.status = "live"
+        this.timestamp = this.client.liveStartTime
+        this.base.title = this.client.caption as unknown as string // bug
+        this.base.cover = `https://tx2.a.kwimgs.com/bs2/ztlc/cover_${this.client.liveId}_raw.jpg`
       }
       await axios
         .get(
@@ -92,7 +86,7 @@ class acfunLive extends EventEmitter implements LiveRoom {
     let client = this.client;
     client.on("EnterRoomAck", () => {
       console.log("[acfun-live-danmaku] 已连接AcFun直播间");
-      this.live.status = "live"
+      this.status = "live"
     });
     client.on("RecentComment", (comments: any) => {
       //当前弹幕列表
@@ -144,13 +138,13 @@ class acfunLive extends EventEmitter implements LiveRoom {
     };
     content: any;
   }) {
-    let danmaku: MessageText = {
+    let danmaku: MessageChat = {
       platform: "acfun",
       room: this.id,
-      local_timestamp: new Date().valueOf(),
-      type: "text",
+      record_time: new Date().valueOf(),
+      type: "chat",
       info: {
-        text: data.content,
+        content: data.content,
         user: {
           name: data.userInfo.nickname,
           id: parseInt(data.userInfo.userId),
@@ -179,7 +173,7 @@ class acfunLive extends EventEmitter implements LiveRoom {
       platform: "acfun",
       room: this.id,
       type: "gift",
-      local_timestamp: new Date().valueOf(),
+      record_time: new Date().valueOf(),
       info: {
         user: {
           name: data.user.nickname,
@@ -215,7 +209,7 @@ class acfunLive extends EventEmitter implements LiveRoom {
       platform: "acfun",
       room: this.id,
       type: type,
-      local_timestamp: new Date().valueOf(),
+      record_time: new Date().valueOf(),
       info: {
         user: {
           name: data.userInfo.nickname,
@@ -232,13 +226,12 @@ class acfunLive extends EventEmitter implements LiveRoom {
       platform: "acfun",
       room: this.id,
       type: "live_end",
-      local_timestamp: new Date().valueOf(),
+      record_time: new Date().valueOf(),
       info: {
         status: "off"
       }
     }
     this.client = null
-    this.emit("change", { status: "off" })
     this.emitMsg(off)
   }
   public msg_LiveBanned() {
@@ -246,30 +239,16 @@ class acfunLive extends EventEmitter implements LiveRoom {
       platform: "acfun",
       room: this.id,
       type: "live_cut",
-      local_timestamp: new Date().valueOf(),
+      record_time: new Date().valueOf(),
       info: {
         message: ""
       }
     }
     this.client = null
-    this.emit("change", { status: "off" })
     this.emitMsg(cut)
   }
   msg_DisplayInfo(data: any) {
-    // this.toData(msg)
-  }
-  emitMsg(data: MessageType) {
-    // 一般消息
-    this.emit("msg", data);
-  }
-  emitOrigin(data: any) {
-    // 源消息
-    this.emit("origin", data);
-  }
-  emitChange(data: Partial<LiveInfo>) {
-    this.live = Object.assign(this.live, data)
-    // 直播信息
-    this.emit("change", data);
+    // 
   }
 }
 

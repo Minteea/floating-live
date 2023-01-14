@@ -13,7 +13,7 @@ export interface PlatformInfo {
     level?: string[],
   }
   /** 粉丝vip信息 */
-  privilege: {
+  membership: {
     /** 粉丝vip对应id */
     id: string,
     /** 粉丝vip名称 */
