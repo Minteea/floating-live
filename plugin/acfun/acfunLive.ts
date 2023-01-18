@@ -56,7 +56,6 @@ class acfunLive extends LiveRoom {
     this.getInfo().then(() => {
       if (open) this.open()
     })
-    console.log("连接直播间");
   }
   public async getInfo() {
     if (!this.client) {

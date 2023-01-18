@@ -165,8 +165,6 @@ class bilibiliLive extends LiveRoom {
         }
       }
     }
-    console.log(extra.emots)
-    console.log(emoticon)
     if (msg.info[2][2]) {
       identity = "admin" 
     } else if (uid == this.anchor.id) {
