@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "acfun-live-danmaku": "^0.6.1",
-    "axios": "^0.26.0",
+    "axios": "^1.2.3",
     "bilibili-live-ws": "^6.0.3",
     "fs-extra": "^11.1.0"
   },
