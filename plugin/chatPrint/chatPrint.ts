@@ -69,7 +69,7 @@ export class chatPrint {
         let user = this.getUserInfo(message)
         let second = Math.round(message.info.duration / 1000)
         console.log(
-          `${"\x1b[1;36m"}SC(${second}s) ${user}${"\x1b[0m"}: ${message.info.text}`
+          `${"\x1b[1;36m"}SC(${second}s) ${user}${"\x1b[0m"}: ${message.info.content}`
         );
         break;
       }

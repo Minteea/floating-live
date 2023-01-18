@@ -127,9 +127,9 @@ export abstract class LiveRoom extends EventEmitter implements RoomInfo {
       break
       case "live_end":
       case "live_cut":
-        this.status = msg.info.status || "off"
-        this.timestamp = msg.info.timestamp || msg.record_time
-        this.emit("status", msg.info.status || "off", msg.info.timestamp || msg.record_time)
+        this.status = msg.status || "off"
+        this.timestamp = msg.timestamp || msg.record_time
+        this.emit("status", msg.status || "off", msg.timestamp || msg.record_time)
       break
       case "live_change":
         this.base = Object.assign(this.base, msg.info)

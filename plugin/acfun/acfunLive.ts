@@ -5,6 +5,20 @@ import axios from "axios";
 import { MessageChat, MessageGift, MessageInteract, MessageLiveEnd, MessageLiveCut } from "../../src/types/message/MessageData";
 import { LiveRoom, RoomBaseInfo } from "../../src/lib/LiveRoom";
 
+type ZtLiveUserInfo = {
+  userIdentity: {
+    managerType?: number
+  };
+  badge?: string;
+  nickname: string;
+  userId: string;
+  avatar: [
+    {
+      url: string
+    }
+  ],
+}
+
 class acfunLive extends LiveRoom {
   /** 平台id */
   readonly platform: string = "acfun"
@@ -115,7 +129,7 @@ class acfunLive extends LiveRoom {
     this.removeAllListeners()
   };
   /** 根据守护徽章字符串获取粉丝牌信息 */
-  public getMedal(badge: string): MedalInfo | null {
+  public getMedal(badge?: string): MedalInfo | null {
     if (badge) {
       let medalInfo = JSON.parse(badge).medalInfo;
       return {
@@ -127,15 +141,25 @@ class acfunLive extends LiveRoom {
       return null;
     }
   }
+  public getUser(user: ZtLiveUserInfo): UserInfo {
+    let identity: "admin" | "anchor" | null = null
+    if (user.userIdentity?.managerType == 1) {
+      identity = "admin"
+    } else if (parseInt(user.userId) == this.anchor.id) {
+      identity = "anchor"
+    }
+    return {
+      name: user.nickname,
+      id: parseInt(user.userId),
+      medal: this.getMedal(user.badge),
+      avatar: user.avatar[0].url,
+      identity: identity
+    }
+  }
   /** 文本信息(Comment) */
   public msg_Comment(data: {
     sendTimeMs: string;
-    userInfo: {
-      userIdentity: any;
-      badge: string;
-      nickname: any;
-      userId: string;
-    };
+    userInfo: ZtLiveUserInfo;
     content: any;
   }) {
     let danmaku: MessageChat = {
@@ -145,11 +169,7 @@ class acfunLive extends LiveRoom {
       type: "chat",
       info: {
         content: data.content,
-        user: {
-          name: data.userInfo.nickname,
-          id: parseInt(data.userInfo.userId),
-          medal: this.getMedal(data.userInfo.badge),
-        },
+        user: this.getUser(data.userInfo),
         timestamp: parseInt(data.sendTimeMs),
       },
     };
@@ -158,15 +178,10 @@ class acfunLive extends LiveRoom {
   /** 礼物信息(Gift) */
   public msg_Gift(data: {
     sendTimeMs: string;
-    user: {
-      userIdentity: any;
-      badge: string;
-      nickname: any;
-      userId: string;
-    };
+    user: ZtLiveUserInfo;
     giftName: any;
     giftId: string;
-    count: any;
+    count: number;
     value: string;
   }) {
     let gift: MessageGift = {
@@ -175,16 +190,12 @@ class acfunLive extends LiveRoom {
       type: "gift",
       record_time: new Date().valueOf(),
       info: {
-        user: {
-          name: data.user.nickname,
-          id: parseInt(data.user.userId),
-          medal: this.getMedal(data.user.badge),
-        },
+        user: this.getUser(data.user),
         gift: {
           name: data.giftName, // 礼物名称
           id: parseInt(data.giftId), // 礼物id
           num: data.count, // 礼物数量
-          currency: "coin", // 货币种类
+          currency: data.giftId == "1" ? "banana" : "coin", // 货币种类
           value: parseInt(data.value), // 总价值
         },
         timestamp: parseInt(data.sendTimeMs),
@@ -196,12 +207,7 @@ class acfunLive extends LiveRoom {
   public msg_Interact(
     data: {
       sendTimeMs: string;
-      userInfo: {
-        userIdentity: any;
-        badge: string;
-        nickname: any;
-        userId: string;
-      };
+      userInfo: ZtLiveUserInfo;
     },
     type: "entry" | "like" | "follow" | "share" | "join"
   ) {
@@ -211,11 +217,7 @@ class acfunLive extends LiveRoom {
       type: type,
       record_time: new Date().valueOf(),
       info: {
-        user: {
-          name: data.userInfo.nickname,
-          id: parseInt(data.userInfo.userId),
-          medal: this.getMedal(data.userInfo.badge),
-        },
+        user: this.getUser(data.userInfo),
         timestamp: parseInt(data.sendTimeMs),
       },
     };

@@ -1,7 +1,6 @@
-import { UserInfo } from "../../src/types/message/AttributeInfo";
+import { ImageInfo, UserInfo } from "../../src/types/message/AttributeInfo";
 import { KeepLiveWS } from "bilibili-live-ws";
 import axios from "axios";
-import { EventEmitter } from "events";
 import { LiveRoom, RoomBaseInfo, RoomStatsInfo, RoomStatus } from "../../src/lib/LiveRoom";
 import { MessageBlock, MessageChat, MessageGift, MessageInteract, MessageLiveChange, MessageLiveCut, MessageLiveEnd, MessageLiveStart, MessageMembership, MessageSuperchat } from "../../src/types/message/MessageData";
 
@@ -145,6 +144,7 @@ class bilibiliLive extends LiveRoom {
     let uid = msg.info[2][0];
     let timestamp = msg.info[0][4];
     let guard_level = msg.info[7];  // 舰长级别
+    let extra = JSON.parse(msg.info[0][15].extra)
     let medal = (msg.info[3].length) ? {
         level: msg.info[3][0],
         name: msg.info[3][1],
@@ -152,11 +152,25 @@ class bilibiliLive extends LiveRoom {
         id: msg.info[3][12],
         membership: msg.info[3][10] || 0,
       } : null;
-    let admin: undefined | number = undefined;
+    let identity: null | "admin" | "anchor" = null;
+    let emoticon: {[key: string]: ImageInfo} | undefined = undefined
+    if (extra.emots) {
+      emoticon = {}
+      for (let key in extra.emots) {
+        let emotItem = extra.emots[key]
+        emoticon[key] = {
+          id: emotItem.emoticon_unique,
+          url: emotItem.url,
+          name: emotItem.emoji,
+        }
+      }
+    }
+    console.log(extra.emots)
+    console.log(emoticon)
     if (msg.info[2][2]) {
-      admin = 2;
+      identity = "admin" 
     } else if (uid == this.anchor.id) {
-      admin = 1;
+      identity = "anchor";
     }
     let danmaku: MessageChat = {
       platform: "bilibili",
@@ -172,14 +186,15 @@ class bilibiliLive extends LiveRoom {
           name: content,
           id: msg.info[0][13].emoticon_unique,
           url: msg.info[0][13].url,
-          size: [msg.info[0][13].width, msg.info[0][13].height],
+          height: msg.info[0][13].height / 3,
         } : undefined,
+        emoticon: emoticon,
         user: {
           name: uname,
           id: uid,
           medal: medal,
           membership: guard_level,
-          admin: admin,
+          identity: identity,
         }
       }
     };

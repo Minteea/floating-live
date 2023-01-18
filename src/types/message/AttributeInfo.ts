@@ -38,8 +38,8 @@ export interface ImageInfo {
   id?: string | number;
   /** 图像url */
   url?: string;
-  /** 图像尺寸 */
-  size?: [number, number]
+  /** 图像高度 */
+  height?: number
 }
 
 /** 礼物信息 */
@@ -64,4 +64,6 @@ export interface GiftInfo {
   action?: string
   /** 随机礼物信息 */
   blind_gift?: GiftInfo
+  /** 图片信息 */
+  image?: string
 }
