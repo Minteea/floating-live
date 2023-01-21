@@ -8,8 +8,8 @@ import consoleEvent from "../plugin/consoleEvent"
 const config = {
   rooms: [
     {
-      platform: "acfun",
-      id: 36626547,
+      platform: "bilibili",
+      id: 6,
     },
   ],
   open: true,

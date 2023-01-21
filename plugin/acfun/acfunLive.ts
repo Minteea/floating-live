@@ -111,7 +111,7 @@ class acfunLive extends LiveRoom {
     client.on("Gift", (gift: any) => { this.msg_Gift(gift); });
     client.on("UserEnterRoom", (entry: any) => { this.msg_Interact(entry, "entry"); });
     client.on("Like", (like: any) => { this.msg_Interact(like, "like"); });
-    client.on("JoinClub", (join: any) => { this.msg_Interact(join, "join"); });
+    // client.on("JoinClub", (join: any) => { this.msg_Interact(join, "join"); });
     client.on("DisplayInfo", (info: any) => { this.msg_DisplayInfo(info); });
     client.on("LiveClosed", (end: any) => { this.msg_LiveClosed() });
     client.on("LiveBanned", (end: any) => { this.msg_LiveBanned() });
