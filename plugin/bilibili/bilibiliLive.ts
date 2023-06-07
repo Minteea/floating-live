@@ -71,13 +71,15 @@ class bilibiliLive extends LiveRoom {
       ) // 获取直播间信息
       .then((response) => response.json())
       .then((res) => {
-        const {room_info, anchor_info}: any = res.data;
+        const {room_info, anchor_info, like_info_v3, watched_show}: any = res.data;
         this.roomid = room_info.room_id;
         this.status = room_info.live_status == 1 ? RoomStatus.live : RoomStatus.off;
         this.timestamp = this.status == RoomStatus.live ? room_info.live_start_time * 1000 : refresh ? Date.now() : this.timestamp;
         this.view.title = room_info.title
         this.view.area = [room_info.parent_area_name, room_info.area_name]
         this.view.cover = room_info.cover
+        this.stats.watch = watched_show.num
+        this.stats.like = like_info_v3.total_likes
         this.anchor.id = room_info.uid;
         this.anchor.name = anchor_info.base_info.uname
         this.anchor.avatar = anchor_info.base_info.face

@@ -108,6 +108,7 @@ export abstract class LiveRoom extends EventEmitter implements RoomInfo {
       break
       case "live_stats":
         this.stats = Object.assign(this.stats!, msg.info)
+        this.emit("stats", msg.info)
       break
       case "live_end":
       case "live_cut":
