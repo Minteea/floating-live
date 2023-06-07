@@ -1,8 +1,8 @@
-import { ImageSize, RoomStatus, UserAdmin } from './../../src/enum';
-import { ImageInfo, UserInfo } from "../../src/types/message/AttributeInfo";
+import { ImageSize, RoomStatus, UserAdmin } from '../..';
+import { ImageInfo, UserInfo } from "../..";
 import { KeepLiveWS } from "bilibili-live-ws";
-import { LiveRoom, RoomStatsInfo, RoomViewInfo } from "../../src/lib/LiveRoom";
-import { MessageBlock, MessageChat, MessageGift, MessageInteract, MessageLiveCut, MessageLiveEnd, MessageLiveStart, MessageLiveStats, MessageLiveView, MessageMembership, MessageSuperchat } from "../../src/types/message/MessageData";
+import { LiveRoom, RoomStatsInfo, RoomViewInfo } from "../..";
+import { MessageBlock, MessageChat, MessageGift, MessageInteract, MessageLiveCut, MessageLiveEnd, MessageLiveStart, MessageLiveStats, MessageLiveView, MessageMembership, MessageSuperchat } from "../..";
 
 // utils
 

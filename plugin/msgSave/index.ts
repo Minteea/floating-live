@@ -1,7 +1,7 @@
-import { RoomStatus } from './../../src/enum';
-import { RoomInfo } from './../../src/lib/LiveRoom';
-import { FloatingLive } from "../../src";
-import MsgSave from "../msgSave/msgSave";
+import { RoomStatus } from '../..';
+import { RoomInfo } from '../..';
+import { FloatingLive } from "../..";
+import MsgSave from "./msgSave";
 
 export const messageSave = () => {
   return {

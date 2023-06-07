@@ -1,4 +1,4 @@
-import { FloatingLive } from "../../src";
+import { FloatingLive } from "../..";
 import { chatPrint } from "./chatPrint";
 
 export = () => {

@@ -1,7 +1,7 @@
-import { UserAdmin } from "../../src/enum";
+import { UserAdmin } from "../..";
 import { FloatingLive } from "../..";
-import { UserInfo } from "../../src/types/message/AttributeInfo";
-import { MessageData } from "../../src/types/message/MessageData";
+import { UserInfo } from "../..";
+import { MessageData } from "../..";
 
 export class chatPrint {
   /** 主模块 */

@@ -1,4 +1,4 @@
-import { FloatingLive } from "../../src/index"
+import { FloatingLive } from "../.."
 import bilibiliLive from "./bilibiliLive"
 
 export = () => {

@@ -1,4 +1,4 @@
-import { FloatingLive } from "../../src";
+import { FloatingLive } from "../..";
 
 const initEventConsole = (ctx: FloatingLive) => {
   ctx.on("start", () => {

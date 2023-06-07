@@ -1,9 +1,9 @@
-import { MedalInfo, UserInfo } from "../../src/types/message/AttributeInfo";
+import { MedalInfo, UserInfo } from "../..";
 import getAcClient from "acfun-live-danmaku";
 import AcClient from "acfun-live-danmaku/client";
-import { MessageChat, MessageGift, MessageInteract, MessageLiveEnd, MessageLiveCut, MessageLiveStats } from "../../src/types/message/MessageData";
-import { LiveRoom, RoomStatsInfo, RoomViewInfo } from "../../src/lib/LiveRoom";
-import { RoomStatus, UserAdmin } from "../../src/enum";
+import { MessageChat, MessageGift, MessageInteract, MessageLiveEnd, MessageLiveCut, MessageLiveStats } from "../..";
+import { LiveRoom, RoomStatsInfo, RoomViewInfo } from "../..";
+import { RoomStatus, UserAdmin } from "../..";
 
 type ZtLiveUserInfo = {
   userIdentity: {

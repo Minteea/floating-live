@@ -1,7 +1,6 @@
-import { RoomStatus } from './../../src/enum';
-import { MessageData } from './../../src/types/message/MessageData';
+import { RoomStatus } from '../..';
 import fs from "fs-extra";
-import { FloatingLive, LiveRoom } from "../..";
+import { FloatingLive } from "../..";
 import path from "path"
 
 function getTimeStr(timestamp: number) {
