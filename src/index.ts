@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 import { Reglist } from "./lib/Reglist";
 import { LiveRoom } from "./lib/LiveRoom";
-import { MessageData } from "./types/message/MessageData";
+import { MessageData } from "./types";
 import { PluginHandler } from "./module/Plugin";
 import { RoomController } from "./module/Room";
 
@@ -23,7 +23,7 @@ export class FloatingLive extends EventEmitter {
     pluginRemoveHandler: Reglist<(name: string) => void>,
   }
   /** 插件事件注册表 */
-  private pluginEventMap = new Map<string, [string, (...args: any[]) => void][]>()
+  private regEventMap = new Map<string, [string, (...args: any[]) => void][]>()
   /** 状态 */
   private status = {
     started: false,
@@ -52,11 +52,13 @@ export class FloatingLive extends EventEmitter {
 
   /** 初始化 */
   private init() {
+    // 监听到有房间打开，则开始记录
     this.on("room_open", () => {
       this.started || this.start()
     })
+    // 设置在插件卸载时移除由插件注册的事件
     this.helper.pluginRemoveHandler.register("removePluginEvent", (name: string) => {
-      this.pluginEventMap.get(name)?.forEach(([eventName, listener]) => {
+      this.regEventMap.get(name)?.forEach(([eventName, listener]) => {
         this.removeListener(eventName, listener)
       })
     })
@@ -65,7 +67,7 @@ export class FloatingLive extends EventEmitter {
   /** 开始 */
   start() {
     this.status.started = true
-    this.status.timestamp = new Date().valueOf()
+    this.status.timestamp = Date.now()
     this.emit("start", this.timestamp)
   }
   /** 结束 */
@@ -76,7 +78,7 @@ export class FloatingLive extends EventEmitter {
     this.status.timestamp = 0
   }
   /** 添加房间 */
-  addRoom({platform, id}: {platform: string, id: string | number}, open?: boolean) {
+  addRoom({platform, id}: {platform: string, id: string | number}, open?: boolean, config?: {}) {
     let generated = this.room.generate({platform, id}, open)
     if (generated) {
       this.room.add(generated)
@@ -119,10 +121,10 @@ export class FloatingLive extends EventEmitter {
     super.on(eventName, listener)
     // 检测是否为插件添加事件，并添加进事件列表
     if (this.plugin.currentPlugin) {
-      if (!this.pluginEventMap.has(this.plugin.currentPlugin)) {
-        this.pluginEventMap.set(this.plugin.currentPlugin, [])
+      if (!this.regEventMap.has(this.plugin.currentPlugin)) {
+        this.regEventMap.set(this.plugin.currentPlugin, [])
       }
-      this.pluginEventMap.get(this.plugin.currentPlugin)?.push([eventName, listener])
+      this.regEventMap.get(this.plugin.currentPlugin)?.push([eventName, listener])
     }
     return this
   }

@@ -1,6 +1,7 @@
+import { MessageRoomInfo } from './../types/message/MessageData';
 import { EventEmitter } from "events";
-import { MedalInfo, UserInfo } from "../types/message/AttributeInfo";
-import { MessageData } from "../types/message/MessageData";
+import { RoomStatus } from "../enum";
+import { MessageData, MedalInfo, UserInfo } from "../../src/types";
 
 export interface RoomInfo {
   /** 平台id */
@@ -10,13 +11,15 @@ export interface RoomInfo {
   /** 房间key */
   key: string;
   /** 基本信息 */
-  base: RoomBaseInfo;
+  view: RoomViewInfo;
   /** 统计信息 */
   stats?: RoomStatsInfo;
   /** 主播信息 */
   anchor: UserInfo;
   /** 时间戳 */
   timestamp: number;
+  /** 当前直播id */
+  liveId?: string
   /** 直播状态 */
   status: RoomStatus;
   /** 直播间是否可用 */
@@ -27,8 +30,8 @@ export interface RoomInfo {
   connected: boolean;
 }
 
-/** 房间基本信息 */
-export type RoomBaseInfo = {
+/** 房间展示信息 */
+export type RoomViewInfo = {
   /** 直播标题 */
   title?: string
   /** 分区 */
@@ -49,9 +52,6 @@ export type RoomStatsInfo = {
   popularity?: number
 }
 
-/** 房间状态 */
-export type RoomStatus = "live" | "off" | "round" | "banned"
-
 export abstract class LiveRoom extends EventEmitter implements RoomInfo {
   constructor() {
     super()
@@ -61,15 +61,17 @@ export abstract class LiveRoom extends EventEmitter implements RoomInfo {
   /** 房间id */
   abstract readonly id: string | number
   /** 基本信息 */
-  abstract base: RoomBaseInfo
+  abstract view: RoomViewInfo
   /** 统计信息 */
   stats?: RoomStatsInfo
   /** 主播信息 */
   abstract anchor: UserInfo
   /** 直播状态 */
-  status: RoomStatus = "off"
+  status: RoomStatus = RoomStatus.off
   /** 时间戳 */
   timestamp: number = 0
+  /** 当前直播id */
+  liveId?: string
   /** 房间是否打开 */
   opening: boolean = false
   /** 房间是否可用 */
@@ -92,22 +94,45 @@ export abstract class LiveRoom extends EventEmitter implements RoomInfo {
   }
   // 发送消息
   protected emitMsg(msg: MessageData) {
-    this.msgCheck(msg)
+    // 其他消息 => 先更改状态再发送消息
+    // 直播结束消息 => 先发送消息再更改状态
+    switch (msg.type) {
+      case "live_start":
+        this.status = RoomStatus.live
+        this.timestamp = msg.timestamp
+        this.emit("status", RoomStatus.live, {timestamp: msg.timestamp, id: msg.info.id})
+      break
+      case "live_view":
+        this.view = Object.assign(this.view, msg.info)
+        this.emit("view", msg.info)
+      break
+      case "live_stats":
+        this.stats = Object.assign(this.stats!, msg.info)
+      break
+      case "live_end":
+      case "live_cut":
+        this.emit("msg", msg)
+        this.status = msg.status || RoomStatus.off
+        this.timestamp = msg.timestamp
+        this.emit("status", msg.status || RoomStatus.off, {timestamp: msg.timestamp})
+      return
+    }
     this.emit("msg", msg)
   }
   // 发送源消息
   protected emitOrigin(msg: any) {
-    this.emit("origin", msg)
+    this.emit("origin", msg, {platform: this.platform, room: this.id})
   }
   get info(): RoomInfo {
     return {
       platform: this.platform,
       id: this.id,
-      base: this.base,
+      view: this.view,
       stats: this.stats,
       anchor: this.anchor,
       timestamp: this.timestamp,
       status: this.status,
+      liveId: this.liveId,
       available: this.available,
       opening: this.opening,
       connected: this.connected,
@@ -116,28 +141,5 @@ export abstract class LiveRoom extends EventEmitter implements RoomInfo {
   }
   get key(): string {
     return `${this.platform}:${this.id}`
-  }
-  // 检测特定消息
-  private msgCheck(msg: MessageData) {
-    switch (msg.type) {
-      case "live_start":
-        this.status = "live"
-        this.timestamp = msg.info.timestamp || msg.record_time
-        this.emit("status", "live", msg.info.timestamp)
-      break
-      case "live_end":
-      case "live_cut":
-        this.status = msg.status || "off"
-        this.timestamp = msg.timestamp || msg.record_time
-        this.emit("status", msg.status || "off", msg.timestamp || msg.record_time)
-      break
-      case "live_change":
-        this.base = Object.assign(this.base, msg.info)
-        this.emit("change", msg.info)
-      break
-      case "live_stats":
-        this.stats = Object.assign(this.stats!, msg.info)
-      break
-    }
   }
 }

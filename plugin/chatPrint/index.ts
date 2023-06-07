@@ -1,6 +1,10 @@
 import { FloatingLive } from "../../src";
 import { chatPrint } from "./chatPrint";
 
-export = (ctx: FloatingLive) => {
-  return new chatPrint(ctx)
+export = () => {
+  return {
+    register: (ctx: FloatingLive) => {
+      return new chatPrint(ctx)
+    }
+  }
 }

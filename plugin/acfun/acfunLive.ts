@@ -1,9 +1,9 @@
 import { MedalInfo, UserInfo } from "../../src/types/message/AttributeInfo";
 import getAcClient from "acfun-live-danmaku";
 import AcClient from "acfun-live-danmaku/client";
-import axios from "axios";
-import { MessageChat, MessageGift, MessageInteract, MessageLiveEnd, MessageLiveCut } from "../../src/types/message/MessageData";
-import { LiveRoom, RoomBaseInfo } from "../../src/lib/LiveRoom";
+import { MessageChat, MessageGift, MessageInteract, MessageLiveEnd, MessageLiveCut, MessageLiveStats } from "../../src/types/message/MessageData";
+import { LiveRoom, RoomStatsInfo, RoomViewInfo } from "../../src/lib/LiveRoom";
+import { RoomStatus, UserAdmin } from "../../src/enum";
 
 type ZtLiveUserInfo = {
   userIdentity: {
@@ -19,19 +19,39 @@ type ZtLiveUserInfo = {
   ],
 }
 
+// 获取当前时间戳，以替代无法从数据中获取时间戳的情况，精度为1s
+function getDateTimestamp() {
+  return Math.floor(Date.now()/1000)*1000 
+}
+
+function stringToNumber(num: string) {
+  if (num.slice(-1) == "万") {
+    return Math.round(parseFloat(num) * 10000)
+  } else {
+    return parseFloat(num)
+  }
+}
+
 class acfunLive extends LiveRoom {
   /** 平台id */
   readonly platform: string = "acfun"
   /** 房间id */
   readonly id: number
-  /** 直播信息 */
-  public base: RoomBaseInfo = {
+  /** 直播展示信息 */
+  public view: RoomViewInfo = {
     /** 直播标题 */
     title: "",
     /** 分区 */
     area: [],
     /** 封面 */
     cover: "",
+  }
+  /** 直播数据信息 */
+  public stats: RoomStatsInfo = {
+    /** 点赞数 */
+    like: 0,
+    /** 在线观看数 */
+    online: 0,
   }
   /** 主播信息 */
   public anchor: UserInfo = { name: "", id: 0 }
@@ -61,24 +81,27 @@ class acfunLive extends LiveRoom {
     if (!this.client) {
       this.client = await getAcClient(this.id) || null
       if (this.client) {
-        this.status = "live"
+        this.status = RoomStatus.live
         this.timestamp = this.client.liveStartTime
-        this.base.title = this.client.caption as unknown as string // bug
-        this.base.cover = `https://tx2.a.kwimgs.com/bs2/ztlc/cover_${this.client.liveId}_raw.jpg`
+        this.view.title = this.client.caption as unknown as string // bug
+        this.view.cover = `https://tx2.a.kwimgs.com/bs2/ztlc/cover_${this.client.liveId}_raw.jpg`
       }
-      await axios
-        .get(
-          `https://live.acfun.cn/rest/pc-direct/user/userInfo?userId=${this.id}`
+      await fetch(
+          `https://live.acfun.cn/rest/pc-direct/user/userInfo?userId=${this.id}`,
+          {
+            method: "GET"
+          }
         )
+        .then((response) => response.json())
         .then((res) => {
-          let profile: any = res.data.profile;
-          this.anchor.avatar = profile.headUrl
-          this.anchor.name = profile.name
+          let {headUrl, name} = res.profile;
+          this.anchor.avatar = headUrl
+          this.anchor.name = name
+          this.emit("info")
         })
         .catch((error) => {
           console.error(error);
         });
-      this.emit("info")
     }
     // 暂不能在连接房间后更新信息
   }
@@ -99,7 +122,7 @@ class acfunLive extends LiveRoom {
     let client = this.client;
     client.on("EnterRoomAck", () => {
       console.log("[acfun-live-danmaku] 已连接AcFun直播间");
-      this.status = "live"
+      this.status = RoomStatus.live
     });
     client.on("RecentComment", (comments: any) => {
       //当前弹幕列表
@@ -117,6 +140,7 @@ class acfunLive extends LiveRoom {
     client.on("LiveBanned", (end: any) => { this.msg_LiveBanned() });
     this.wsInit = true
   }
+  /** 关闭直播间监听 */
   close() {
     if (!this.opening) return
     this.opening = false
@@ -141,18 +165,18 @@ class acfunLive extends LiveRoom {
     }
   }
   public getUser(user: ZtLiveUserInfo): UserInfo {
-    let identity: "admin" | "anchor" | null = null
+    let identity: UserAdmin | null = null
     if (user.userIdentity?.managerType == 1) {
-      identity = "admin"
+      identity = UserAdmin.admin
     } else if (parseInt(user.userId) == this.anchor.id) {
-      identity = "anchor"
+      identity = UserAdmin.anchor
     }
     return {
       name: user.nickname,
       id: parseInt(user.userId),
       medal: this.getMedal(user.badge),
       avatar: user.avatar[0].url,
-      identity: identity
+      admin: identity
     }
   }
   /** 文本信息(Comment) */
@@ -164,12 +188,11 @@ class acfunLive extends LiveRoom {
     let danmaku: MessageChat = {
       platform: "acfun",
       room: this.id,
-      record_time: new Date().valueOf(),
+      timestamp: parseInt(data.sendTimeMs),
       type: "chat",
       info: {
         content: data.content,
         user: this.getUser(data.userInfo),
-        timestamp: parseInt(data.sendTimeMs),
       },
     };
     this.emitMsg(danmaku);
@@ -187,7 +210,7 @@ class acfunLive extends LiveRoom {
       platform: "acfun",
       room: this.id,
       type: "gift",
-      record_time: new Date().valueOf(),
+      timestamp: parseInt(data.sendTimeMs),
       info: {
         user: this.getUser(data.user),
         gift: {
@@ -197,7 +220,6 @@ class acfunLive extends LiveRoom {
           currency: data.giftId == "1" ? "banana" : "coin", // 货币种类
           value: parseInt(data.value), // 总价值
         },
-        timestamp: parseInt(data.sendTimeMs),
       },
     };
     this.emitMsg(gift);
@@ -214,10 +236,9 @@ class acfunLive extends LiveRoom {
       platform: "acfun",
       room: this.id,
       type: type,
-      record_time: new Date().valueOf(),
+      timestamp: parseInt(data.sendTimeMs),
       info: {
         user: this.getUser(data.userInfo),
-        timestamp: parseInt(data.sendTimeMs),
       },
     };
     this.emitMsg(like);
@@ -227,9 +248,9 @@ class acfunLive extends LiveRoom {
       platform: "acfun",
       room: this.id,
       type: "live_end",
-      record_time: new Date().valueOf(),
+      timestamp: getDateTimestamp(),
       info: {
-        status: "off"
+        status: RoomStatus.off
       }
     }
     this.client = null
@@ -240,7 +261,7 @@ class acfunLive extends LiveRoom {
       platform: "acfun",
       room: this.id,
       type: "live_cut",
-      record_time: new Date().valueOf(),
+      timestamp: getDateTimestamp(),
       info: {
         message: ""
       }
@@ -249,7 +270,17 @@ class acfunLive extends LiveRoom {
     this.emitMsg(cut)
   }
   msg_DisplayInfo(data: any) {
-    // 
+    let stats: MessageLiveStats = {
+      platform: "acfun",
+      room: this.id,
+      type: "live_stats",
+      timestamp: getDateTimestamp(),
+      info: {
+        like: stringToNumber(data.likeCount),
+        online: stringToNumber(data.watchingCount),
+      }
+    }
+    this.emitMsg(stats)
   }
 }
 

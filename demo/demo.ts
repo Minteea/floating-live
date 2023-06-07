@@ -11,6 +11,10 @@ const config = {
       platform: "bilibili",
       id: 6,
     },
+    {
+      platform: "acfun",
+      id: 23512715,
+    },
   ],
   open: true,
 }

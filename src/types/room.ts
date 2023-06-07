@@ -36,3 +36,7 @@ export interface PlatformInfo {
     }>
   }
 }
+
+export interface RoomConfig {
+  
+}

@@ -1,3 +1,5 @@
+import { ImageSize, UserAdmin } from "../../enum";
+
 /** 用户信息 */
 export interface UserInfo {
   /** 用户名 */
@@ -8,8 +10,8 @@ export interface UserInfo {
   avatar?: string;
   /** 粉丝勋章 */
   medal?: MedalInfo | null;
-  /** 身份 */
-  identity?: "anchor" | "admin" | null;
+  /** 管理等级 */
+  admin?: UserAdmin | null;
   /** 粉丝vip等级 */
   membership?: boolean | number;
   /** vip等级 */
@@ -38,8 +40,8 @@ export interface ImageInfo {
   id?: string | number;
   /** 图像url */
   url?: string;
-  /** 图像高度 */
-  height?: number
+  /** 图像尺寸 */
+  size?: ImageSize
 }
 
 /** 礼物信息 */

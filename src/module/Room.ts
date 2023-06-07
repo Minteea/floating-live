@@ -1,7 +1,8 @@
-import { LiveRoom, RoomBaseInfo, RoomStatsInfo, RoomStatus } from "../lib/LiveRoom";
+import { LiveRoom, RoomViewInfo, RoomStatsInfo } from "../lib/LiveRoom";
 
 import { FloatingLive } from "..";
 import { MessageData } from "../types/message/MessageData";
+import { RoomStatus } from "../enum";
 
 /** 直播间监听实例控制器 */
 export class RoomController {
@@ -39,8 +40,8 @@ export class RoomController {
       this.main.emit("live_message", data)
     })
     // 直播消息源数据
-    room.on("origin", (data: any) => {
-      this.main.emit("live_origin", data)
+    room.on("origin", (data: any, {platform, room}: {platform: string, room: string | number}) => {
+      this.main.emit("live_origin", data, {platform, room})
     })
     // 连接到直播间
     room.on("connect", () => {
@@ -54,13 +55,13 @@ export class RoomController {
     room.on("info", () => {
       this.main.emit("room_info", key, room.info)
     })
-    // 直播信息更改
-    room.on("change", (data: Partial<RoomBaseInfo>) => {
-      this.main.emit("room_change", key, data)
+    // 直播展示信息更改
+    room.on("view", (data: Partial<RoomViewInfo>) => {
+      this.main.emit("room_view", key, data)
     })
     // 直播状态更改
-    room.on("status", (status: RoomStatus, timestamp: number) => {
-      this.main.emit("room_status", key, status, timestamp)
+    room.on("status", (status: RoomStatus, {id, timestamp}: {id?: string, timestamp: number}) => {
+      this.main.emit("room_status", key, status, {id, timestamp})
     })
     // 统计数据更新
     room.on("stats", (data: Partial<RoomStatsInfo>) => {
@@ -117,4 +118,3 @@ export class RoomController {
     room?.opening && room.close()
   }
 }
-

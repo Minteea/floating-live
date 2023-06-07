@@ -1,4 +1,6 @@
-import { RoomBaseInfo, RoomStatsInfo, RoomStatus } from "../../lib/LiveRoom";
+import { RoomInfo } from './../../lib/LiveRoom';
+import { DanmakuMode, RoomStatus, UserAdmin } from '../../enum';
+import { RoomViewInfo, RoomStatsInfo } from "../../lib/LiveRoom";
 import { UserInfo, GiftInfo, ImageInfo } from "./AttributeInfo";
 
 type MessageBase = {
@@ -8,8 +10,8 @@ type MessageBase = {
   room: number | string;
   /** 信息类型 */
   type: string;
-  /** 记录时间 */
-  record_time: number
+  /** 时间戳 */
+  timestamp: number
   /** 其他属性 */
   [attr: string]: any
 }
@@ -27,14 +29,12 @@ export type MessageChat = MessageBase & {
   info: {
     /** 用户信息 */
     user: UserInfo;
-    /** 日期时间戳 */
-    timestamp: number;
     /** 文本内容 */
     content: string;
     /** 文字颜色 */
     color?: number | string;
     /** 弹幕模式 */
-    mode?: number | string;
+    mode?: DanmakuMode;
     /** 文字大小 */
     size?: number | string;
     /** 图片信息 */
@@ -52,8 +52,6 @@ export type MessageGift = MessageBase & {
   info: {
     /** 用户信息 */
     user: UserInfo;
-    /** 日期时间戳 */
-    timestamp: number;
     /** 礼物信息 */
     gift: GiftInfo;
   };
@@ -65,8 +63,6 @@ export type MessageInteract = MessageBase & {
   info: {
     /** 用户信息 */
     user: UserInfo;
-    /** 日期时间戳 */
-    timestamp: number;
     /** 信息标签 */
     tag?: string | boolean
   };
@@ -78,8 +74,6 @@ export type MessageMembership = MessageBase & {
   info: {
     /** 用户信息 */
     user: UserInfo;
-    /** 日期时间戳 */
-    timestamp: number;
     /** 礼物信息 */
     gift: GiftInfo;
     /** 开通vip名称 */
@@ -99,8 +93,6 @@ export type MessageSuperchat = MessageBase & {
     id?: string;
     /** 用户信息 */
     user: UserInfo;
-    /** 日期时间戳 */
-    timestamp: number;
     /** 文本内容 */
     content: string;
     /** 文字颜色 */
@@ -118,10 +110,8 @@ export type MessageBlock = MessageBase & {
   info: {
     /** 用户信息 */
     user: UserInfo;
-    /** 日期时间戳 */
-    timestamp?: number;
     /** 操作者 */
-    operator: UserInfo | { identity: null | "admin" | "anchor" };
+    operator: UserInfo | { admin: null | UserAdmin };
   };
 }
 
@@ -129,8 +119,8 @@ export type MessageBlock = MessageBase & {
 export type MessageLiveStart = MessageBase & {
   type: "live_start";
   info: {
-    /** 开播时间 */
-    timestamp: number
+    /** 直播id */
+    id: string
   }
 }
 
@@ -143,16 +133,23 @@ export type MessageLiveCut = MessageBase & {
   }
 }
 
+/** 获取房间信息 */
+export interface MessageRoomInfo extends MessageBase {
+  type: "room_info";
+  /** 数据信息 */
+  info: RoomInfo
+}
+
 /** 直播数据更新 */
 export type MessageLiveStats = MessageBase & {
   type: "live_stats";
   info: RoomStatsInfo
 }
 
-/** 直播信息更新 */
-export type MessageLiveChange = MessageBase & {
-  type: "live_change";
-  info: RoomBaseInfo
+/** 直播展示信息更新 */
+export type MessageLiveView = MessageBase & {
+  type: "live_view";
+  info: RoomViewInfo
 }
 
 /** 直播结束 */
@@ -174,7 +171,7 @@ type AllMessageType =
   | MessageLiveStart
   | MessageLiveEnd
   | MessageLiveCut
-  | MessageLiveChange
+  | MessageLiveView
   | MessageLiveStats
 
 export type MessageData<T extends AllMessageType["type"] = AllMessageType["type"]> = AllMessageType & {type: T}

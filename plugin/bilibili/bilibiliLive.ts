@@ -1,8 +1,15 @@
+import { ImageSize, RoomStatus, UserAdmin } from './../../src/enum';
 import { ImageInfo, UserInfo } from "../../src/types/message/AttributeInfo";
 import { KeepLiveWS } from "bilibili-live-ws";
-import axios from "axios";
-import { LiveRoom, RoomBaseInfo, RoomStatsInfo, RoomStatus } from "../../src/lib/LiveRoom";
-import { MessageBlock, MessageChat, MessageGift, MessageInteract, MessageLiveChange, MessageLiveCut, MessageLiveEnd, MessageLiveStart, MessageMembership, MessageSuperchat } from "../../src/types/message/MessageData";
+import { LiveRoom, RoomStatsInfo, RoomViewInfo } from "../../src/lib/LiveRoom";
+import { MessageBlock, MessageChat, MessageGift, MessageInteract, MessageLiveCut, MessageLiveEnd, MessageLiveStart, MessageLiveStats, MessageLiveView, MessageMembership, MessageSuperchat } from "../../src/types/message/MessageData";
+
+// utils
+
+// 获取当前时间戳，以替代无法从数据中获取时间戳的情况，精度为1s
+function getDateTimestamp() {
+  return Math.floor(Date.now()/1000)*1000 
+}
 
 class bilibiliLive extends LiveRoom {
   /** 平台id */
@@ -11,14 +18,20 @@ class bilibiliLive extends LiveRoom {
   readonly id: number;
   /** 直播间room_id */
   public roomid: number = 0;
-  /** 直播信息 */
-  public base: RoomBaseInfo = {
+  /** 展示信息 */
+  public view: RoomViewInfo = {
     /** 直播标题 */
     title: "",
     /** 分区 */
     area: [],
     /** 封面url */
     cover: "",
+  }
+  public stats: RoomStatsInfo = {
+    /** 观看数 */
+    watch: 0,
+    /** 点赞数 */
+    like: 0,
   }
   /** 房间是否可用 */
   public available: boolean = false;
@@ -48,22 +61,27 @@ class bilibiliLive extends LiveRoom {
     }
   }
   /** 获取房间信息 */
-  public async getInfo() {
-    await axios
-      .get(
-        `https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=${this.id}`
+  public async getInfo(refresh?: boolean) {
+    await fetch
+      (
+        `https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=${this.id}`,
+        {
+          method: "GET"
+        }
       ) // 获取直播间信息
+      .then((response) => response.json())
       .then((res) => {
-        let data: any = res.data.data;
-        this.roomid = data.room_info.room_id;
-        this.status = data.room_info.live_status == 1 ? "live" : "off";
-        this.timestamp = this.status == "live" ? data.room_info.live_start_time * 1000 : 0;
-        this.base.title = data.room_info.title
-        this.base.area = [data.room_info.parent_area_name, data.room_info.area_name]
-        this.base.cover = data.room_info.cover
-        this.anchor.id = data.room_info.uid;
-        this.anchor.name = data.anchor_info.base_info.uname
-        this.anchor.avatar = data.anchor_info.base_info.face
+        const {room_info, anchor_info}: any = res.data;
+        this.roomid = room_info.room_id;
+        this.status = room_info.live_status == 1 ? RoomStatus.live : RoomStatus.off;
+        this.timestamp = this.status == RoomStatus.live ? room_info.live_start_time * 1000 : refresh ? Date.now() : this.timestamp;
+        this.view.title = room_info.title
+        this.view.area = [room_info.parent_area_name, room_info.area_name]
+        this.view.cover = room_info.cover
+        this.anchor.id = room_info.uid;
+        this.anchor.name = anchor_info.base_info.uname
+        this.anchor.avatar = anchor_info.base_info.face
+        this.liveId = room_info.live_id_str
         this.available = true
         console.log("[bilibiliLive] 已获取房间信息");
         this.emit("info", this.info)
@@ -74,9 +92,11 @@ class bilibiliLive extends LiveRoom {
   }
   /** 开启直播间监听 */
   async open() {
-    await this.getInfo()
-    // 如果直播间监听已打开或直播间不可用，则返回
-    if (this.opening || !this.available) return
+    // 如果直播间监听已打开，则返回
+    if (this.opening) return
+    await this.getInfo(true)
+    // 如果直播间不可用，则返回
+    if (!this.available) return
     this.opening = true
     this.createWS();
     this.emit("open")
@@ -116,29 +136,20 @@ class bilibiliLive extends LiveRoom {
     client.on("PREPARING", this.msg_PREPARING.bind(this));
     client.on("LIVE", this.msg_LIVE.bind(this));
     client.on("ROOM_CHANGE", this.msg_ROOM_CHANGE.bind(this))
+    client.on("WATCHED_CHANGE", this.msg_WATCHED_CHANGE.bind(this))
+    client.on("LIKE_INFO_V3_UPDATE", this.msg_LIKE_INFO_V3_UPDATE.bind(this))
   }
+  /** 关闭直播间监听 */
   close() {
     if (!this.opening) return
     this.opening = false
     this.client?.close();
     this.emit("close")
   }
-  public getDanmakuMode(n: number): string {
-    switch (n) {
-      case 1:
-        return "left";
-      case 4:
-        return "bottom";
-      case 5:
-        return "top";
-      default:
-        return "left";
-    }
-  }
   /** 获取弹幕消息 */
   public msg_DANMU_MSG(msg: any) {
     let content = msg.info[1];
-    let mode = this.getDanmakuMode(msg.info[0][1]);
+    let mode = msg.info[0][1];
     let color = msg.info[0][3];
     let uname = msg.info[2][1];
     let uid = msg.info[2][0];
@@ -152,7 +163,7 @@ class bilibiliLive extends LiveRoom {
         id: msg.info[3][12],
         membership: msg.info[3][10] || 0,
       } : null;
-    let identity: null | "admin" | "anchor" = null;
+    let identity: null | UserAdmin = null;
     let emoticon: {[key: string]: ImageInfo} | undefined = undefined
     if (extra.emots) {
       emoticon = {}
@@ -166,17 +177,16 @@ class bilibiliLive extends LiveRoom {
       }
     }
     if (msg.info[2][2]) {
-      identity = "admin" 
+      identity = UserAdmin.admin 
     } else if (uid == this.anchor.id) {
-      identity = "anchor";
+      identity = UserAdmin.anchor;
     }
     let danmaku: MessageChat = {
       platform: "bilibili",
       room: this.id,
       type: "chat",
-      record_time: new Date().valueOf(),
+      timestamp: timestamp,
       info: {
-        timestamp: timestamp,
         color: color,
         mode: mode,
         content: content,
@@ -184,7 +194,7 @@ class bilibiliLive extends LiveRoom {
           name: content,
           id: msg.info[0][13].emoticon_unique,
           url: msg.info[0][13].url,
-          height: msg.info[0][13].height / 3,
+          size: msg.info[0][13].width == msg.info[0][13].height ? ImageSize.large : ImageSize.small,
         } : undefined,
         emoticon: emoticon,
         user: {
@@ -192,7 +202,7 @@ class bilibiliLive extends LiveRoom {
           id: uid,
           medal: medal,
           membership: guard_level,
-          identity: identity,
+          admin: identity,
         }
       }
     };
@@ -200,7 +210,7 @@ class bilibiliLive extends LiveRoom {
   }
   /** 获取互动消息 */
   public msg_INTERACT_WORD(msg: any) {
-    let data = msg.data;
+    const data = msg.data;
     let type: "entry" | "follow" | "share";
     switch (data.msg_type) {
       case 1:
@@ -219,13 +229,12 @@ class bilibiliLive extends LiveRoom {
       platform: "bilibili",
       room: this.id,
       type: type,
-      record_time: new Date().valueOf(),
+      timestamp: Math.floor(data.trigger_time / 1000000),
       info: {
-        timestamp: Math.floor(data.trigger_time / 1000000),
         user: {
           name: data.uname,
           id: data.uid,
-          medal: (data.fans_medal && data.fans_medal.medal_level) ? {
+          medal: (data.fans_medal?.medal_level) ? {
             level: data.fans_medal.medal_level,
             name: data.fans_medal.medal_name,
             id: data.fans_medal.target_id,
@@ -238,14 +247,13 @@ class bilibiliLive extends LiveRoom {
   }
   /** 获取礼物消息 */
   public msg_SEND_GIFT(msg: any) {
-    let data = msg.data;
+    const data = msg.data;
     let gift: MessageGift = {
       platform: "bilibili",
       room: this.id,
       type: "gift",
-      record_time: new Date().valueOf(),
+      timestamp: data.timestamp * 1000, // 接口只能获得秒级时间戳
       info: {
-        timestamp: data.timestamp * 1000, // 接口只能获得秒级时间戳
         user: {
           name: data.uname,
           id: data.uid,
@@ -273,14 +281,13 @@ class bilibiliLive extends LiveRoom {
   }
   /** 获取舰长开通消息 */
   public msg_GUARD_BUY(msg: any) {
-    let data = msg.data;
+    const data = msg.data;
     let gift: MessageMembership = {
       platform: "bilibili",
       room: this.id,
       type: "membership",
-      record_time: new Date().valueOf(),
+      timestamp: data.start_time * 1000,
       info: {
-        timestamp: data.start_time * 1000,
         user: {
           name: data.username,
           id: data.uid,
@@ -302,15 +309,14 @@ class bilibiliLive extends LiveRoom {
   }
   /** 获取醒目留言消息 */
   public msg_SUPER_CHAT_MESSAGE(msg: any) {
-    let data = msg.data;
+    const data = msg.data;
     let sc: MessageSuperchat = {
       platform: "bilibili",
       room: this.id,
       type: "superchat",
-      record_time: new Date().valueOf(),
+      timestamp: data.ts * 1000,
       info: {
         id: data.id,
-        timestamp: data.ts * 1000,
         user: {
           name: data.user_info.uname,
           id: data.uid,
@@ -337,21 +343,49 @@ class bilibiliLive extends LiveRoom {
     };
     this.emitMsg(sc);
   }
+  /** 观看数变化 */
+  public msg_WATCHED_CHANGE(msg: any) {
+    const data = msg.data;
+    const stats: MessageLiveStats = {
+      platform: "bilibili",
+      room: this.id,
+      type: "live_stats",
+      timestamp: getDateTimestamp(),
+      info: {
+        watch: data.num
+      },
+    };
+    this.emitMsg(stats);
+  }
+  /** 点赞数变化 */
+  public msg_LIKE_INFO_V3_UPDATE(msg: any) {
+    const data = msg.data;
+    const stats: MessageLiveStats = {
+      platform: "bilibili",
+      room: this.id,
+      type: "live_stats",
+      timestamp: getDateTimestamp(),
+      info: {
+        like: data.click_count
+      },
+    };
+    this.emitMsg(stats);
+  }
   msg_ROOM_BLOCK_MSG(msg: any) {
     // 禁言
-    let data = msg.data;
-    let block: MessageBlock = {
+    const data = msg.data;
+    const block: MessageBlock = {
       platform: "bilibili",
       room: this.id,
       type: "block",
-      record_time: new Date().valueOf(),
+      timestamp: getDateTimestamp(),
       info: {
         user: {
           id: data.uid,
           name: data.uname
         },
         operator: {
-          identity: data.operator == 2 ? "anchor" : "admin"
+          admin: data.operator == 2 ? UserAdmin.anchor : UserAdmin.admin
         }
       },
     };
@@ -364,9 +398,9 @@ class bilibiliLive extends LiveRoom {
         platform: "bilibili",
         room: this.id,
         type: "live_start",
-        record_time: new Date().valueOf(),
+        timestamp: msg.live_time * 1000,
         info: {
-          timestamp: msg.live_time * 1000,
+          id: msg.live_key.toString(),
         },
       };
       this.emitMsg(live);
@@ -378,7 +412,7 @@ class bilibiliLive extends LiveRoom {
       platform: "bilibili",
       room: this.id,
       type: "live_cut",
-      record_time: new Date().valueOf(),
+      timestamp: getDateTimestamp(),
       info: {
         message: msg.msg,
       },
@@ -390,19 +424,19 @@ class bilibiliLive extends LiveRoom {
       platform: "bilibili",
       room: this.id,
       type: "live_end",
-      record_time: new Date().valueOf(),
+      timestamp: getDateTimestamp(),
       info: {
-        status: msg.round ? "round" : "off"
+        status: msg.round ? RoomStatus.round : RoomStatus.off
       }
     }
     this.emitMsg(off)
   }
   msg_ROOM_CHANGE(msg: any) {
-    let change: MessageLiveChange = {
+    let change: MessageLiveView = {
       platform: "bilibili",
       room: this.id,
-      type: "live_change",
-      record_time: new Date().valueOf(),
+      type: "live_view",
+      timestamp: Date.now(),
       info: {
         title: msg.data.title,
         area: [msg.data.parent_area_name, msg.data.area_name]

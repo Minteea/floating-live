@@ -1,7 +1,9 @@
 import { FloatingLive } from "..";
+import { FloatingLivePlugin } from "../types/plugin";
 
 export class PluginHandler<T extends FloatingLive> {
   private current: string | null = null
+  /** 插件列表 */
   private list = new Map<string, {[key: string]: any}>()
   private pluginEvent = new Map<string, [string, (...args: any[]) => void][]>()
   private main: T
@@ -27,22 +29,29 @@ export class PluginHandler<T extends FloatingLive> {
     return this.list.get(name)
   }
   /** 注册插件 */
-  register(name: string, pluginFunc: (main: T) => {[key: string]: any} | void) {
+  register(name: string, plugin: FloatingLivePlugin<T>, config?: {[key: string]: any}) {
     if (this.list.has(name)) {
       this.main.emit("plugin_duplicate", name)
       return
     }
     this.current = name;
     // 执行插件函数并获取插件操作对象
-    let pluginObject = pluginFunc(this.main);
-    this.list.set(name, pluginObject || {});
+    let pluginObject = plugin()
+    // 如果插件register函数无法调用，则无法注册插件
+    if (typeof pluginObject.register != 'function') {
+      this.main.emit("plugin_invalid", name);
+      this.current = null;
+      return;
+    }
+    let pluginExpose = pluginObject.register(this.main, config);
+    this.list.set(name, pluginExpose || {});
     // 执行钩子函数
     this.helper.pluginAddHandler.getList().forEach(handler => {
       handler(name)
     });
     this.main.emit("plugin_add", name);
     this.current = null;
-    return pluginObject;
+    return pluginExpose;
   }
   /** 移除插件 */
   unregister(name: string) {

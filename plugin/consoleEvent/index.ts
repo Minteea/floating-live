@@ -1,6 +1,6 @@
 import { FloatingLive } from "../../src";
 
-export = (ctx: FloatingLive) => {
+const initEventConsole = (ctx: FloatingLive) => {
   ctx.on("start", () => {
     console.log(`[controller]记录已开始: ${ctx.timestamp}`)
   })
@@ -49,4 +49,10 @@ export = (ctx: FloatingLive) => {
   ctx.on("plugin_duplicate", (name) => {
     console.log(`[plugin]插件名称重复: ${name}`)
   })
+}
+
+export = () => {
+  return {
+    register: initEventConsole
+  }
 }

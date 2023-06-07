@@ -1,3 +1,4 @@
+import { UserAdmin } from "../../src/enum";
 import { FloatingLive } from "../..";
 import { UserInfo } from "../../src/types/message/AttributeInfo";
 import { MessageData } from "../../src/types/message/MessageData";
@@ -19,9 +20,9 @@ export class chatPrint {
     let name = `${"\x1b[33m"}${user.name}` // 用户名
     let medal = user.medal ? `${"\x1b[32m"}[${user.medal.name}(${user.medal.level})] ` : "" // 粉丝牌
     let membership = user.membership ? `${"\x1b[36m"}[${this.getPriviliegeName(message.platform, user.membership)}]` : ""  // 特权粉丝
-    let identity = user.identity ? `${"\x1b[95m"}[${{admin: "房管", anchor: "主播"}[user.identity]}]` : ""  // 房管
+    let admin = user.admin ? `${"\x1b[95m"}[${{[UserAdmin.admin]: "房管", [UserAdmin.anchor]: "主播"}[user.admin]}]` : ""  // 房管
 
-    return `${medal}${membership}${identity}${name}${"\x1b[0m"}`  //[粉丝牌(等级)] [特权][房管]用户名
+    return `${medal}${membership}${admin}${name}${"\x1b[0m"}`  //[粉丝牌(等级)] [特权][房管]用户名
   }
   /** 获取特权粉丝名称 */
   public getPriviliegeName(platform: string, level: number | boolean) {
@@ -96,7 +97,7 @@ export class chatPrint {
       }
       case "block": {
         let user = this.getUserInfo(message)
-        let operator = message.info.operator.identity ? {admin: "房管", anchor: "主播"}[message.info.operator.identity] : "管理员"
+        let operator = message.info.operator.admin ? {[UserAdmin.admin]: "房管", [UserAdmin.anchor]: "主播"}[message.info.operator.admin] : "管理员"
         console.log(
           `${user} 已被${operator}禁言`
         );
