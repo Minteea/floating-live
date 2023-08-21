@@ -1,4 +1,4 @@
-import { LiveRoom, RoomViewInfo, RoomStatsInfo } from "../lib/LiveRoom";
+import { LiveRoom, RoomDetail, RoomStatsInfo } from "../lib/LiveRoom";
 
 import { FloatingLive } from "..";
 import { MessageData } from "../types/message/MessageData";
@@ -56,8 +56,8 @@ export class RoomController {
       this.main.emit("room_info", key, room.info)
     })
     // 直播展示信息更改
-    room.on("view", (data: Partial<RoomViewInfo>) => {
-      this.main.emit("room_view", key, data)
+    room.on("detail", (data: Partial<RoomDetail>) => {
+      this.main.emit("room_detail", key, data)
     })
     // 直播状态更改
     room.on("status", (status: RoomStatus, {id, timestamp}: {id?: string, timestamp: number}) => {

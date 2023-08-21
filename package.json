@@ -17,7 +17,7 @@
   "dependencies": {
     "acfun-live-danmaku": "^0.6.1",
     "axios": "^1.4.0",
-    "bilibili-live-ws": "^6.0.3",
+    "bilibili-live-ws": "^6.3.1",
     "fs-extra": "^11.1.0"
   },
   "devDependencies": {

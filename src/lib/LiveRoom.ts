@@ -11,7 +11,7 @@ export interface RoomInfo {
   /** 房间key */
   key: string;
   /** 基本信息 */
-  view: RoomViewInfo;
+  detail: RoomDetail;
   /** 统计信息 */
   stats?: RoomStatsInfo;
   /** 主播信息 */
@@ -31,7 +31,7 @@ export interface RoomInfo {
 }
 
 /** 房间展示信息 */
-export type RoomViewInfo = {
+export type RoomDetail = {
   /** 直播标题 */
   title?: string
   /** 分区 */
@@ -60,8 +60,8 @@ export abstract class LiveRoom extends EventEmitter implements RoomInfo {
   abstract readonly platform: string
   /** 房间id */
   abstract readonly id: string | number
-  /** 基本信息 */
-  abstract view: RoomViewInfo
+  /** 房间详情 */
+  abstract detail: RoomDetail
   /** 统计信息 */
   stats?: RoomStatsInfo
   /** 主播信息 */
@@ -102,9 +102,9 @@ export abstract class LiveRoom extends EventEmitter implements RoomInfo {
         this.timestamp = msg.timestamp
         this.emit("status", RoomStatus.live, {timestamp: msg.timestamp, id: msg.info.id})
       break
-      case "live_view":
-        this.view = Object.assign(this.view, msg.info)
-        this.emit("view", msg.info)
+      case "live_detail":
+        this.detail = Object.assign(this.detail, msg.info)
+        this.emit("detail", msg.info)
       break
       case "live_stats":
         this.stats = Object.assign(this.stats!, msg.info)
@@ -128,7 +128,7 @@ export abstract class LiveRoom extends EventEmitter implements RoomInfo {
     return {
       platform: this.platform,
       id: this.id,
-      view: this.view,
+      detail: this.detail,
       stats: this.stats,
       anchor: this.anchor,
       timestamp: this.timestamp,

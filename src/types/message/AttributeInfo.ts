@@ -59,13 +59,13 @@ export interface GiftInfo {
   /** 礼物连击数 */
   combo?: string
   /** 礼物连击id */
-  combo_id?: string
+  comboId?: string
   /** 人民币价值 */
   cny?: number
   /** 行为 */
   action?: string
   /** 随机礼物信息 */
-  blind_gift?: GiftInfo
+  blindGift?: GiftInfo
   /** 图片信息 */
   image?: string
 }
