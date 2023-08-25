@@ -1,4 +1,4 @@
-import { RoomDetail } from './../../src/lib/LiveRoom';
+import { RoomDetail } from "./../../src/lib/LiveRoom";
 import { MedalInfo, UserInfo } from "../..";
 import getAcClient from "acfun-live-danmaku";
 import AcClient from "acfun-live-danmaku/client";
@@ -11,7 +11,7 @@ import {
   MessageLiveStats,
 } from "../..";
 import { LiveRoom, RoomStatsInfo } from "../..";
-import { RoomStatus, UserAdmin } from "../..";
+import { RoomStatus, UserType } from "../..";
 
 type ZtLiveUserInfo = {
   userIdentity: {
@@ -186,18 +186,18 @@ class acfunLive extends LiveRoom {
     }
   }
   public getUser(user: ZtLiveUserInfo): UserInfo {
-    let identity: UserAdmin | null = null;
+    let identity: UserType | null = 0;
     if (user.userIdentity?.managerType == 1) {
-      identity = UserAdmin.admin;
+      identity = UserType.admin;
     } else if (parseInt(user.userId) == this.anchor.id) {
-      identity = UserAdmin.anchor;
+      identity = UserType.anchor;
     }
     return {
       name: user.nickname,
       id: parseInt(user.userId),
       medal: this.getMedal(user.badge),
       avatar: user.avatar[0].url,
-      admin: identity,
+      type: identity,
     };
   }
   /** 文本信息(Comment) */

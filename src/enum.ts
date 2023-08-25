@@ -28,8 +28,10 @@ export enum DanmakuMode {
   right = 6,
 }
 
-/** 管理等级 */
-export enum UserAdmin {
+/** 用户类型 */
+export enum UserType {
+  /** 普通观众 */
+  normal = 0,
   /** 房管 */
   admin = 1,
   /** 主播 */

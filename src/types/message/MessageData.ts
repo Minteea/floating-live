@@ -1,5 +1,6 @@
+import { UserType } from "./../../enum";
 import { RoomInfo } from "./../../lib/LiveRoom";
-import { DanmakuMode, RoomStatus, UserAdmin } from "../../enum";
+import { DanmakuMode, RoomStatus } from "../../enum";
 import { RoomDetail, RoomStatsInfo } from "../../lib/LiveRoom";
 import { UserInfo, GiftInfo, ImageInfo } from "./AttributeInfo";
 
@@ -116,7 +117,7 @@ export interface MessageBlock extends MessageBase {
     /** 用户信息 */
     user: UserInfo;
     /** 操作者 */
-    operator: UserInfo | { admin: null | UserAdmin };
+    operator: UserInfo | { type: null | UserType };
   };
 }
 

@@ -1,4 +1,4 @@
-import { ImageSize, UserAdmin } from "../../enum";
+import { ImageSize, UserType } from "../../enum";
 
 /** 用户信息 */
 export interface UserInfo {
@@ -10,8 +10,8 @@ export interface UserInfo {
   avatar?: string;
   /** 粉丝勋章 */
   medal?: MedalInfo | null;
-  /** 管理等级 */
-  admin?: UserAdmin | null;
+  /** 用户类型 */
+  type?: UserType | null;
   /** 粉丝vip等级 */
   membership?: boolean | number;
   /** vip等级 */
@@ -23,13 +23,13 @@ export interface UserInfo {
 /** 粉丝牌信息 */
 export interface MedalInfo {
   /** 粉丝牌名称 */
-  name: string
+  name: string;
   /** 粉丝牌id */
-  id: number
+  id: number;
   /** 粉丝牌等级 */
-  level?: number
+  level?: number;
   /** 粉丝vip等级 */
-  membership?: number
+  membership?: number;
 }
 
 /** 图像信息 */
@@ -41,31 +41,31 @@ export interface ImageInfo {
   /** 图像url */
   url?: string;
   /** 图像尺寸 */
-  size?: ImageSize
+  size?: ImageSize;
 }
 
 /** 礼物信息 */
 export interface GiftInfo {
   /** 礼物名称 */
-  name: string
+  name: string;
   /** 礼物id */
-  id: number | string
+  id: number | string;
   /** 礼物数量 */
-  num: number
+  num: number;
   /** 总价值 */
-  value: number
+  value: number;
   /** 平台货币 */
-  currency: string
+  currency: string;
   /** 礼物连击数 */
-  combo?: string
+  combo?: string;
   /** 礼物连击id */
-  comboId?: string
+  comboId?: string;
   /** 人民币价值 */
-  cny?: number
+  cny?: number;
   /** 行为 */
-  action?: string
+  action?: string;
   /** 随机礼物信息 */
-  blindGift?: GiftInfo
+  blindGift?: GiftInfo;
   /** 图片信息 */
-  image?: string
+  image?: string;
 }

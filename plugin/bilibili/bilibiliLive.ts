@@ -1,4 +1,4 @@
-import { ImageSize, RoomStatus, UserAdmin } from "../..";
+import { generateId, ImageSize, RoomStatus, UserType } from "../..";
 import { ImageInfo, UserInfo } from "../..";
 import { KeepLiveWS } from "bilibili-live-ws";
 import { LiveRoom, RoomStatsInfo, RoomDetail } from "../..";
@@ -135,7 +135,7 @@ class bilibiliLive extends LiveRoom {
   async createWS() {
     // 与Websocket服务器连接
     console.log("[bilibili-live-ws] 开始连接bilibili直播服务器");
-    this.client = new KeepLiveWS(this.roomid, {uid: this.anchor.id});
+    this.client = new KeepLiveWS(this.roomid, { uid: this.anchor.id });
     let client = this.client;
 
     client.interval = this.connectInterval;
@@ -197,7 +197,7 @@ class bilibiliLive extends LiveRoom {
           membership: info[3][10] || 0,
         }
       : null;
-    let identity: null | UserAdmin = null;
+    let identity: null | UserType = 0;
     let emoticon: { [key: string]: ImageInfo } | undefined = undefined;
     if (extra.emots) {
       emoticon = {};
@@ -211,9 +211,9 @@ class bilibiliLive extends LiveRoom {
       }
     }
     if (info[2][2]) {
-      identity = UserAdmin.admin;
+      identity = UserType.admin;
     } else if (uid == this.anchor.id) {
-      identity = UserAdmin.anchor;
+      identity = UserType.anchor;
     }
     let danmaku: MessageChat = {
       platform: "bilibili",
@@ -242,10 +242,11 @@ class bilibiliLive extends LiveRoom {
           id: uid,
           medal: medal,
           membership: guard_level,
-          admin: identity,
+          type: identity,
         },
       },
     };
+    danmaku.id ??= generateId(danmaku);
     this.emitMsg(danmaku);
   }
   /** 获取互动消息 */
@@ -270,7 +271,7 @@ class bilibiliLive extends LiveRoom {
       room: this.id,
       type: type,
       id: msg_id,
-      timestamp: send_time,
+      timestamp: send_time || Math.floor(data.trigger_time / 1000000),
       info: {
         user: {
           name: data.uname,
@@ -286,6 +287,7 @@ class bilibiliLive extends LiveRoom {
         },
       },
     };
+    interact.id ??= generateId(interact);
     this.emitMsg(interact);
   }
   /** 获取礼物消息 */
@@ -295,8 +297,8 @@ class bilibiliLive extends LiveRoom {
       platform: "bilibili",
       room: this.id,
       type: "gift",
-      id: msg_id,
-      timestamp: send_time,
+      id: msg_id || data.combo_id,
+      timestamp: send_time || data.timestamp * 1000,
       info: {
         user: {
           name: data.uname,
@@ -324,6 +326,7 @@ class bilibiliLive extends LiveRoom {
         },
       },
     };
+    gift.id ??= generateId(gift);
     this.emitMsg(gift);
   }
   /** 获取舰长开通消息 */
@@ -334,7 +337,7 @@ class bilibiliLive extends LiveRoom {
       room: this.id,
       type: "membership",
       id: msg_id,
-      timestamp: send_time,
+      timestamp: send_time || data.start_time * 1000,
       info: {
         user: {
           name: data.username,
@@ -353,6 +356,7 @@ class bilibiliLive extends LiveRoom {
         duration: data.num * 30,
       },
     };
+    gift.id ??= generateId(gift);
     this.emitMsg(gift);
   }
   /** 获取醒目留言消息 */
@@ -363,7 +367,7 @@ class bilibiliLive extends LiveRoom {
       room: this.id,
       type: "superchat",
       id: msg_id,
-      timestamp: send_time,
+      timestamp: send_time || data.ts * 1000,
       info: {
         id: data.id,
         user: {
@@ -393,6 +397,7 @@ class bilibiliLive extends LiveRoom {
         },
       },
     };
+    sc.id ??= generateId(sc);
     this.emitMsg(sc);
   }
   /** 观看数变化 */
@@ -403,11 +408,12 @@ class bilibiliLive extends LiveRoom {
       room: this.id,
       type: "live_stats",
       id: msg_id,
-      timestamp: send_time,
+      timestamp: send_time || getDateTimestamp(),
       info: {
         watch: data.num,
       },
     };
+    stats.id ??= generateId(stats);
     this.emitMsg(stats);
   }
   /** 点赞数变化 */
@@ -418,11 +424,12 @@ class bilibiliLive extends LiveRoom {
       room: this.id,
       type: "live_stats",
       id: msg_id,
-      timestamp: send_time,
+      timestamp: send_time || getDateTimestamp(),
       info: {
         like: data.click_count,
       },
     };
+    stats.id ??= generateId(stats);
     this.emitMsg(stats);
   }
   public msg_ONLINE_RANK_COUNT(msg: any) {
@@ -432,12 +439,13 @@ class bilibiliLive extends LiveRoom {
       room: this.id,
       type: "live_stats",
       id: msg_id,
-      timestamp: send_time,
+      timestamp: send_time || getDateTimestamp(),
       info: {
-        online: data.count,
+        online: data.online_count,
       },
     };
-    this.emitMsg(stats);
+    stats.id ??= generateId(stats);
+    if (data.online_count != null) this.emitMsg(stats);
   }
   msg_ROOM_BLOCK_MSG(msg: any) {
     // 禁言
@@ -447,17 +455,18 @@ class bilibiliLive extends LiveRoom {
       room: this.id,
       type: "block",
       id: msg_id,
-      timestamp: send_time,
+      timestamp: send_time || getDateTimestamp(),
       info: {
         user: {
           id: data.uid,
           name: data.uname,
         },
         operator: {
-          admin: data.operator == 2 ? UserAdmin.anchor : UserAdmin.admin,
+          type: data.operator == 2 ? UserType.anchor : UserType.admin,
         },
       },
     };
+    block.id ??= generateId(block);
     this.emitMsg(block);
   }
   msg_LIVE(msg: any) {
@@ -469,11 +478,12 @@ class bilibiliLive extends LiveRoom {
         room: this.id,
         type: "live_start",
         id: msg_id,
-        timestamp: send_time,
+        timestamp: send_time || msg.live_time * 1000,
         info: {
           id: msg.live_key.toString(),
         },
       };
+      live.id ??= generateId(live);
       this.emitMsg(live);
     }
   }
@@ -485,11 +495,12 @@ class bilibiliLive extends LiveRoom {
       room: this.id,
       type: "live_cut",
       id: msg_id,
-      timestamp: send_time,
+      timestamp: send_time || getDateTimestamp(),
       info: {
         message: msg.msg,
       },
     };
+    cut.id ??= generateId(cut);
     this.emitMsg(cut);
   }
   msg_PREPARING(msg: any) {
@@ -499,11 +510,12 @@ class bilibiliLive extends LiveRoom {
       room: this.id,
       type: "live_end",
       id: msg_id,
-      timestamp: send_time,
+      timestamp: send_time || getDateTimestamp(),
       info: {
         status: msg.round ? RoomStatus.round : RoomStatus.off,
       },
     };
+    off.id ??= generateId(off);
     this.emitMsg(off);
   }
   msg_ROOM_CHANGE(msg: any) {
@@ -513,12 +525,13 @@ class bilibiliLive extends LiveRoom {
       room: this.id,
       type: "live_detail",
       id: msg_id,
-      timestamp: send_time,
+      timestamp: send_time || getDateTimestamp(),
       info: {
         title: data.title,
         area: [data.parent_area_name, data.area_name],
       },
     };
+    change.id ??= generateId(change);
     this.emitMsg(change);
   }
 }

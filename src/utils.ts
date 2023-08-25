@@ -1,9 +1,9 @@
 import { MessageData } from './types/message/MessageData';
-export function generateKey(msg: MessageData):string {
+export function generateId(msg: MessageData):string {
   
   switch(msg.type) {
     case "gift":
-      return `gift:${msg.info.gift.comboId || `${msg.info.user.id}-${msg.timestamp}`}`
+      return `gift:${msg.info.user.id}-${msg.timestamp}`
     case "superchat":
       return `superchat:${msg.info.id}`
     case "membership":
