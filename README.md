@@ -23,11 +23,10 @@ const bilibili = require("floating-live/plugin/bilibili")
 // 创建一个FloatingLive实例
 const live = new FloatingLive()
 // 注册插件
-live.plugin.register("bilibili", bilibili)
-// 添加房间
-live.addRoom({platform: "bilibili", id: 6})
-// 打开
-live.start()
+live.plugin.register(bilibili)
+
+// 添加房间并自动打开
+live.rooms.add("bilibili", 6, true)
 ```
 
 ### 拆包即用模式
@@ -59,6 +58,6 @@ live.start()
   即可接收来自平台的直播弹幕。
 
 ## 感谢
-### 开源库
-* [simon300000/bilibili-live-ws](https://github.com/simon300000/bilibili-live-ws/)：与bilibili直播建立Websocket连接并解码数据包
-* [ACFUN-FOSS/ac-danmu](https://github.com/ACFUN-FOSS/ac-danmu.js)：与AcFun直播建立Websocket连接并解码数据包
+### 使用开源库
+* [simon300000/bilibili-live-ws](https://github.com/simon300000/bilibili-live-ws/)
+* [ACFUN-FOSS/ac-danmu](https://github.com/ACFUN-FOSS/ac-danmu.js)

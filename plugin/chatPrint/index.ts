@@ -3,8 +3,9 @@ import { chatPrint } from "./chatPrint";
 
 export = () => {
   return {
+    name: "chatPrint",
     register: (ctx: FloatingLive) => {
-      return new chatPrint(ctx)
-    }
-  }
-}
+      return new chatPrint(ctx);
+    },
+  };
+};

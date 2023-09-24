@@ -1,7 +1,7 @@
 import { UserType } from "../..";
 import { FloatingLive } from "../..";
 import { UserInfo } from "../..";
-import { MessageData } from "../..";
+import { Message } from "../..";
 
 export class chatPrint {
   /** 主模块 */
@@ -12,7 +12,7 @@ export class chatPrint {
     let hidden: any[] = [];
     this.hideType = new Set(hidden); // 隐藏类型
 
-    this.main.on("live_message", (msg) => {
+    this.main.on("live:message", (msg) => {
       this.log(msg);
     });
   }
@@ -47,7 +47,7 @@ export class chatPrint {
     }
   }
   /** 记录在控制台上 */
-  log(message: MessageData) {
+  log(message: Message.All) {
     if (this.hideType.has(message.type)) {
       return;
     }
@@ -112,7 +112,7 @@ export class chatPrint {
           ? { [UserType.admin]: "房管", [UserType.anchor]: "主播" }[
               message.info.operator.type
             ]
-          : "管理员";
+          : "";
         console.log(`${user} 已被${operator}禁言`);
         break;
       }
@@ -132,7 +132,7 @@ export class chatPrint {
       case "live_end": {
         let roomKey = `${message.platform}:${message.room}`;
         console.log(
-          `[=] ${"\x1b[1;31m"}直播间${"\x1b[40;33m"} ${roomKey} ${"\x1b[1;31m"}已结束直播${"\x1b[0m"}`
+          `[-] ${"\x1b[1;31m"}直播间${"\x1b[40;33m"} ${roomKey} ${"\x1b[1;31m"}已结束直播${"\x1b[0m"}`
         );
       }
     }

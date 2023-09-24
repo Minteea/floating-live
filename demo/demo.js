@@ -1,6 +1,6 @@
 const { FloatingLive } = require("../");
 const chatPrint = require("../plugin/chatPrint");
-const { messageSave, messageSaveOrigin } = require("../plugin/msgSave");
+const { messageSave, messageSaveRaw } = require("../plugin/msgSave");
 const bilibili = require("../plugin/bilibili");
 const acfun = require("../plugin/acfun");
 const consoleEvent = require("../plugin/consoleEvent");
@@ -17,21 +17,25 @@ const config = {
     },
   ],
   open: true,
-}
+};
 
 // 创建live实例
 const live = new FloatingLive();
-live.plugin.register("consoleEvent", consoleEvent)
-live.plugin.register("bilibili", bilibili)
-live.plugin.register("acfun", acfun)
+live.plugin.register(consoleEvent);
+live.plugin.register(bilibili);
+live.plugin.register(acfun);
 
 // 初始化内置插件
-live.plugin.register("chatPrint", chatPrint)
-live.plugin.register("messageSave", messageSave)
-live.plugin.register("messageSaveOrigin", messageSaveOrigin)
+live.plugin.register(chatPrint);
+live.plugin.register(messageSave);
+live.plugin.register(messageSaveRaw);
 
-config.rooms.forEach((room) => {
-  live.addRoom(room, config.open)
-})
+// 此处可设置自己的b站登录凭据，以解除b站未登录状态下返回打码弹幕的限制
+// b站的登录凭据可在cookie中获取，注意不要将cookie泄露给其他人
+live.rooms.setAuth("bilibili", "SESSDATA=xxxxxxxxxxxxxxxxxxxx");
+
+config.rooms.forEach(({ platform, id }) => {
+  live.addRoom(platform, id, config.open);
+});
 
 console.log("Floating Live is on :)");

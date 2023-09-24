@@ -1,15 +1,8 @@
-import { RoomDetail } from "./../../src/lib/LiveRoom";
+import { RoomDetail } from "../..";
 import { MedalInfo, UserInfo } from "../..";
 import getAcClient from "acfun-live-danmaku";
 import AcClient from "acfun-live-danmaku/client";
-import {
-  MessageChat,
-  MessageGift,
-  MessageInteract,
-  MessageLiveEnd,
-  MessageLiveCut,
-  MessageLiveStats,
-} from "../..";
+import { Message } from "../..";
 import { LiveRoom, RoomStatsInfo } from "../..";
 import { RoomStatus, UserType } from "../..";
 
@@ -66,7 +59,7 @@ class acfunLive extends LiveRoom {
   /** 直播间弹幕api模块 */
   public client: AcClient | null = null;
   /** 是否为打开状态 */
-  public opening: boolean = false;
+  public opened: boolean = false;
   /** 是否连接上服务器 */
   public connected: boolean = false;
 
@@ -115,12 +108,12 @@ class acfunLive extends LiveRoom {
   }
   /** 开启直播间监听 */
   async open() {
-    if (this.opening || !this.available) return;
+    if (this.opened || !this.available) return;
     if (!this.wsInit) {
       this.initWS();
     }
     //启动websocket连接
-    this.opening = true;
+    this.opened = true;
     this.client!.wsStart();
     this.emit("open");
   }
@@ -163,12 +156,12 @@ class acfunLive extends LiveRoom {
   }
   /** 关闭直播间监听 */
   close() {
-    if (!this.opening) return;
-    this.opening = false;
+    if (!this.opened) return;
+    this.opened = false;
     this.client?.wsClose();
     this.emit("close");
   }
-  destory() {
+  destroy() {
     this.close();
     this.removeAllListeners();
   }
@@ -207,7 +200,7 @@ class acfunLive extends LiveRoom {
     content: any;
   }) {
     const userInfo = this.getUser(data.userInfo);
-    let m: MessageChat = {
+    let m: Message.Chat = {
       platform: "acfun",
       room: this.id,
       id: `${userInfo.id}-${data.sendTimeMs}`,
@@ -230,7 +223,7 @@ class acfunLive extends LiveRoom {
     value: string;
   }) {
     const userInfo = this.getUser(data.user);
-    let m: MessageGift = {
+    let m: Message.Gift = {
       platform: "acfun",
       room: this.id,
       type: "gift",
@@ -258,7 +251,7 @@ class acfunLive extends LiveRoom {
     type: "entry" | "like" | "follow" | "share" | "join"
   ) {
     const userInfo = this.getUser(data.userInfo);
-    let m: MessageInteract = {
+    let m: Message.Interact = {
       platform: "acfun",
       room: this.id,
       type: type,
@@ -272,7 +265,7 @@ class acfunLive extends LiveRoom {
   }
   public msg_LiveClosed() {
     const timestamp = getDateTimestamp();
-    let m: MessageLiveEnd = {
+    let m: Message.LiveEnd = {
       platform: "acfun",
       room: this.id,
       type: "live_end",
@@ -287,7 +280,7 @@ class acfunLive extends LiveRoom {
   }
   public msg_LiveBanned() {
     const timestamp = getDateTimestamp();
-    let m: MessageLiveCut = {
+    let m: Message.LiveCut = {
       platform: "acfun",
       room: this.id,
       type: "live_cut",
@@ -302,7 +295,7 @@ class acfunLive extends LiveRoom {
   }
   msg_DisplayInfo(data: any) {
     const timestamp = getDateTimestamp();
-    let m: MessageLiveStats = {
+    let m: Message.LiveStats = {
       platform: "acfun",
       room: this.id,
       type: "live_stats",
