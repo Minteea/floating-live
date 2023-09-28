@@ -11,19 +11,19 @@ export = () => {
           return new RoomBilibili(Number(id), open, config);
         }
       );
-      ctx.auth;
+      ctx.auth.options.register("bilibili", authConfig);
     },
   };
 };
 
 const authConfig = {
-  warn: "由于b站弹幕接口限制，在未登录账号的情况下，返回的弹幕用户名会变为星号且无法获取到uid。\n详见(github:simon300000/bilibili-live-ws#397)[https://github.com/simon300000/bilibili-live-ws/issues/397]",
+  info: "由于b站弹幕接口限制，在未登录账号的情况下，返回的弹幕用户名会变为星号且无法获取到uid。\n详见(github:simon300000/bilibili-live-ws#397)[https://github.com/simon300000/bilibili-live-ws/issues/397]",
   auth: {
     placeholder: "此处粘贴cookie",
     info: "请在登录后的b站页面中获取cookie并粘贴在输入框内，至少包含SESSDATA字段。",
   },
   qrcode: {
-    generate: () => {},
+    //  generate: () => {},
   },
   // verify: { name: "key", type: "string" },
 };

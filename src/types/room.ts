@@ -43,7 +43,7 @@ export type RoomStatsInfo = {
   /** 点赞数 */
   like?: number;
   /** 观看数 */
-  watch?: number;
+  view?: number;
   /** 在线人数 */
   online?: number;
   /** 人气值 */

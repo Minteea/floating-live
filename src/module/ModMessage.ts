@@ -8,5 +8,9 @@ export class ModMessage {
     this.main = main;
     this.handler = new Reglist(main, "message.handler");
   }
-  handle(msg: Message.All) {}
+  handle(msg: Message.All) {
+    this.handler.getList().forEach((handler) => {
+      handler(msg);
+    });
+  }
 }

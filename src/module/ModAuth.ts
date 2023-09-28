@@ -7,8 +7,22 @@ export class ModAuth {
   constructor(main: FloatingLive) {
     this.options = new Reglist(main, "auth.options");
     this.main = main;
+    this.main.state.register("auth", () => {
+      const options: Record<string, object> = {};
+      this.options.forEach((val, key) => {
+        options[key] = val;
+      });
+      return {
+        options: options,
+      };
+    });
+    this.main.command.batchRegister({
+      auth: (platform, auth) => {
+        this.set(platform, auth);
+      },
+    });
   }
   set(name: string, auth: string) {
-    return this.main.rooms.setAuth(name, auth);
+    this.main.rooms.setAuth(name, auth);
   }
 }

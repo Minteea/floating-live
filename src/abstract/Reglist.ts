@@ -8,10 +8,10 @@ export class Reglist<T> {
   /** 插件与功能名称绑定表 */
   private readonly pluginIdMap: Map<string, string[]>;
   private readonly name: string;
-  private readonly main: FloatingLive
+  private readonly main: FloatingLive;
 
   constructor(main: FloatingLive, name: string) {
-    this.main = main
+    this.main = main;
     this.name = name;
     this.list = new Map();
     this.pluginIdMap = new Map();
@@ -58,6 +58,11 @@ export class Reglist<T> {
   /** 获取注册对象列表 */
   getList(): T[] {
     return [...this.list.values()];
+  }
+
+  /** 遍历 */
+  forEach(callbackfn: (value: T, key: string) => void) {
+    this.list.forEach(callbackfn);
   }
 
   /** 获取注册id列表 */

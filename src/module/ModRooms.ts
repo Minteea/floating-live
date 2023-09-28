@@ -4,7 +4,7 @@ import { LiveRoom } from "../abstract/LiveRoom";
 import { FloatingLive } from "..";
 import { Message } from "../types/message";
 import { RoomStatus } from "../enum";
-import { RoomDetail, RoomStatsInfo } from "../types";
+import { RoomDetail, RoomInfo, RoomStatsInfo } from "../types";
 
 /** 直播间监听实例控制器 */
 export class ModRooms {
@@ -20,6 +20,30 @@ export class ModRooms {
   constructor(main: FloatingLive) {
     this.main = main;
     this.generator = new Reglist(this.main, "rooms.generator");
+    this.main.state.register("rooms", () => {
+      const list: RoomInfo[] = [];
+      this.roomMap.forEach((room) => {
+        list.push(room.info);
+      });
+      return list;
+    });
+    this.main.command.batchRegister({
+      add: (platform, id, open) => {
+        this.add(platform, id, open);
+      },
+      remove: (key) => {
+        this.remove(key);
+      },
+      open: (key) => {
+        this.open(key);
+      },
+      close: (key) => {
+        this.close(key);
+      },
+      update: (key) => {
+        this.update(key);
+      },
+    });
   }
 
   /** 设置登录凭据 */
@@ -54,9 +78,7 @@ export class ModRooms {
     // 添加监听事件
     // 直播消息
     room.on("msg", (data: Message.All) => {
-      this.main.helper.messageHandler.getList().forEach((handler) => {
-        handler(data);
-      });
+      this.main.message.handle(data);
       this.main.emit("live:message", data);
     });
     // 直播消息源数据

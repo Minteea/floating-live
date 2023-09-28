@@ -28,7 +28,7 @@ live.plugin.register(messageSaveRaw);
 
 // 此处可设置自己的b站登录凭据，以解除b站未登录状态下返回打码弹幕的限制
 // b站的登录凭据可在cookie中获取，注意不要将cookie泄露给其他人
-live.rooms.setAuth("bilibili", "SESSDATA=xxxxxxxxxxxxxxxxxxxx");
+live.auth.set("bilibili", "SESSDATA=xxxxxxxxxxxxxxxxxxxx");
 
 config.rooms.forEach(({ platform, id }) => {
   live.rooms.add(platform, id, config.open);

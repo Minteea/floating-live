@@ -39,7 +39,7 @@ class RoomBilibili extends LiveRoom {
   };
   public stats: RoomStatsInfo = {
     /** 观看数 */
-    watch: 0,
+    view: 0,
     /** 点赞数 */
     like: 0,
   };
@@ -110,7 +110,7 @@ class RoomBilibili extends LiveRoom {
         this.detail.title = room_info.title;
         this.detail.area = [room_info.parent_area_name, room_info.area_name];
         this.detail.cover = room_info.cover;
-        this.stats.watch = watched_show.num;
+        this.stats.view = watched_show.num;
         this.stats.like = like_info_v3.total_likes;
         this.anchor.id = room_info.uid;
         this.anchor.name = anchor_info.base_info.uname;

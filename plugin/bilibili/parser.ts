@@ -243,7 +243,7 @@ const parseFunction: ParseFunction<RawMessage.All> = {
       id: msg_id!,
       timestamp: send_time || getDateTimestamp(),
       info: {
-        watch: data.num,
+        view: data.num,
       },
     };
     stats.id ??= generateId(stats);
@@ -393,7 +393,7 @@ export function parseInfo(data: RawInfo): RoomInfo {
       avatar: anchor_info.base_info.face,
     },
     stats: {
-      watch: watched_show.num,
+      view: watched_show.num,
       like: like_info_v3.total_likes,
     },
     liveId: room_info.live_id_str,
