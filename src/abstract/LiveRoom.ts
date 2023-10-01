@@ -34,7 +34,7 @@ export abstract class LiveRoom extends EventEmitter implements RoomInfo {
   /** 关闭连接 */
   abstract close(): void;
   /** 从服务器获取信息 */
-  abstract getInfo(): Promise<RoomInfo>;
+  abstract getInfo(): Promise<void>;
   /** 销毁事件 */
   protected onDestory?(): void;
   /** 销毁 */

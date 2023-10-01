@@ -98,14 +98,13 @@ class acfunLive extends LiveRoom {
           let { headUrl, name } = res.profile;
           this.anchor.avatar = headUrl;
           this.anchor.name = name;
-          this.emit("info");
+          this.emit("info", this.info);
         })
         .catch((error) => {
-          console.error(error);
+          this.emit("info_error", error);
         });
     }
     // 暂不能在连接房间后更新信息
-    return this.info;
   }
   /** 开启直播间监听 */
   async open() {
