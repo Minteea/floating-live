@@ -9,7 +9,7 @@ const config = {
   rooms: [
     {
       platform: "bilibili",
-      id: 3044248,
+      id: 1017,
     },
   ],
   open: true,

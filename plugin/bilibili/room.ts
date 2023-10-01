@@ -1,10 +1,8 @@
-import { RoomInfo } from "../../src/types/room";
-import { RawInfo } from "../../test/type/bilibili_getInfoByRoom";
-import { generateId, ImageSize, RoomStatus, UserType } from "../..";
-import { ImageInfo, UserInfo } from "../..";
+import { RawInfo } from "./types";
+import { RoomStatus } from "../..";
+import { UserInfo } from "../..";
 import { KeepLiveWS } from "bilibili-live-ws";
 import { RoomStatsInfo, RoomDetail } from "../..";
-import { Message } from "../..";
 import { RawMessage } from "./types";
 import { parseMessage } from "./parser";
 import { LiveRoom } from "../../src/abstract/LiveRoom";

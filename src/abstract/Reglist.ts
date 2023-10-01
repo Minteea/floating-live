@@ -8,7 +8,7 @@ export class Reglist<T> {
   /** 插件与功能名称绑定表 */
   private readonly pluginIdMap: Map<string, string[]>;
   private readonly name: string;
-  private readonly main: FloatingLive;
+  protected readonly main: FloatingLive;
 
   constructor(main: FloatingLive, name: string) {
     this.main = main;

@@ -25,7 +25,7 @@ export class ModRooms {
       this.roomMap.forEach((room) => {
         list.push(room.info);
       });
-      return list;
+      return { list };
     });
     this.main.command.batchRegister({
       add: (platform, id, open) => {
