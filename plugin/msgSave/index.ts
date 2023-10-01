@@ -19,7 +19,7 @@ export const messageSave = () => {
           status: RoomStatus,
           { timestamp }: { timestamp: number }
         ) => {
-          const { platform, id } = ctx.rooms.get(roomKey)!.info;
+          const { platform, id } = ctx.room.get(roomKey)!.info;
           saveMessage.setSaveInfo({
             platform,
             room: id,

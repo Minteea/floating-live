@@ -200,7 +200,7 @@ class MsgSave {
     platform: string;
     room: string | number;
   }) {
-    const { status, timestamp } = this.main.rooms.get(`${platform}:${room}`)
+    const { status, timestamp } = this.main.room.get(`${platform}:${room}`)
       ?.info || { status: RoomStatus.off, timestamp: 0 };
     const saveInfoConfig = {
       platform,
@@ -235,7 +235,7 @@ class MsgSave {
       statusChanged: saveInfo.statusChanged,
       index: saveInfo.totalCount,
       part: saveInfo.part,
-      roomInfo: this.main.rooms.get(roomKey)?.info,
+      roomInfo: this.main.room.get(roomKey)?.info,
     };
     fs.writeFileSync(file, JSON.stringify(message) + ",", {
       encoding: "utf8",

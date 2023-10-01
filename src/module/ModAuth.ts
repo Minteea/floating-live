@@ -23,6 +23,6 @@ export class ModAuth {
     });
   }
   set(name: string, auth: string) {
-    this.main.rooms.setAuth(name, auth);
+    this.main.room.setAuth(name, auth);
   }
 }

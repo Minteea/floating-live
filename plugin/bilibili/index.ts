@@ -5,7 +5,7 @@ export = () => {
   return {
     name: "bilibili",
     register: (ctx: FloatingLive) => {
-      ctx.rooms.generator.register(
+      ctx.room.generator.register(
         "bilibili",
         (id: string | number, open?: boolean, config?: object) => {
           return new RoomBilibili(Number(id), open, config);

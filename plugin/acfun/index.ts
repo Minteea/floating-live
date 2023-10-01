@@ -5,7 +5,7 @@ export = () => {
   return {
     name: "acfun",
     register: (ctx: FloatingLive) => {
-      ctx.rooms.generator.register(
+      ctx.room.generator.register(
         "acfun",
         (id: string | number, open?: boolean) => {
           return new acfunLive(Number(id), open);

@@ -31,7 +31,7 @@ live.plugin.register(messageSaveRaw);
 live.auth.set("bilibili", "SESSDATA=xxxxxxxxxxxxxxxxxxxx");
 
 config.rooms.forEach(({ platform, id }) => {
-  live.rooms.add(platform, id, config.open);
+  live.room.add(platform, id, config.open);
 });
 
 console.log("Floating Live is on :)");

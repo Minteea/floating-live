@@ -7,7 +7,7 @@ import { RoomStatus } from "../enum";
 import { RoomDetail, RoomInfo, RoomStatsInfo } from "../types";
 
 /** 直播间监听实例控制器 */
-export class ModRooms {
+export class ModRoom {
   readonly main: FloatingLive;
   private roomMap: Map<string, LiveRoom> = new Map();
   private auths: Map<string, string> = new Map();
@@ -19,8 +19,8 @@ export class ModRooms {
 
   constructor(main: FloatingLive) {
     this.main = main;
-    this.generator = new Reglist(this.main, "rooms.generator");
-    this.main.state.register("rooms", () => {
+    this.generator = new Reglist(this.main, "room.generator");
+    this.main.state.register("room", () => {
       const list: RoomInfo[] = [];
       this.roomMap.forEach((room) => {
         list.push(room.info);

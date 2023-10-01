@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
 import { ModPlugin } from "./module/ModPlugin";
-import { ModRooms } from "./module/ModRooms";
+import { ModRoom } from "./module/ModRoom";
 import { ModAuth } from "./module/ModAuth";
 import { ModMessage } from "./module/ModMessage";
 import { ModState } from "./module/ModState";
@@ -8,7 +8,7 @@ import ModCommand from "./module/ModCommand";
 
 export class FloatingLive extends EventEmitter {
   /** 房间控制模块 */
-  public rooms: ModRooms;
+  public room: ModRoom;
   /** 消息处理模块 */
   public message: ModMessage;
   /** 用户登录凭据模块 */
@@ -27,7 +27,7 @@ export class FloatingLive extends EventEmitter {
     this.command = new ModCommand(this);
     this.state = new ModState(this);
     this.plugin = new ModPlugin(this);
-    this.rooms = new ModRooms(this);
+    this.room = new ModRoom(this);
     this.message = new ModMessage(this);
     this.auth = new ModAuth(this);
     this.init();

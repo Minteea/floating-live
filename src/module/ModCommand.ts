@@ -1,9 +1,7 @@
 import { FloatingLive } from "..";
 import { Reglist } from "../abstract/Reglist";
 
-export default class ModCommand extends Reglist<
-  (e: any, ...args: any[]) => any
-> {
+export default class ModCommand extends Reglist<(...args: any[]) => any> {
   constructor(main: FloatingLive) {
     super(main, "command");
   }
@@ -16,6 +14,6 @@ export default class ModCommand extends Reglist<
   }
   /** 执行命令 */
   execute(name: string, ...args: any[]) {
-    return this.get(name)?.(null, ...args);
+    return this.get(name)?.(...args);
   }
 }

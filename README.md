@@ -26,7 +26,7 @@ const live = new FloatingLive()
 live.plugin.register(bilibili)
 
 // 添加房间并自动打开
-live.rooms.add("bilibili", 6, true)
+live.room.add("bilibili", 6, true)
 ```
 
 ### 拆包即用模式
