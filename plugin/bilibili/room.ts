@@ -121,6 +121,7 @@ class RoomBilibili extends LiveRoom {
       .catch((error) => {
         console.error(error);
       });
+    return this.info;
   }
   /** 开启直播间监听 */
   async open() {

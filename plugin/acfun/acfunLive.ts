@@ -105,6 +105,7 @@ class acfunLive extends LiveRoom {
         });
     }
     // 暂不能在连接房间后更新信息
+    return this.info;
   }
   /** 开启直播间监听 */
   async open() {
