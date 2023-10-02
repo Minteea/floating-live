@@ -14,6 +14,18 @@ const ROOM_INIT_URL =
 const DANMAKU_SERVER_CONF_URL =
   "https://api.live.bilibili.com/xlive/web-room/v1/index/getDanmuInfo";
 
+export function getCookie(headers: Headers) {
+  const cookies: string[] = [];
+  headers.forEach((val, key) => {
+    if (key == "set-cookie") {
+      const [c] = val.split(";");
+      cookies.push(c);
+    }
+  });
+  const cookie = cookies.join("; ");
+  return cookie;
+}
+
 export function parseCookieString(str: string) {
   const cookie: Record<string, string> = {};
   str.split(";").forEach((item) => {
@@ -54,7 +66,7 @@ export async function getBuvid(cookie: string = "") {
       "User-Agent": USER_AGENT,
     },
   });
-  const resCookie = res.headers.get("set-cookie");
+  const resCookie = getCookie(res.headers);
   if (!resCookie) return;
   return parseCookieString(resCookie)["buvid2"];
 }
@@ -111,8 +123,8 @@ export async function checkLoginQRcode(key: string) {
     // 等待确认
     return [2];
   } else if (code == 0) {
-    // 登录成功
-    const cookie = res.headers.get("set-cookie");
+    const cookie = getCookie(res.headers);
+    console.log(cookie);
     return [0, cookie];
   } else if (code == 86038) {
     // 二维码失效
