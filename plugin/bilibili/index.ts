@@ -37,7 +37,7 @@ const bilibili = () => {
           ctx.auth.set("bilibili", `SESSDATA=${SESSDATA}`);
           ctx.emit("auth:update", "bilibili", DedeUserID);
         }
-        return code;
+        return [code, auth];
       });
     },
   };
