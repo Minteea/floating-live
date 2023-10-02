@@ -1,6 +1,6 @@
 {
   "name": "floating-live",
-  "version": "0.14.7",
+  "version": "0.14.8",
   "type": "commonjs",
   "main": "index.js",
   "types": "index.d.ts",
