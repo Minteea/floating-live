@@ -4,7 +4,7 @@ import { AuthOptions } from "../types/auth";
 
 export class ModAuth {
   public options: Reglist<AuthOptions>;
-  public account: Record<string, string | number> = {};
+  public status: Record<string, string | number> = {};
   main: FloatingLive;
   constructor(main: FloatingLive) {
     this.options = new Reglist(main, "auth.options");
@@ -16,6 +16,7 @@ export class ModAuth {
       });
       return {
         options: options,
+        status: this.status,
       };
     });
     this.main.command.batchRegister({

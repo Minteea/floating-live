@@ -22,7 +22,7 @@ const bilibili = () => {
 
       ctx.command.register("auth.bilibili", async (auth) => {
         const uid = await getLoginUid(auth);
-        ctx.auth.account["bilibili"] = uid;
+        ctx.auth.status["bilibili"] = uid;
         ctx.auth.set("bilibili", auth);
         ctx.emit("auth:update", "bilibili", uid);
       });
@@ -33,7 +33,7 @@ const bilibili = () => {
         const [code, auth] = await checkLoginQRcode(key);
         if (auth) {
           const { SESSDATA, DedeUserID } = parseCookieString(auth as string);
-          ctx.auth.account["bilibili"] = DedeUserID;
+          ctx.auth.status["bilibili"] = DedeUserID;
           ctx.auth.set("bilibili", `SESSDATA=${SESSDATA}`);
           ctx.emit("auth:update", "bilibili", DedeUserID);
         }
