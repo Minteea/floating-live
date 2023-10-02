@@ -1,7 +1,7 @@
 import { FloatingLive } from "../..";
 import RoomBilibili from "./room";
 
-export = () => {
+const bilibili = () => {
   return {
     name: "bilibili",
     register: (ctx: FloatingLive) => {
@@ -44,3 +44,5 @@ interface LoginCommands {
   /** 验证码登录 */
   "login:code": () => void;
 }
+
+export = bilibili;

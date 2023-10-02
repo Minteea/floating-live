@@ -28,7 +28,10 @@ export class ModPlugin<T extends FloatingLive> {
     return this.exports.get(name);
   }
   /** 注册插件 */
-  register(pluginFunc: FloatingLivePlugin<T>, pluginConfig?: object) {
+  register<C extends object, E extends void | object>(
+    pluginFunc: FloatingLivePlugin<C, E>,
+    pluginConfig?: C
+  ) {
     // 执行插件函数
     const plugin = pluginFunc();
     const name = plugin.name;

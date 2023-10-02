@@ -1,7 +1,8 @@
 import { FloatingLive } from "../../src/index";
+import { FloatingLivePlugin } from "../../src/types";
 import acfunLive from "./acfunLive";
 
-export = () => {
+const acfun: FloatingLivePlugin = () => {
   return {
     name: "acfun",
     register: (ctx: FloatingLive) => {
@@ -14,3 +15,5 @@ export = () => {
     },
   };
 };
+
+export = acfun;
