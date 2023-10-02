@@ -1,8 +1,10 @@
 import { Reglist } from "../abstract/Reglist";
 import { FloatingLive } from "..";
+import { AuthOptions } from "../types/auth";
 
 export class ModAuth {
-  public options: Reglist<object>;
+  public options: Reglist<AuthOptions>;
+  public account: Record<string, string | number> = {};
   main: FloatingLive;
   constructor(main: FloatingLive) {
     this.options = new Reglist(main, "auth.options");
@@ -18,7 +20,11 @@ export class ModAuth {
     });
     this.main.command.batchRegister({
       auth: (platform, auth) => {
-        this.set(platform, auth);
+        if (this.main.command.has(`auth.${platform}`)) {
+          this.main.command.execute(`auth.${platform}`, auth);
+        } else {
+          this.set(platform, auth);
+        }
       },
     });
   }

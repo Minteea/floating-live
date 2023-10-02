@@ -29,17 +29,17 @@ export interface RoomInfo {
 }
 
 /** 房间展示信息 */
-export type RoomDetail = {
+export interface RoomDetail {
   /** 直播标题 */
   title?: string;
   /** 分区 */
   area?: string[];
   /** 封面 */
   cover?: string;
-};
+}
 
 /** 房间统计数据信息 */
-export type RoomStatsInfo = {
+export interface RoomStatsInfo {
   /** 点赞数 */
   like?: number;
   /** 观看数 */
@@ -48,7 +48,8 @@ export type RoomStatsInfo = {
   online?: number;
   /** 人气值 */
   popularity?: number;
-};
+}
+
 export interface PlatformInfo {
   /** 平台名称 */
   name: string;
@@ -70,20 +71,22 @@ export interface PlatformInfo {
     /** 粉丝vip名称 */
     name: string;
     /** 粉丝vip等级名称 */
-    level?: string;
+    level?: string[];
   };
   /** 礼物信息 */
   gift: {
-    /** 货币 */
-    currency: Array<{
-      /** 货币id */
-      id: string;
+    action: string;
+  };
+  /** 货币信息 */
+  currency: Record<
+    string,
+    {
       /** 货币名称 */
       name: string;
       /** 1货币面值等值value (1面值/1数值) */
       face: number;
       /** 1人民币等值value (1.00CNY/1数值) (若为0则为免费货币) */
       cny?: number;
-    }>;
-  };
+    }
+  >;
 }

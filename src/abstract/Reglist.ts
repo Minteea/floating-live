@@ -55,6 +55,11 @@ export class Reglist<T> {
     return this.list.get(id);
   }
 
+  /** 检查注册对象是否存在 */
+  has(id: string): boolean {
+    return this.list.has(id);
+  }
+
   /** 获取注册对象列表 */
   getList(): T[] {
     return [...this.list.values()];

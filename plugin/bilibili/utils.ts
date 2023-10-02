@@ -94,44 +94,7 @@ export function printQRcode(url: string) {
 }
 
 /** 检测登录二维码 */
-export function checkLoginQRcode(key: string) {
-  return new Promise((resolve, reject) => {
-    let timer: number = 0;
-    const pollFuction = async () => {
-      clearTimeout(timer);
-      const res = await fetch(
-        `https://passport.bilibili.com/x/passport-login/web/qrcode/poll?qrcode_key=${key}`,
-        {
-          headers: {
-            "User-Agent": USER_AGENT,
-          },
-        }
-      );
-      const { code, message } = (await res.json()).data;
-      if (code == 86101) {
-        console.log("未扫码");
-        timer = setTimeout(pollFuction, 1000) as unknown as number;
-      } else if (code == 86090) {
-        console.log("等待确认");
-        timer = setTimeout(pollFuction, 1000) as unknown as number;
-      } else if (code == 0) {
-        console.log("登录成功");
-        const a = res.headers.get("set-cookie");
-        resolve(a);
-      } else if (code == 86038) {
-        console.log("二维码失效");
-        resolve("");
-      } else {
-        console.log(`${code} ${message}`);
-        resolve("");
-      }
-    };
-    timer = setTimeout(pollFuction, 1000) as unknown as number;
-  });
-}
-
-/** 轮询登录二维码 */
-async function pollLoginQRCode(key: string) {
+export async function checkLoginQRcode(key: string) {
   const res = await fetch(
     `https://passport.bilibili.com/x/passport-login/web/qrcode/poll?qrcode_key=${key}`,
     {
@@ -140,5 +103,23 @@ async function pollLoginQRCode(key: string) {
       },
     }
   );
-  return;
+  const { code, message } = (await res.json()).data;
+  if (code == 86101) {
+    // 未扫码
+    return [1];
+  } else if (code == 86090) {
+    // 等待确认
+    return [2];
+  } else if (code == 0) {
+    // 登录成功
+    const cookie = res.headers.get("set-cookie");
+    return [0, cookie];
+  } else if (code == 86038) {
+    // 二维码失效
+    return [-1];
+  } else {
+    // 其他错误
+    console.log(`${code} ${message}`);
+    throw message;
+  }
 }
