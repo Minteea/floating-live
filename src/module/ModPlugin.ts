@@ -28,7 +28,7 @@ export class ModPlugin<T extends FloatingLive> {
     return this.exports.get(name);
   }
   /** 注册插件 */
-  register(pluginFunc: FloatingLivePlugin<T>) {
+  register(pluginFunc: FloatingLivePlugin<T>, pluginConfig?: object) {
     // 执行插件函数
     const plugin = pluginFunc();
     const name = plugin.name;
@@ -39,7 +39,7 @@ export class ModPlugin<T extends FloatingLive> {
     this.list.set(name, plugin);
     this.current = name;
     // 调用register函数，并保存获取值
-    let pluginExpose = plugin.register?.(this.main) || {};
+    let pluginExpose = plugin.register?.(this.main, pluginConfig) || {};
     this.exports.set(name, pluginExpose);
     this.main.emit("plugin:add", name);
     this.current = null;

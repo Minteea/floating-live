@@ -4,6 +4,6 @@ import { FloatingLive } from "..";
 export type FloatingLivePlugin<T extends FloatingLive> = () => {
   /** 插件名称 */
   name: string;
-  register: (ctx: T) => object | void;
+  register: (ctx: T, config?: object) => object | void;
   destroy?: (ctx: T) => void;
 };
