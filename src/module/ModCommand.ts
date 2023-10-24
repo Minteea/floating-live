@@ -1,5 +1,5 @@
-import { FloatingLive } from "..";
-import { Reglist } from "../abstract/Reglist";
+import { FloatingLive } from "../live";
+import { Reglist } from "../core/Reglist";
 
 export default class ModCommand extends Reglist<(...args: any[]) => any> {
   constructor(main: FloatingLive) {

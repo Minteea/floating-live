@@ -1,4 +1,4 @@
-import { FloatingLive } from "..";
+import { FloatingLive } from "../live";
 import { FloatingLivePlugin } from "../types/plugin";
 
 export class ModPlugin<T extends FloatingLive> {

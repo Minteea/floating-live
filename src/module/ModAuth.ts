@@ -1,5 +1,5 @@
-import { Reglist } from "../abstract/Reglist";
-import { FloatingLive } from "..";
+import { Reglist } from "../core/Reglist";
+import { FloatingLive } from "../live";
 import { AuthOptions } from "../types/auth";
 
 export class ModAuth {

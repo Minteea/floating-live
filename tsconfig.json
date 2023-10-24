@@ -8,11 +8,9 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "strict": true,
-    "rootDir": ".",
+    "rootDir": "./src",
+    "outDir": "dist"
   },
-  "include": [
-    "src",
-    "plugin",
-  ],
-  "files": ["index.ts"]
+  "include": ["src"]
+  // "files": ["index.ts"]
 }

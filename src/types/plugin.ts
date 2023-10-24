@@ -1,4 +1,4 @@
-import { FloatingLive } from "..";
+import { FloatingLive } from "../live";
 
 /** 插件模块, 加载时调用 */
 export type FloatingLivePlugin<

@@ -1,6 +1,6 @@
 import { Message } from "../types/message";
-import { FloatingLive } from "..";
-import { Reglist } from "../abstract/Reglist";
+import { FloatingLive } from "../live";
+import { Reglist } from "../core/Reglist";
 export class ModMessage {
   main: FloatingLive;
   public handler: Reglist<(msg: Message.All) => void>;

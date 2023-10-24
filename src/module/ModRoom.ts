@@ -1,9 +1,9 @@
-import { Reglist } from "../abstract/Reglist";
-import { LiveRoom } from "../abstract/LiveRoom";
+import { Reglist } from "../core/Reglist";
+import { LiveRoom } from "../core/LiveRoom";
 
-import { FloatingLive } from "..";
+import { FloatingLive } from "../live";
 import { Message } from "../types/message";
-import { RoomStatus } from "../enum";
+import { RoomStatus } from "../enums";
 import { RoomDetail, RoomInfo, RoomStatsInfo } from "../types";
 
 /** 直播间监听实例控制器 */

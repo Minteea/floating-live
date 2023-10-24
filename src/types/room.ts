@@ -1,4 +1,4 @@
-import { RoomStatus } from "../enum";
+import { RoomStatus } from "../enums";
 import { UserInfo } from "./message";
 
 export interface RoomInfo {

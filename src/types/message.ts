@@ -1,5 +1,5 @@
-import { ImageSize, UserType } from "../enum";
-import { DanmakuMode, RoomStatus } from "../enum";
+import { ImageSize, UserType } from "../enums";
+import { DanmakuMode, RoomStatus } from "../enums";
 import { RoomDetail, RoomStatsInfo } from "./room";
 
 export namespace Message {

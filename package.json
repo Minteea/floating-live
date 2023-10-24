@@ -2,10 +2,28 @@
   "name": "floating-live",
   "version": "0.14.11",
   "type": "commonjs",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "author": "Minteea",
   "license": "GPLv3",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "require": "./dist/core/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "require": "./dist/types/index.js"
+    },
+    "./enums": {
+      "types": "./dist/enum.d.ts",
+      "require": "./dist/enum.js"
+    }
+  },
   "scripts": {
     "tsc": "tsc -b",
     "clear": "rimraf index.js index.d.ts src/**/*.js src/**/*.d.ts plugin/**/*.js plugin/**/*.d.ts",
@@ -29,5 +47,8 @@
     "rimraf": "^3.0.2",
     "ts-node": "^10.9.1",
     "typescript": "^4.8.4"
+  },
+  "peerDependencies": {
+    "events": "^3.3.0"
   }
 }

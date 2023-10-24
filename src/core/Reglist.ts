@@ -1,5 +1,5 @@
 // Plugin System modified from PicGo
-import { FloatingLive } from "..";
+import { FloatingLive } from "../live";
 
 /** 插件可注册对象模块 */
 export class Reglist<T> {

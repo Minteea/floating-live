@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { RoomStatus } from "../enum";
+import { RoomStatus } from "../enums";
 import { RoomDetail, RoomInfo, RoomStatsInfo } from "../types";
 import { Message, MedalInfo, UserInfo } from "../types/message";
 
