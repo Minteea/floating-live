@@ -20,30 +20,23 @@
       "require": "./dist/types/index.js"
     },
     "./enums": {
-      "types": "./dist/enum.d.ts",
-      "require": "./dist/enum.js"
+      "types": "./dist/enums.d.ts",
+      "require": "./dist/enums.js"
+    },
+    "./utils": {
+      "types": "./dist/utils.d.ts",
+      "require": "./dist/utils.js"
     }
   },
   "scripts": {
     "tsc": "tsc -b",
-    "clear": "rimraf index.js index.d.ts src/**/*.js src/**/*.d.ts plugin/**/*.js plugin/**/*.d.ts",
+    "clear": "rimraf dist",
     "test": "npm run clear && ts-node demo/demo.ts",
     "build-test": "npm run build && node demo/demo.js",
     "build": "npm run clear && npm run tsc",
     "prepare": "npm run build"
   },
-  "dependencies": {
-    "@types/qrcode": "^1.5.2",
-    "acfun-live-danmaku": "^0.6.1",
-    "axios": "^1.4.0",
-    "bilibili-live-ws": "^6.3.1",
-    "fs-extra": "^11.1.0",
-    "qrcode": "^1.5.3"
-  },
   "devDependencies": {
-    "@types/fs-extra": "^9.0.13",
-    "@types/websocket": "^1.0.5",
-    "@types/ws": "^8.5.3",
     "rimraf": "^3.0.2",
     "ts-node": "^10.9.1",
     "typescript": "^4.8.4"
