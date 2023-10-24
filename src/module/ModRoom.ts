@@ -46,15 +46,6 @@ export class ModRoom {
     });
   }
 
-  /** 设置登录凭据 */
-  public setAuth(platform: string, auth: string) {
-    this.auths.set(platform, auth);
-    this.roomMap.forEach((room) => {
-      if (room.platform == platform) {
-        room.setAuth?.(auth);
-      }
-    });
-  }
   /** 设置房间配置 */
   public setConfig(platform: string, config: any) {
     this.configs.set(platform, config);
