@@ -1,62 +1,52 @@
 import { EventEmitter } from "events";
-import { ModPlugin } from "./module/ModPlugin";
-import { ModRoom } from "./module/ModRoom";
-import { ModMessage } from "./module/ModMessage";
-import { ModState } from "./module/ModState";
-import ModCommand from "./module/ModCommand";
+import { ModPlugin } from "./module/plugin";
+import { ModRoom } from "./module/room";
+import { ModStore } from "./module/store";
+import ModCommand from "./module/command";
+import { ModValues } from "./module/values";
+import { ModHook } from "./module/hook";
+import { FloatingEventMap } from "./types/events";
 
 export class FloatingLive extends EventEmitter {
   /** 房间控制模块 */
   public room: ModRoom;
-  /** 消息处理模块 */
-  public message: ModMessage;
   /** 插件处理模块 */
-  public plugin: ModPlugin<this>;
+  public plugin: ModPlugin;
   /** 命令模块 */
   public command: ModCommand;
   /** 状态模块 */
-  public state: ModState;
-  /** 插件事件注册表 */
-  private regEventMap = new Map<string, [string, (...args: any[]) => void][]>();
+  public store: ModStore;
+  /** 数值模块 */
+  public values: ModValues;
+  /** 数值模块 */
+  public hook: ModHook;
 
   constructor() {
     super();
     this.command = new ModCommand(this);
-    this.state = new ModState(this);
+    this.store = new ModStore(this);
     this.plugin = new ModPlugin(this);
     this.room = new ModRoom(this);
-    this.message = new ModMessage(this);
-    this.init();
+    this.values = new ModValues(this);
+    this.hook = new ModHook(this);
   }
 
-  /** 初始化 */
-  private init() {
-    // 设置在插件卸载时移除由插件注册的事件
-    this.on("plugin:remove", (name: string) => {
-      this.regEventMap.get(name)?.forEach(([eventName, listener]) => {
-        this.removeListener(eventName, listener);
-      });
-    });
+  call(name: string, ...args: any[]) {
+    return this.command.call(name, ...args);
   }
 
-  /** 重写事件监听 */
-  on(eventName: string, listener: (...args: any[]) => void) {
-    super.on(eventName, listener);
-    // 检测是否为插件添加事件，并添加进事件列表
-    if (this.plugin.currentPlugin) {
-      if (!this.regEventMap.has(this.plugin.currentPlugin)) {
-        this.regEventMap.set(this.plugin.currentPlugin, []);
-      }
-      this.regEventMap
-        .get(this.plugin.currentPlugin)
-        ?.push([eventName, listener]);
-    }
-    return this;
+  on<T extends keyof FloatingEventMap>(
+    eventName: T,
+    listener: FloatingEventMap[T]
+  ) {
+    return super.on(eventName, listener);
   }
 
-  emit(eventName: string | symbol, ...args: any[]): boolean {
-    const result = super.emit(eventName, ...args);
-    super.emit("event", eventName, ...args);
-    return result;
+  emit<T extends keyof FloatingEventMap>(eventName: T, ...args: any[]) {
+    return super.emit(eventName, ...args);
+  }
+
+  throw(err: Error) {
+    this.emit("error", err);
   }
 }

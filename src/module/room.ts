@@ -1,4 +1,3 @@
-import { Reglist } from "../core/Reglist";
 import { LiveRoom } from "../core/LiveRoom";
 
 import { FloatingLive } from "../live";
@@ -8,74 +7,38 @@ import { RoomDetail, RoomInfo, RoomStatsInfo } from "../types";
 
 /** 直播间监听实例控制器 */
 export class ModRoom {
+  private list = new Map<string, LiveRoom>();
   readonly main: FloatingLive;
-  private roomMap: Map<string, LiveRoom> = new Map();
-  private auths: Map<string, string> = new Map();
-  private configs: Map<string, object> = new Map();
-
-  public generator: Reglist<
-    (id: string | number, open?: boolean, config?: object) => LiveRoom
-  >;
 
   constructor(main: FloatingLive) {
     this.main = main;
-    this.generator = new Reglist(this.main, "room.generator");
-    this.main.state.register("room", () => {
-      const list: RoomInfo[] = [];
-      this.roomMap.forEach((room) => {
-        list.push(room.info);
-      });
-      return { list };
-    });
-    this.main.command.batchRegister({
-      add: (platform, id, open) => {
-        this.add(platform, id, open);
-      },
-      remove: (key) => {
-        this.remove(key);
-      },
-      open: (key) => {
-        this.open(key);
-      },
-      close: (key) => {
-        this.close(key);
-      },
-      update: (key) => {
-        this.update(key);
-      },
-    });
+    const { command } = main;
+    command.register("add", this.add.bind(this));
+    command.register("remove", this.remove.bind(this));
+    command.register("open", this.open.bind(this));
+    command.register("close", this.close.bind(this));
+    command.register("update", this.update.bind(this));
   }
 
-  /** 设置房间配置 */
-  public setConfig(platform: string, config: any) {
-    this.configs.set(platform, config);
-  }
-
-  /** 生成房间 */
-  public generate(platform: string, id: string | number, open?: boolean) {
-    platform = platform.toLowerCase();
-    const config = this.configs.get(platform) || {};
-    const auth = this.auths.get(platform);
-    let platformGenerator = this.generator.get(platform);
-    if (platformGenerator) {
-      return platformGenerator(id, open, { auth, ...config });
-    } else {
-      this.main.emit("room:unknown_platform", platform);
-    }
-  }
   /** 添加房间监听实例 */
   public addRoom(room: LiveRoom, open?: boolean) {
     let key = room.key;
-    if (this.roomMap.has(key)) {
-      this.main.emit("room:exist", key);
+    if (this.list.has(key)) {
+      this.main.throw(
+        Object.assign(new Error("房间已存在"), {
+          from: "room",
+          signal: "room_exist",
+        })
+      );
       return;
     }
-    this.roomMap.set(key, room);
+    this.list.set(key, room);
     // 添加监听事件
     // 直播消息
     room.on("msg", (data: Message.All) => {
-      this.main.message.handle(data);
-      this.main.emit("live:message", data);
+      this.main.hook.call("message", data).then((res) => {
+        res && this.main.emit("live:message", data);
+      });
     });
     // 直播消息源数据
     room.on(
@@ -110,7 +73,7 @@ export class ModRoom {
         status: RoomStatus,
         { id, timestamp }: { id?: string; timestamp: number }
       ) => {
-        this.main.emit("room:status", key, status, { id, timestamp });
+        this.main.emit("room:status", key, { status, id, timestamp });
       }
     );
     // 统计数据更新
@@ -131,47 +94,58 @@ export class ModRoom {
     this.main.emit("room:add", key, room.info);
   }
   /** 添加房间 */
-  public add(platform: string, id: number, open: boolean) {
-    const room = this.generate(platform, id, open);
+  public add(
+    platform: string,
+    id: number,
+    config?: boolean | Record<string, any>
+  ) {
+    if (typeof config == "boolean") {
+      config = { open: config };
+    }
+    const room = this.main.call(platform, id, config);
     room && this.addRoom(room);
   }
   /** 移除房间 */
   public remove(roomKey: string) {
-    if (!this.roomMap.has(roomKey)) {
-      this.main.emit("room:unexist", roomKey);
-      return;
+    let room = this.list.get(roomKey);
+    if (!room) {
+      this.main.throw(
+        Object.assign(new Error("房间不存在"), {
+          from: "room",
+          signal: "room_unexist",
+        })
+      );
     }
-    let room = this.roomMap.get(roomKey);
-    this.roomMap.delete(roomKey); // 从表中删除房间
+    this.list.delete(roomKey); // 从表中删除房间
     room?.removeAllListeners(); // 移除房间监听实例
     this.main.emit("room:remove", roomKey);
   }
   /** 获取房间 */
   public get(roomKey: string) {
-    return this.roomMap.get(roomKey);
+    return this.list.get(roomKey);
   }
   /** 获取房间信息 */
   public info(roomKey: string) {
-    let room = this.roomMap.get(roomKey);
+    let room = this.list.get(roomKey);
     return room ? room.info : undefined;
   }
   /** 更新房间信息 */
   public update(roomKey: string) {
-    let room = this.roomMap.get(roomKey);
+    let room = this.list.get(roomKey);
     room && room.getInfo();
   }
   /** 获取roomKey列表 */
   get keys(): Array<string> {
-    return [...this.roomMap.keys()];
+    return [...this.list.keys()];
   }
   /** 打开房间连接 */
   open(roomKey: string) {
-    let room = this.roomMap.get(roomKey);
+    let room = this.list.get(roomKey);
     room?.available && !room.opened && room.open();
   }
   /** 关闭房间连接 */
   close(roomKey: string) {
-    let room = this.roomMap.get(roomKey);
+    let room = this.list.get(roomKey);
     room?.opened && room.close();
   }
 }

@@ -1,6 +1,17 @@
 import { RoomStatus } from "../enums";
 import { UserInfo } from "./message";
 
+/** 房间配置 */
+export interface RoomConfig {
+  /** 添加后是否打开房间 */
+  open?: boolean;
+  /** 口令 */
+  tokens?: Record<string, number>;
+  /** 凭据 */
+  credentials?: string;
+}
+
+/** 房间信息 */
 export interface RoomInfo {
   /** 平台id */
   platform: string;
