@@ -6,6 +6,7 @@ import ModCommand from "./module/command";
 import { ModValues } from "./module/values";
 import { ModHook } from "./module/hook";
 import { FloatingEventMap } from "./types/events";
+import { FloatingCommandMap } from "./types";
 
 export class FloatingLive extends EventEmitter {
   /** 房间控制模块 */
@@ -18,7 +19,7 @@ export class FloatingLive extends EventEmitter {
   public store: ModStore;
   /** 数值模块 */
   public values: ModValues;
-  /** 数值模块 */
+  /** 钩子模块 */
   public hook: ModHook;
 
   constructor() {
@@ -31,7 +32,10 @@ export class FloatingLive extends EventEmitter {
     this.hook = new ModHook(this);
   }
 
-  call(name: string, ...args: any[]) {
+  call<T extends keyof FloatingCommandMap>(
+    name: T,
+    ...args: Parameters<FloatingCommandMap[T]>
+  ): ReturnType<FloatingCommandMap[T]> {
     return this.command.call(name, ...args);
   }
 
@@ -42,11 +46,23 @@ export class FloatingLive extends EventEmitter {
     return super.on(eventName, listener);
   }
 
-  emit<T extends keyof FloatingEventMap>(eventName: T, ...args: any[]) {
+  emit<T extends keyof FloatingEventMap>(
+    eventName: T,
+    ...args: Parameters<FloatingEventMap[T]>
+  ) {
     return super.emit(eventName, ...args);
   }
 
   throw(err: Error) {
     this.emit("error", err);
+  }
+
+  snapshot() {
+    return {
+      room: this.room.snapshot(),
+      values: this.values.snapshot(),
+      store: this.store.snapshot(),
+      command: this.command.snapshot(),
+    };
   }
 }

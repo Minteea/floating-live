@@ -102,7 +102,7 @@ export class ModRoom {
     if (typeof config == "boolean") {
       config = { open: config };
     }
-    const room = this.main.call(platform, id, config);
+    const room = this.main.call(`room.create.${platform}`, id, config);
     room && this.addRoom(room);
   }
   /** 移除房间 */
@@ -147,5 +147,18 @@ export class ModRoom {
   close(roomKey: string) {
     let room = this.list.get(roomKey);
     room?.opened && room.close();
+  }
+  /** 更改某个房间的顺序 */
+  move(roomKey: string, position: number) {
+    const arr = [...this.list];
+    const index = arr.findIndex(([key]) => key == roomKey);
+    if (index == -1) return;
+    const [item] = arr.splice(index, 1);
+    arr.splice(position, 0, item);
+    this.list = new Map(arr);
+  }
+  /** 获取快照 */
+  snapshot() {
+    return [...this.list].map(([key, room]) => room.info);
   }
 }

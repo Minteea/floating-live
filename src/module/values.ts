@@ -1,4 +1,5 @@
 import { FloatingLive } from "../live";
+import { FloatingValueMap } from "../types/values";
 
 interface ValueConfig<T> {
   get: () => T;
@@ -35,11 +36,28 @@ export class ModValues {
     }
   }
   /** 获取注册的所有值 */
-  getMap() {
+  snapshot() {
     const map: Record<string, any> = {};
     this.list.forEach((config, name) => {
       map[name] = config.get();
     });
     return map;
+  }
+
+  emit<T extends keyof FloatingValueMap>(name: T, value: FloatingValueMap[T]) {
+    this.main.emit("values:change", name, value);
+    this.main.emit(`change:${name as string}`, value);
+  }
+  watch<T extends keyof FloatingValueMap>(
+    name: T,
+    listener: (value: FloatingValueMap[T]) => void
+  ) {
+    this.main.on(`change:${name}`, listener);
+  }
+  unwatch<T extends keyof FloatingValueMap>(
+    name: T,
+    listener: (value: FloatingValueMap[T]) => void
+  ) {
+    this.main.off(`change:${name}`, listener);
   }
 }

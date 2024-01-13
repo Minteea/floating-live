@@ -1,4 +1,5 @@
 import { FloatingLive } from "../live";
+import { FloatingCommandMap } from "../types";
 
 type CommandFunction = (...args: any[]) => any;
 
@@ -12,7 +13,10 @@ export default class ModCommand {
   }
 
   /** 注册命令 */
-  register(name: string, func: CommandFunction): void {
+  register<T extends keyof FloatingCommandMap>(
+    name: T,
+    func: FloatingCommandMap[T]
+  ): void {
     this.list.set(name, func);
     this.main.emit("command:add", name);
   }
@@ -24,7 +28,15 @@ export default class ModCommand {
   }
 
   /** 调用命令 */
-  call(name: string, ...args: any[]) {
+  call<T extends keyof FloatingCommandMap>(
+    name: T,
+    ...args: Parameters<FloatingCommandMap[T]>
+  ) {
     return this.list.get(name)?.(...args);
+  }
+
+  /** 获取快照 */
+  snapshot() {
+    return [...this.list].map(([key]) => key);
   }
 }

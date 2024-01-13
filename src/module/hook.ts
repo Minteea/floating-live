@@ -1,4 +1,5 @@
 import { FloatingLive } from "../live";
+import { FloatingHookMap } from "../types/hook";
 
 export type HookFunction<T> = (
   ctx: T
@@ -12,7 +13,10 @@ export class ModHook {
     this.main = main;
   }
   /** 注册钩子函数 */
-  register<T>(name: string, func: HookFunction<T>) {
+  register<T extends keyof FloatingHookMap>(
+    name: T,
+    func: HookFunction<FloatingHookMap[T]>
+  ) {
     let hooks = this.list.get(name);
     if (!hooks) {
       hooks = [];
@@ -21,7 +25,10 @@ export class ModHook {
     hooks.push(func);
   }
   /** 取消注册钩子函数 */
-  unregister(name: string, func: HookFunction<any>): void {
+  unregister<T extends keyof FloatingHookMap>(
+    name: T,
+    func: HookFunction<FloatingHookMap[T]>
+  ): void {
     let hooks = this.list.get(name);
     if (hooks) {
       const index = hooks.indexOf(func);
@@ -29,7 +36,10 @@ export class ModHook {
     }
   }
   /** 调用钩子函数 */
-  async call<T>(name: string, ctx: T) {
+  async call<T extends keyof FloatingHookMap>(
+    name: T,
+    ctx: FloatingHookMap[T]
+  ) {
     const hooks = this.list.get(name);
     if (!hooks) {
       return true;
