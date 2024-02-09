@@ -8,6 +8,8 @@ export enum RoomStatus {
   round = 2,
   /** 被封禁 */
   banned = -1,
+  /** 已上锁 */
+  locked = -2,
 }
 
 /** 图片大小 */

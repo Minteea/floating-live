@@ -84,8 +84,11 @@ export interface PlatformInfo {
   };
   /** 礼物信息 */
   gift?: {
+    /** 默认送出礼物行为 */
     action: string;
   };
+  /** 统计信息 */
+  stats?: Record<string, string>;
   /** 货币信息 */
   currency?: Record<
     string,
@@ -94,8 +97,8 @@ export interface PlatformInfo {
       name: string;
       /** 1货币面值等值value (1面值/1数值) */
       ratio: number;
-      /** 1单位消费现金等值value (1.00CNY/1数值) (若为0则为免费货币) */
-      cash?: number;
+      /** 1单位消费金额等值value (1.00CNY/1数值) (若为0则为免费货币) */
+      money?: number;
     }
   >;
 }
