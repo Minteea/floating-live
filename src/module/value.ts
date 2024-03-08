@@ -1,12 +1,12 @@
 import { FloatingLive } from "../live";
-import { FloatingValueMap } from "../types/values";
+import { FloatingValueMap } from "../types/value";
 
 interface ValueConfig<T> {
   get: () => T;
   set?: (value: T) => void;
 }
 
-export class ModValues {
+export class ModValue {
   private list = new Map<string, ValueConfig<any>>();
   protected readonly main: FloatingLive;
 
@@ -16,10 +16,12 @@ export class ModValues {
   /** 注册值 */
   register<T>(name: string, config: ValueConfig<T>) {
     this.list.set(name, config);
+    this.main.emit("value:add", name);
   }
   /** 取消注册 */
   unregister(name: string): void {
     this.list.delete(name);
+    this.main.emit("value:remove", name);
   }
   /** 获取值 */
   get(name: string) {
@@ -36,7 +38,7 @@ export class ModValues {
     }
   }
   /** 获取注册的所有值 */
-  snapshot() {
+  getSnapshot() {
     const map: Record<string, any> = {};
     this.list.forEach((config, name) => {
       map[name] = config.get();
@@ -45,8 +47,8 @@ export class ModValues {
   }
 
   emit<T extends keyof FloatingValueMap>(name: T, value: FloatingValueMap[T]) {
-    this.main.emit("values:change", name, value);
     this.main.emit(`change:${name as string}`, value);
+    this.main.emit("value:change", name, value);
   }
   watch<T extends keyof FloatingValueMap>(
     name: T,

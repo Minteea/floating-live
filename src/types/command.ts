@@ -10,7 +10,7 @@ export interface FloatingCommandMap {
   open: (key: string) => void;
   close: (key: string) => void;
   update: (key: string) => void;
-  [name: `room.create.${string}`]: (
+  [name: `${string}.room.create`]: (
     id: string | number,
     config?: Record<string, any>
   ) => LiveRoom;

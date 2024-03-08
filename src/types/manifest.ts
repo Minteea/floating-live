@@ -1,5 +1,5 @@
 import { PlatformInfo } from "./room";
 
-export interface FloatingStoreMap {
+export interface FloatingManifestMap {
   platform: PlatformInfo;
 }

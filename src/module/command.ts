@@ -3,7 +3,7 @@ import { FloatingCommandMap } from "../types";
 
 type CommandFunction = (...args: any[]) => any;
 
-export default class ModCommand {
+export class ModCommand {
   /** 功能列表 */
   private readonly list = new Map<string, CommandFunction>();
   protected readonly main: FloatingLive;
@@ -36,7 +36,7 @@ export default class ModCommand {
   }
 
   /** 获取快照 */
-  snapshot() {
+  getSnapshot() {
     return [...this.list].map(([key]) => key);
   }
 }

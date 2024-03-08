@@ -1,9 +1,9 @@
 import { EventEmitter } from "events";
 import { ModPlugin } from "./module/plugin";
 import { ModRoom } from "./module/room";
-import { ModStore } from "./module/store";
-import ModCommand from "./module/command";
-import { ModValues } from "./module/values";
+import { ModManifest } from "./module/manifest";
+import {ModCommand} from "./module/command";
+import { ModValue } from "./module/value";
 import { ModHook } from "./module/hook";
 import { FloatingEventMap } from "./types/events";
 import { FloatingCommandMap } from "./types";
@@ -15,20 +15,20 @@ export class FloatingLive extends EventEmitter {
   public plugin: ModPlugin;
   /** 命令模块 */
   public command: ModCommand;
-  /** 状态模块 */
-  public store: ModStore;
+  /** Manifest模块 */
+  public manifest: ModManifest;
   /** 数值模块 */
-  public values: ModValues;
+  public value: ModValue;
   /** 钩子模块 */
   public hook: ModHook;
 
   constructor() {
     super();
     this.command = new ModCommand(this);
-    this.store = new ModStore(this);
+    this.manifest = new ModManifest(this);
     this.plugin = new ModPlugin(this);
     this.room = new ModRoom(this);
-    this.values = new ModValues(this);
+    this.value = new ModValue(this);
     this.hook = new ModHook(this);
   }
 
@@ -57,12 +57,12 @@ export class FloatingLive extends EventEmitter {
     this.emit("error", err);
   }
 
-  snapshot() {
+  getSnapshot() {
     return {
-      room: this.room.snapshot(),
-      values: this.values.snapshot(),
-      store: this.store.snapshot(),
-      command: this.command.snapshot(),
+      room: this.room.getSnapshot(),
+      value: this.value.getSnapshot(),
+      manifest: this.manifest.getSnapshot(),
+      command: this.command.getSnapshot(),
     };
   }
 }

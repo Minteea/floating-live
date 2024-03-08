@@ -102,7 +102,7 @@ export class ModRoom {
     if (typeof config == "boolean") {
       config = { open: config };
     }
-    const room = this.main.call(`room.create.${platform}`, id, config);
+    const room = this.main.call(`${platform}.room.create`, id, config);
     room && this.addRoom(room);
   }
   /** 移除房间 */
@@ -158,7 +158,7 @@ export class ModRoom {
     this.list = new Map(arr);
   }
   /** 获取快照 */
-  snapshot() {
+  getSnapshot() {
     return [...this.list].map(([key, room]) => room.info);
   }
 }

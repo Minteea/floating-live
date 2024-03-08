@@ -26,11 +26,12 @@ export interface FloatingEventMap {
   "plugin:remove": (name: string) => void;
   "command:add": (name: string) => void;
   "command:remove": (name: string) => void;
-  "store:add": (name: string, id: string, value: any) => void;
-  "store:remove": (name: string, id: string) => void;
+  "manifest:add": (name: string, id: string, value: any) => void;
+  "manifest:remove": (name: string, id: string) => void;
 
-  "values:register": (name: string) => void;
-  "values:change": (name: string, value: any) => void;
+  "value:add": (name: string) => void;
+  "value:remove": (name: string) => void;
+  "value:change": (name: string, value: any) => void;
   [name: `change:${string}`]: (value: any) => void;
 
   error: (err: Error) => void;
