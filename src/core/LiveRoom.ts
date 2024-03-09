@@ -24,9 +24,7 @@ export abstract class LiveRoom extends EventEmitter implements RoomInfo {
   /** 当前直播id */
   liveId?: string;
   /** 房间是否打开 */
-  get opened(): boolean {
-    return !!this.connection;
-  }
+  opened: boolean = false;
   /** 是否连接上房间 */
   connection: ConnectStatus = ConnectStatus.off;
   /** 房间是否可用 */
