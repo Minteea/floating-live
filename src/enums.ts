@@ -12,6 +12,20 @@ export enum RoomStatus {
   locked = -2,
 }
 
+/** 直播间状态 */
+export enum ConnectStatus {
+  /** 未连接 */
+  off = 0,
+  /** 连接中 */
+  connecting = 1,
+  /** 连接到服务器 */
+  connected = 2,
+  /** 连接到房间 */
+  entered = 3,
+  /** 连接失败或断开 */
+  disconnected = -1,
+}
+
 /** 图片大小 */
 export enum ImageSize {
   /** 自定义大小 */

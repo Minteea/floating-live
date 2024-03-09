@@ -1,4 +1,4 @@
-import { RoomStatus } from "../enums";
+import { ConnectStatus, RoomStatus } from "../enums";
 import { UserInfo } from "./message";
 
 /** 房间配置 */
@@ -35,8 +35,8 @@ export interface RoomInfo {
   available: boolean;
   /** 房间监听是否打开 */
   opened: boolean;
-  /** 是否连接到房间 */
-  connected: boolean;
+  /** 房间连接状态 */
+  connection: ConnectStatus;
 }
 
 /** 房间展示信息 */

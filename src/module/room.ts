@@ -50,13 +50,17 @@ export class ModRoom {
         this.main.emit("live:raw", data, { platform, room });
       }
     );
-    // 连接到直播间
+    // 连接到服务器
     room.on("connect", () => {
       this.main.emit("room:connect", key);
     });
-    // 与直播间的连接已断开
+    // 与服务器的连接已断开
     room.on("disconnect", () => {
       this.main.emit("room:disconnect", key);
+    });
+    // 连接到直播间
+    room.on("enter", () => {
+      this.main.emit("room:enter", key);
     });
     // 获取房间信息
     room.on("info", () => {
