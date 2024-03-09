@@ -8,7 +8,8 @@ export interface FloatingEventMap {
     data: any,
     { platform, room }: { platform: string; room: string | number }
   ) => void;
-  "room:connect": (key: string) => void;
+  "room:connecting": (key: string) => void;
+  "room:connected": (key: string) => void;
   "room:enter": (key: string) => void;
   "room:disconnect": (key: string) => void;
   "room:info": (key: string, info: RoomInfo) => void;

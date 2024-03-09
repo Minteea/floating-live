@@ -35,7 +35,7 @@ export class ModRoom {
     this.list.set(key, room);
     // 添加监听事件
     // 直播消息
-    room.on("msg", (data: Message.All) => {
+    room.on("message", (data: Message.All) => {
       this.main.hook.call("message", data).then((res) => {
         res && this.main.emit("live:message", data);
       });
@@ -50,9 +50,13 @@ export class ModRoom {
         this.main.emit("live:raw", data, { platform, room });
       }
     );
+    // 正在连接服务器
+    room.on("connecting", () => {
+      this.main.emit("room:connecting", key);
+    });
     // 连接到服务器
-    room.on("connect", () => {
-      this.main.emit("room:connect", key);
+    room.on("connected", () => {
+      this.main.emit("room:connected", key);
     });
     // 与服务器的连接已断开
     room.on("disconnect", () => {

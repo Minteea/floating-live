@@ -46,7 +46,7 @@ export abstract class LiveRoom extends EventEmitter implements RoomInfo {
     this.onDestroy?.();
   }
   // 发送消息
-  protected emitMsg(msg: Message.All) {
+  protected emitMessage(msg: Message.All) {
     // 其他消息 => 先更改状态再发送消息
     // 直播结束消息 => 先发送消息再更改状态
     switch (msg.type) {
@@ -70,13 +70,13 @@ export abstract class LiveRoom extends EventEmitter implements RoomInfo {
       case "live_cut":
         this.status = msg.status || RoomStatus.off;
         this.timestamp = msg.timestamp;
-        this.emit("msg", msg);
+        this.emit("message", msg);
         this.emit("status", msg.status || RoomStatus.off, {
           timestamp: msg.timestamp,
         });
         return;
     }
-    this.emit("msg", msg);
+    this.emit("message", msg);
   }
   // 发送源消息
   protected emitRaw(msg: any) {
