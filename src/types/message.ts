@@ -1,5 +1,5 @@
-import { ImageSize, UserType } from "../enum";
-import { DanmakuMode, RoomStatus } from "../enum";
+import { ImageSize, UserType } from "../enums";
+import { DanmakuMode, RoomStatus } from "../enums";
 import { RoomDetail, RoomStatsInfo } from "./room";
 
 export namespace Message {
@@ -17,9 +17,9 @@ export namespace Message {
     /** 其他属性 */
     [attr: string]: any;
   }
-  /** 文本聊天消息 */
-  export interface Chat extends Base {
-    type: "chat";
+  /** 聊天消息 */
+  export interface Comment extends Base {
+    type: "comment";
     info: {
       /** 用户信息 */
       user: UserInfo;
@@ -148,8 +148,46 @@ export namespace Message {
     info: RoomDetail;
   }
 
+  export interface Lottery extends Base {
+    type: "lottery";
+    info: {
+      id: number;
+      award: GiftInfo;
+    };
+  }
+  export interface LotteryResult extends Base {
+    type: "lottery_result";
+    info: {
+      id: number;
+      award: GiftInfo;
+      result: UserInfo[];
+    };
+  }
+
+  export interface Redpacket extends Base {
+    type: "redpacket";
+    info: {
+      id: number;
+      gifts?: GiftInfo[];
+      value?: number;
+      currency?: string | number;
+    };
+  }
+  export interface RedpacketResult extends Base {
+    type: "redpacket_result";
+    info: {
+      id: number;
+      result: {
+        user: UserInfo;
+        gift?: GiftInfo;
+        value?: number;
+        currency?: string | number;
+      }[];
+    };
+  }
+
   export type All =
-    | Chat
+    | Comment
     | Gift
     | Interact
     | Membership
@@ -159,7 +197,11 @@ export namespace Message {
     | LiveEnd
     | LiveCut
     | LiveDetail
-    | LiveStats;
+    | LiveStats
+    | Lottery
+    | LotteryResult
+    | Redpacket
+    | RedpacketResult;
 }
 
 /** 用户信息 */
@@ -217,17 +259,19 @@ export interface GiftInfo {
   /** 总价值 */
   value: number;
   /** 平台货币 */
-  currency: string;
+  currency?: string | number;
   /** 礼物连击数 */
   combo?: string;
   /** 礼物连击id */
   comboId?: string;
   /** 人民币价值 */
-  cny?: number;
+  money?: number;
   /** 行为 */
   action?: string;
   /** 随机礼物信息 */
   blindGift?: GiftInfo;
   /** 图片信息 */
   image?: string;
+  /** 单位 */
+  unit?: string;
 }

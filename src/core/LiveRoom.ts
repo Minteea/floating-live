@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { RoomStatus } from "../enum";
+import { ConnectStatus, RoomStatus } from "../enums";
 import { RoomDetail, RoomInfo, RoomStatsInfo } from "../types";
 import { Message, MedalInfo, UserInfo } from "../types/message";
 
@@ -25,28 +25,26 @@ export abstract class LiveRoom extends EventEmitter implements RoomInfo {
   liveId?: string;
   /** 房间是否打开 */
   opened: boolean = false;
+  /** 是否连接上房间 */
+  connection: ConnectStatus = ConnectStatus.off;
   /** 房间是否可用 */
   abstract available: boolean;
-  /** 是否连接上房间 */
-  abstract connected: boolean;
   /** 打开连接 */
   abstract open(): void;
   /** 关闭连接 */
   abstract close(): void;
   /** 从服务器获取信息 */
   abstract getInfo(): Promise<void>;
-  /** 设置用户凭据 */
-  public setAuth?(auth: string): void;
   /** 销毁事件 */
-  protected onDestory?(): void;
+  protected onDestroy?(): void;
   /** 销毁 */
   public destroy() {
     this.close();
     this.removeAllListeners();
-    this.onDestory?.();
+    this.onDestroy?.();
   }
   // 发送消息
-  protected emitMsg(msg: Message.All) {
+  protected emitMessage(msg: Message.All) {
     // 其他消息 => 先更改状态再发送消息
     // 直播结束消息 => 先发送消息再更改状态
     switch (msg.type) {
@@ -68,15 +66,15 @@ export abstract class LiveRoom extends EventEmitter implements RoomInfo {
         break;
       case "live_end":
       case "live_cut":
-        this.emit("msg", msg);
         this.status = msg.status || RoomStatus.off;
         this.timestamp = msg.timestamp;
+        this.emit("message", msg);
         this.emit("status", msg.status || RoomStatus.off, {
           timestamp: msg.timestamp,
         });
         return;
     }
-    this.emit("msg", msg);
+    this.emit("message", msg);
   }
   // 发送源消息
   protected emitRaw(msg: any) {
@@ -94,7 +92,7 @@ export abstract class LiveRoom extends EventEmitter implements RoomInfo {
       liveId: this.liveId,
       available: this.available,
       opened: this.opened,
-      connected: this.connected,
+      connection: this.connection,
       key: this.key,
     };
   }

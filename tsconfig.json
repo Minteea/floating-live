@@ -1,18 +1,15 @@
 {
   "compilerOptions": {
     "target": "es2020",
-    "lib": ["es2020", "dom"],
     "module": "commonjs",
     "noImplicitAny": true,
     "declaration": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
     "strict": true,
-    "rootDir": ".",
+    "rootDir": "./src",
+    "outDir": "dist"
   },
-  "include": [
-    "src",
-    "plugin",
-  ],
-  "files": ["index.ts"]
+  "include": ["src"]
+  // "files": ["index.ts"]
 }

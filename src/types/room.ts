@@ -1,6 +1,17 @@
-import { RoomStatus } from "../enum";
+import { ConnectStatus, RoomStatus } from "../enums";
 import { UserInfo } from "./message";
 
+/** 房间配置 */
+export interface RoomConfig {
+  /** 添加后是否打开房间 */
+  open?: boolean;
+  /** 口令 */
+  tokens?: Record<string, number>;
+  /** 凭据 */
+  credentials?: string;
+}
+
+/** 房间信息 */
 export interface RoomInfo {
   /** 平台id */
   platform: string;
@@ -24,8 +35,8 @@ export interface RoomInfo {
   available: boolean;
   /** 房间监听是否打开 */
   opened: boolean;
-  /** 是否连接到房间 */
-  connected: boolean;
+  /** 房间连接状态 */
+  connection: ConnectStatus;
 }
 
 /** 房间展示信息 */
@@ -53,10 +64,8 @@ export interface RoomStatsInfo {
 export interface PlatformInfo {
   /** 平台名称 */
   name: string;
-  /** 平台id */
-  id: string;
   /** 平台vip信息 */
-  vip: {
+  vip?: {
     /** 平台vip对应id */
     id: string;
     /** 平台vip名称 */
@@ -65,7 +74,7 @@ export interface PlatformInfo {
     level?: string[];
   };
   /** 粉丝vip信息 */
-  membership: {
+  membership?: {
     /** 粉丝vip对应id */
     id: string;
     /** 粉丝vip名称 */
@@ -74,19 +83,21 @@ export interface PlatformInfo {
     level?: string[];
   };
   /** 礼物信息 */
-  gift: {
+  gift?: {
+    /** 默认送出礼物行为 */
     action: string;
   };
+  /** 统计信息 */
+  stats?: Record<string, string>;
   /** 货币信息 */
-  currency: Record<
-    string,
-    {
+  currency?: {
+    [key: string | number]: {
       /** 货币名称 */
       name: string;
       /** 1货币面值等值value (1面值/1数值) */
-      face: number;
-      /** 1人民币等值value (1.00CNY/1数值) (若为0则为免费货币) */
-      cny?: number;
-    }
-  >;
+      ratio: number;
+      /** 1单位消费金额等值value (1.00CNY/1数值) (若为0则为免费货币) */
+      money?: number;
+    };
+  };
 }

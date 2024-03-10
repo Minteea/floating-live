@@ -4,8 +4,7 @@ test/
 package-lock.json
 
 # 编译生成文件
-*.js
-*.d.ts
+dist/
 !demo/*.js
 
 *.tgz
