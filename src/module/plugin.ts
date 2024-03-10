@@ -16,7 +16,7 @@ export class ModPlugin {
   }
   /** 注册插件 */
   register(pluginFunc: PluginConstructor, options?: any) {
-    const name = pluginFunc.name;
+    const name = pluginFunc.pluginName;
     if (!name) {
       this.main.throw(
         Object.assign(new TypeError("缺少插件id"), {
@@ -60,5 +60,9 @@ export class ModPlugin {
     this.list.delete(name);
     // 移除插件注册
     this.main.emit("plugin:remove", name);
+  }
+  /** 获取插件实例 */
+  get(name: string) {
+    return this.list.get(name);
   }
 }
