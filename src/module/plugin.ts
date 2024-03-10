@@ -15,7 +15,7 @@ export class ModPlugin {
     return this.current;
   }
   /** 注册插件 */
-  register(pluginFunc: PluginConstructor, config?: any) {
+  register(pluginFunc: PluginConstructor, options?: any) {
     const name = pluginFunc.name;
     if (!name) {
       this.main.throw(
@@ -36,7 +36,7 @@ export class ModPlugin {
       return;
     }
     // 执行插件函数
-    const plugin = new pluginFunc(this.main, config);
+    const plugin = new pluginFunc(this.main, options);
     this.list.set(name, plugin);
     this.main.emit("plugin:add", name);
     this.current = null;

@@ -105,15 +105,13 @@ export class ModRoom {
   public add(
     platform: string,
     id: number,
-    config?: boolean | Record<string, any>
+    options?: boolean | Record<string, any>
   ) {
-    if (typeof config == "boolean") {
-      config = { open: config };
-    }
-    const ctx = { platform, id, options: config || {} };
+    const opt = typeof options == "boolean" ? { open: options } : options;
+    const ctx = { platform, id, options: opt || {} };
     this.main.hook.call("add", ctx).then((res) => {
       if (!res) return;
-      const room = this.main.call(`${platform}.room.create`, id, config);
+      const room = this.main.call(`${platform}.room.create`, id, opt);
       room && this.addRoom(room);
     });
   }

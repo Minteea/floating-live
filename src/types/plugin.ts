@@ -4,7 +4,7 @@ import { FloatingLive } from "../live";
 export type FloatingLivePlugin<C extends object = object> = () => {
   /** 插件名称 */
   name: string;
-  register: (ctx: FloatingLive, config?: C) => void;
+  register: (ctx: FloatingLive, options?: C) => void;
   destroy?: (ctx: FloatingLive) => void;
 };
 
@@ -14,5 +14,5 @@ export interface IPlugin {
 
 export interface PluginConstructor {
   pluginName: string;
-  new (ctx: FloatingLive, config: any): IPlugin;
+  new (ctx: FloatingLive, options: any): IPlugin;
 }

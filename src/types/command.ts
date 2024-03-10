@@ -4,7 +4,7 @@ export interface FloatingCommandMap {
   add: (
     platform: string,
     id: number,
-    config?: boolean | Record<string, any>
+    options?: boolean | Record<string, any>
   ) => void;
   remove: (key: string) => void;
   open: (key: string) => void;
@@ -12,6 +12,6 @@ export interface FloatingCommandMap {
   update: (key: string) => void;
   [name: `${string}.room.create`]: (
     id: string | number,
-    config?: Record<string, any>
+    options?: Record<string, any>
   ) => LiveRoom;
 }
