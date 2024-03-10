@@ -52,6 +52,6 @@ export class ModHook {
         return false;
       }
     }
-    return false;
+    return true;
   }
 }
