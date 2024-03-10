@@ -110,8 +110,12 @@ export class ModRoom {
     if (typeof config == "boolean") {
       config = { open: config };
     }
-    const room = this.main.call(`${platform}.room.create`, id, config);
-    room && this.addRoom(room);
+    const ctx = { platform, id, options: config || {} };
+    this.main.hook.call("add", ctx).then((res) => {
+      if (!res) return;
+      const room = this.main.call(`${platform}.room.create`, id, config);
+      room && this.addRoom(room);
+    });
   }
   /** 移除房间 */
   public remove(roomKey: string) {
