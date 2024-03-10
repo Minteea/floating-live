@@ -36,5 +36,7 @@ export interface FloatingEventMap {
   "value:change": (name: string, value: any) => void;
   [name: `change:${string}`]: (value: any) => void;
 
+  event: (eventName: string, ...args: any[]) => void;
+
   error: (err: Error) => void;
 }

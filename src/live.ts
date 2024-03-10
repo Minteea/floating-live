@@ -2,7 +2,7 @@ import { EventEmitter } from "events";
 import { ModPlugin } from "./module/plugin";
 import { ModRoom } from "./module/room";
 import { ModManifest } from "./module/manifest";
-import {ModCommand} from "./module/command";
+import { ModCommand } from "./module/command";
 import { ModValue } from "./module/value";
 import { ModHook } from "./module/hook";
 import { FloatingEventMap } from "./types/events";
@@ -50,7 +50,9 @@ export class FloatingLive extends EventEmitter {
     eventName: T,
     ...args: Parameters<FloatingEventMap[T]>
   ) {
-    return super.emit(eventName, ...args);
+    const emit = super.emit(eventName, ...args);
+    super.emit("event", eventName, ...args);
+    return emit;
   }
 
   throw(err: Error) {
