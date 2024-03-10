@@ -35,6 +35,11 @@ export class ModCommand {
     return this.list.get(name)?.(...args);
   }
 
+  /** 检测命令是否存在 */
+  has<T extends keyof FloatingCommandMap>(name: T) {
+    return this.list.has(name);
+  }
+
   /** 获取快照 */
   getSnapshot() {
     return [...this.list].map(([key]) => key);

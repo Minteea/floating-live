@@ -259,7 +259,7 @@ export interface GiftInfo {
   /** 总价值 */
   value: number;
   /** 平台货币 */
-  currency: string;
+  currency?: string | number;
   /** 礼物连击数 */
   combo?: string;
   /** 礼物连击id */
