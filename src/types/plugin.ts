@@ -9,6 +9,7 @@ export type FloatingLivePlugin<C extends object = object> = () => {
 };
 
 export interface IPlugin {
+  [key: string]: any;
   destroy?(): void;
 }
 

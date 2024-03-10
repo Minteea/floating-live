@@ -17,10 +17,10 @@ GUI版本：[Minteea/floating-live-gui](https://github.com/Minteea/floating-live
 npm install floating-live
 ```
 ``` javascript
-// 导入FloatingLive
+// 导入FloatingLive本体
 const { FloatingLive } = require("floating-live")
 // 导入bilibili房间生成插件
-const bilibili = require("@floating-live/bilibili/plugin")   
+const bilibili = require("@floating-live/bilibili")   
 
 // 创建一个FloatingLive实例
 const live = new FloatingLive()
