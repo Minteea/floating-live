@@ -9,31 +9,36 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.js"
+      "require": "./dist/index.js",
+      "import": "./esm/index.js"
     },
     "./core": {
       "types": "./dist/core/index.d.ts",
-      "require": "./dist/core/index.js"
+      "require": "./dist/core/index.js",
+      "import": "./esm/core/index.js"
     },
     "./types": {
       "types": "./dist/types/index.d.ts",
-      "require": "./dist/types/index.js"
+      "require": "./dist/types/index.js",
+      "import": "./esm/types/index.js"
     },
     "./enums": {
       "types": "./dist/enums.d.ts",
-      "require": "./dist/enums.js"
+      "require": "./dist/enums.js",
+      "import": "./esm/enums.js"
     },
     "./utils": {
       "types": "./dist/utils.d.ts",
-      "require": "./dist/utils.js"
+      "require": "./dist/utils.js",
+      "import": "./esm/utils.js"
     }
   },
   "scripts": {
     "tsc": "tsc -b",
-    "clear": "rimraf dist",
+    "clear": "rimraf dist esm",
     "test": "npm run clear && ts-node demo/demo.ts",
     "build-test": "npm run build && node demo/demo.js",
-    "build": "npm run clear && npm run tsc",
+    "build": "npm run clear && tsc -b && tsc --project tsconfig.esm.json",
     "prepack": "npm run build",
     "postpack": "npm run clear"
   },

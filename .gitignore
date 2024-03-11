@@ -6,6 +6,7 @@ yarn.lock
 
 # 编译生成文件
 dist/
+esm/
 !demo/*.js
 
 *.tgz
