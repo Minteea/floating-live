@@ -111,7 +111,7 @@ export class ModRoom {
     if (!res) {
       this.main.throw({ message: "无法添加房间", id: "room:add_fail" });
     }
-    const room = this.main.call(`${platform}.room.create`, id, opt);
+    const room = await this.main.call(`${platform}.room.create`, id, opt);
     if (!room) {
       this.main.throw({ message: "无法创建房间", id: "room:create_fail" });
     } else {

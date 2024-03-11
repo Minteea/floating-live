@@ -14,6 +14,6 @@ export interface FloatingCommandMap {
   [name: `${string}.room.create`]: (
     id: string | number,
     options?: Record<string, any>
-  ) => LiveRoom;
-  [name: `${string}.room.info`]: (id: string | number) => RoomInfo;
+  ) => Promise<LiveRoom> | LiveRoom;
+  [name: `${string}.room.info`]: (id: string | number) => Promise<RoomInfo>;
 }
