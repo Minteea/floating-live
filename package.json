@@ -34,7 +34,8 @@
     "test": "npm run clear && ts-node demo/demo.ts",
     "build-test": "npm run build && node demo/demo.js",
     "build": "npm run clear && npm run tsc",
-    "prepare": "npm run build"
+    "prepack": "npm run build",
+    "postpack": "npm run clear"
   },
   "devDependencies": {
     "rimraf": "^3.0.2",

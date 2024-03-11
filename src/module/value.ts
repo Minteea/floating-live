@@ -14,7 +14,10 @@ export class ModValue {
     this.main = main;
   }
   /** 注册值 */
-  register<T>(name: string, config: ValueConfig<T>) {
+  register<T extends keyof FloatingValueMap>(
+    name: T,
+    config: ValueConfig<FloatingValueMap[T]>
+  ) {
     this.list.set(name, config);
     this.main.emit("value:add", name);
   }
@@ -24,11 +27,11 @@ export class ModValue {
     this.main.emit("value:remove", name);
   }
   /** 获取值 */
-  get(name: string) {
+  get<T extends keyof FloatingValueMap>(name: T) {
     return this.list.get(name)?.get();
   }
   /** 设置值 */
-  set(name: string, value: any) {
+  set<T extends keyof FloatingValueMap>(name: T, value: FloatingValueMap[T]) {
     const valueConfig = this.list.get(name);
     if (valueConfig?.set) {
       valueConfig?.set(value);

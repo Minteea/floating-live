@@ -36,7 +36,7 @@ export class ModRoom {
     // 添加监听事件
     // 直播消息
     room.on("message", (data: Message.All) => {
-      this.main.hook.call("message", data).then((res) => {
+      this.main.hook.call("message", { message: data }).then((res) => {
         res && this.main.emit("live:message", data);
       });
     });
@@ -109,7 +109,7 @@ export class ModRoom {
   ) {
     const opt = typeof options == "boolean" ? { open: options } : options;
     const ctx = { platform, id, options: opt || {} };
-    this.main.hook.call("add", ctx).then((res) => {
+    this.main.hook.call("room.add", ctx).then((res) => {
       if (!res) return;
       const room = this.main.call(`${platform}.room.create`, id, opt);
       room && this.addRoom(room);

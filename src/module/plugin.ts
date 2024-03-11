@@ -2,17 +2,12 @@ import { FloatingLive } from "../live";
 import { PluginConstructor } from "../types/plugin";
 
 export class ModPlugin {
-  private current: string | null = null;
   /** 插件列表 */
   private list = new Map<string, { [key: string]: any }>();
   protected readonly main: FloatingLive;
 
   constructor(main: FloatingLive) {
     this.main = main;
-  }
-  /** 获取当前安装插件 */
-  get currentPlugin() {
-    return this.current;
   }
   /** 注册插件 */
   register(pluginFunc: PluginConstructor, options?: any) {
@@ -35,11 +30,17 @@ export class ModPlugin {
       );
       return;
     }
-    // 执行插件函数
-    const plugin = new pluginFunc(this.main, options);
-    this.list.set(name, plugin);
-    this.main.emit("plugin:add", name);
-    this.current = null;
+    return this.main.hook
+      .call("plugin.register", { name, options })
+      .then((res) => {
+        if (!res) return;
+        // 执行插件函数
+        const plugin = new pluginFunc(this.main, options);
+        this.list.set(name, plugin);
+        // 调用插件的register钩子
+        plugin.register?.(this.main, options);
+        this.main.emit("plugin:add", name);
+      });
   }
   /** 移除插件 */
   unregister(name: string) {
@@ -54,7 +55,7 @@ export class ModPlugin {
       );
       return;
     }
-    // 获取该插件的销毁函数
+    // 调用该插件的destroy钩子
     plugin.destroy?.();
     // 从列表中移除插件
     this.list.delete(name);
