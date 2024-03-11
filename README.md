@@ -1,9 +1,9 @@
 # Floating Live
 一个用于处理和保存直播弹幕的Node.js小工具，开箱即用。
 
-本体无弹幕获取功能，需要配合[floating-live-danmaku](https://github.com/Minteea/floating-live-danmaku)中的弹幕获取插件使用。
+本体无弹幕获取功能，需要配合[floating-live-plugins](https://github.com/Minteea/floating-live-plugins)中的插件使用。
 
-目前支持bilibili和AcFun的直播弹幕，不同平台的弹幕会转换为同一种格式便于保存。
+目前插件库支持bilibili和AcFun的直播弹幕，不同平台的弹幕会转换为同一种格式便于保存。
 
 项目仍在开发中，功能尚未完善，目前除了记录保存直播弹幕外暂时没有别的用处啦，敬请期待。
 

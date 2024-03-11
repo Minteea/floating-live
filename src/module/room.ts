@@ -24,12 +24,10 @@ export class ModRoom {
   public addRoom(room: LiveRoom, open?: boolean) {
     let key = room.key;
     if (this.list.has(key)) {
-      this.main.throw(
-        Object.assign(new Error("房间已存在"), {
-          from: "room",
-          signal: "room_exist",
-        })
-      );
+      this.main.throw({
+        message: "房间已存在",
+        id: "room:add_exist",
+      });
       return;
     }
     this.list.set(key, room);
@@ -102,29 +100,32 @@ export class ModRoom {
     this.main.emit("room:add", key, room.info);
   }
   /** 添加房间 */
-  public add(
+  public async add(
     platform: string,
     id: number,
     options?: boolean | Record<string, any>
   ) {
-    const opt = typeof options == "boolean" ? { open: options } : options;
-    const ctx = { platform, id, options: opt || {} };
-    this.main.hook.call("room.add", ctx).then((res) => {
-      if (!res) return;
-      const room = this.main.call(`${platform}.room.create`, id, opt);
-      room && this.addRoom(room);
-    });
+    const opt = typeof options == "boolean" ? { open: options } : options || {};
+    const ctx = { platform, id, options: opt };
+    const res = await this.main.hook.call("room.add", ctx);
+    if (!res) {
+      this.main.throw({ message: "无法添加房间", id: "room:add_fail" });
+    }
+    const room = this.main.call(`${platform}.room.create`, id, opt);
+    if (!room) {
+      this.main.throw({ message: "无法创建房间", id: "room:create_fail" });
+    } else {
+      this.addRoom(room);
+    }
   }
   /** 移除房间 */
   public remove(roomKey: string) {
     let room = this.list.get(roomKey);
     if (!room) {
-      this.main.throw(
-        Object.assign(new Error("房间不存在"), {
-          from: "room",
-          signal: "room_unexist",
-        })
-      );
+      this.main.throw({
+        message: "房间不存在",
+        id: "room:remove_unexist",
+      });
     }
     this.list.delete(roomKey); // 从表中删除房间
     room?.removeAllListeners(); // 移除房间监听实例

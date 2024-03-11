@@ -32,7 +32,15 @@ export class ModCommand {
     name: T,
     ...args: Parameters<FloatingCommandMap[T]>
   ) {
-    return this.list.get(name)?.(...args);
+    const command = this.list.get(name);
+    if (!command) {
+      this.main.throw({
+        message: "命令不存在",
+        id: "command:call_unexist",
+      });
+    } else {
+      return command(...args);
+    }
   }
 
   /** 检测命令是否存在 */

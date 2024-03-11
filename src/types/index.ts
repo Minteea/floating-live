@@ -6,3 +6,4 @@ export * from "./events";
 export * from "./manifest";
 export * from "./hook";
 export * from "./value";
+export * from "./error";

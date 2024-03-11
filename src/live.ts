@@ -6,7 +6,7 @@ import { ModCommand } from "./module/command";
 import { ModValue } from "./module/value";
 import { ModHook } from "./module/hook";
 import { FloatingEventMap } from "./types/events";
-import { FloatingCommandMap } from "./types";
+import { ErrorOptions, FloatingCommandMap } from "./types";
 
 export class FloatingLive extends EventEmitter {
   /** 房间控制模块 */
@@ -55,8 +55,15 @@ export class FloatingLive extends EventEmitter {
     return emit;
   }
 
-  throw(err: Error) {
-    this.emit("error", err);
+  /** 抛出错误 */
+  throw(err: Error, options?: ErrorOptions): void;
+  throw(options: ErrorOptions): void;
+  throw(err: Error | ErrorOptions, options?: ErrorOptions): void {
+    if (err instanceof Error) {
+      throw Object.assign(err, options);
+    } else {
+      throw Object.assign(new Error(), err);
+    }
   }
 
   getSnapshot() {
@@ -65,6 +72,7 @@ export class FloatingLive extends EventEmitter {
       value: this.value.getSnapshot(),
       manifest: this.manifest.getSnapshot(),
       command: this.command.getSnapshot(),
+      hook: this.value.getSnapshot(),
     };
   }
 }

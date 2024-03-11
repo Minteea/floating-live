@@ -1,4 +1,5 @@
 import { LiveRoom } from "../core";
+import { RoomInfo } from "./room";
 
 export interface FloatingCommandMap {
   add: (
@@ -14,4 +15,5 @@ export interface FloatingCommandMap {
     id: string | number,
     options?: Record<string, any>
   ) => LiveRoom;
+  [name: `${string}.room.info`]: (id: string | number) => RoomInfo;
 }
