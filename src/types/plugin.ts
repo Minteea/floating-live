@@ -9,8 +9,9 @@ export type FloatingLivePlugin<C extends object = object> = () => {
 };
 
 export interface IPlugin {
-  register?(ctx: FloatingLive, options: any): void;
-  destroy?(): void;
+  register?(ctx: FloatingLive, options: any): void | Promise<void>;
+  destroy?(): void | Promise<void>;
+  [name: string]: any;
 }
 
 export interface PluginConstructor {
