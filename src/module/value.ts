@@ -12,6 +12,9 @@ export class ModValue {
 
   constructor(main: FloatingLive) {
     this.main = main;
+    const { command } = main;
+    command.register("get", this.get.bind(this));
+    command.register("set", this.set.bind(this));
   }
   /** 注册值 */
   register<T extends keyof FloatingValueMap>(
