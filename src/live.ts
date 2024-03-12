@@ -72,7 +72,8 @@ export class FloatingLive extends EventEmitter {
       value: this.value.getSnapshot(),
       manifest: this.manifest.getSnapshot(),
       command: this.command.getSnapshot(),
-      hook: this.value.getSnapshot(),
+      hook: this.hook.getSnapshot(),
+      plugin: this.plugin.getSnapshot(),
     };
   }
 }

@@ -23,6 +23,7 @@ export interface FloatingEventMap {
   "room:close": (key: string, info: RoomInfo) => void;
   "room:add": (key: string, info: RoomInfo) => void;
   "room:remove": (key: string) => void;
+  "room:move": (key: string, position: number) => void;
 
   "plugin:add": (name: string) => void;
   "plugin:remove": (name: string) => void;
@@ -30,6 +31,8 @@ export interface FloatingEventMap {
   "command:remove": (name: string) => void;
   "manifest:add": (name: string, id: string, value: any) => void;
   "manifest:remove": (name: string, id: string) => void;
+  "hook:add": (name: string) => void;
+  "hook:remove": (name: string) => void;
 
   "value:add": (name: string) => void;
   "value:remove": (name: string) => void;

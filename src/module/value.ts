@@ -23,11 +23,13 @@ export class ModValue {
   ) {
     this.list.set(name, config);
     this.main.emit("value:add", name);
+    this.main.emit("value:change", name, config.get());
   }
   /** 取消注册 */
   unregister(name: string): void {
     this.list.delete(name);
     this.main.emit("value:remove", name);
+    this.main.emit("value:change", name, undefined);
   }
   /** 获取值 */
   get<T extends keyof FloatingValueMap>(name: T) {
@@ -43,13 +45,8 @@ export class ModValue {
       return false;
     }
   }
-  /** 获取注册的所有值 */
-  getSnapshot() {
-    const map: Record<string, any> = {};
-    this.list.forEach((config, name) => {
-      map[name] = config.get();
-    });
-    return map;
+  has(name: string) {
+    return this.list.has(name);
   }
 
   emit<T extends keyof FloatingValueMap>(name: T, value: FloatingValueMap[T]) {
@@ -67,5 +64,14 @@ export class ModValue {
     listener: (value: FloatingValueMap[T]) => void
   ) {
     this.main.off(`change:${name}`, listener);
+  }
+
+  /** 获取注册的所有值 */
+  getSnapshot() {
+    const map: Record<string, any> = {};
+    this.list.forEach((config, name) => {
+      map[name] = config.get();
+    });
+    return map;
   }
 }

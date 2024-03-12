@@ -17,14 +17,17 @@ export class ModPlugin {
     const name = pluginFunc.pluginName;
     if (!name) {
       this.main.throw({
-        message: "缺少插件id",
+        message: "添加插件失败",
+        reason: "缺少插件id",
         id: "plugin:register_id_missing",
       });
     }
     if (this.list.has(name)) {
       this.main.throw({
-        message: "已存在相同id的插件",
+        message: `添加插件失败: ${name}`,
+        reason: "已存在相同id的插件",
         id: "plugin:register_id_duplicate",
+        pluginName: name,
       });
     }
     return await this.main.hook
@@ -33,11 +36,22 @@ export class ModPlugin {
         if (!res) return;
         // 执行插件函数
         const plugin = new pluginFunc(this.main, options);
-        this.list.set(name, plugin);
         // 调用插件的register钩子
         await plugin.register?.(this.main, options);
+        this.list.set(name, plugin);
         this.main.emit("plugin:add", name);
         return plugin;
+      })
+      .catch((err) => {
+        this.main.throw({
+          message: `添加插件失败: ${name}`,
+          reason:
+            err?.message && err?.reason
+              ? `${err.message}: ${err.reason}`
+              : err?.message || err?.reason,
+          id: "plugin:register_fail",
+          pluginName: name,
+        });
       });
   }
   /** 移除插件 */
@@ -46,8 +60,10 @@ export class ModPlugin {
     // 检测插件是否存在
     if (!plugin) {
       this.main.throw({
-        message: "插件不存在",
+        message: `移除插件失败: ${name}`,
+        reason: "插件不存在",
         id: "plugin:unregister_unexist",
+        pluginName: name,
       });
     } else {
       // 调用该插件的destroy钩子
@@ -61,5 +77,11 @@ export class ModPlugin {
   /** 获取插件实例 */
   get(name: string) {
     return this.list.get(name);
+  }
+  has(name: string) {
+    return this.list.has(name);
+  }
+  getSnapshot() {
+    return [...this.list.keys()];
   }
 }

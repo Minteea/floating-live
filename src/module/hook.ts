@@ -54,4 +54,11 @@ export class ModHook {
     }
     return true;
   }
+  getSnapshot() {
+    const map: Record<string, number> = {};
+    this.list.forEach((fnList, name) => {
+      map[name] = fnList.length;
+    });
+    return map;
+  }
 }

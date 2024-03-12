@@ -135,6 +135,9 @@ export class ModRoom {
   public get(roomKey: string) {
     return this.list.get(roomKey);
   }
+  public has(roomKey: string) {
+    return this.list.has(roomKey);
+  }
   /** 获取房间信息 */
   public info(roomKey: string) {
     let room = this.list.get(roomKey);
@@ -167,9 +170,10 @@ export class ModRoom {
     const [item] = arr.splice(index, 1);
     arr.splice(position, 0, item);
     this.list = new Map(arr);
+    this.main.emit("room:move", roomKey, position);
   }
   /** 获取快照 */
   getSnapshot() {
-    return [...this.list].map(([key, room]) => room.info);
+    return [...this.list.values()];
   }
 }
