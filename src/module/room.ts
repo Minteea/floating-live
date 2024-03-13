@@ -174,6 +174,6 @@ export class ModRoom {
   }
   /** 获取快照 */
   getSnapshot() {
-    return [...this.list.values()];
+    return [...this.list.values()].map((room) => room.info);
   }
 }
