@@ -30,14 +30,15 @@ export class ModPlugin {
         pluginName: name,
       });
     }
+    const ctx = { name, options };
     return await this.main.hook
-      .call("plugin.register", { name, options })
+      .call("plugin.register", ctx)
       .then(async (res) => {
         if (!res) return;
         // 执行插件函数
-        const plugin = new pluginFunc(this.main, options);
+        const plugin = new pluginFunc(this.main, ctx.options || {});
         // 调用插件的register钩子
-        await plugin.register?.(this.main, options);
+        await plugin.register?.(this.main, ctx.options || {});
         this.list.set(name, plugin);
         this.main.emit("plugin:add", name);
         return plugin;

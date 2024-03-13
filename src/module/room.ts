@@ -7,7 +7,7 @@ import { RoomDetail, RoomInfo, RoomStatsInfo } from "../types";
 
 /** 直播间监听实例控制器 */
 export class ModRoom {
-  private list = new Map<string, LiveRoom>();
+  private map = new Map<string, LiveRoom>();
   readonly main: FloatingLive;
 
   constructor(main: FloatingLive) {
@@ -23,19 +23,20 @@ export class ModRoom {
   /** 添加房间监听实例 */
   public addRoom(room: LiveRoom, open?: boolean) {
     let key = room.key;
-    if (this.list.has(key)) {
+    if (this.map.has(key)) {
       this.main.throw({
         message: "房间已存在",
         id: "room:add_exist",
       });
       return;
     }
-    this.list.set(key, room);
+    this.map.set(key, room);
     // 添加监听事件
     // 直播消息
     room.on("message", (data: Message.All) => {
+      const ctx = { message: data };
       this.main.hook.call("message", { message: data }).then((res) => {
-        res && this.main.emit("live:message", data);
+        res && this.main.emit("live:message", ctx.message);
       });
     });
     // 直播消息源数据
@@ -119,61 +120,65 @@ export class ModRoom {
     }
   }
   /** 移除房间 */
-  public remove(roomKey: string) {
-    let room = this.list.get(roomKey);
+  public remove(key: string) {
+    let room = this.map.get(key);
     if (!room) {
       this.main.throw({
         message: "房间不存在",
         id: "room:remove_unexist",
       });
     }
-    this.list.delete(roomKey); // 从表中删除房间
+    this.map.delete(key); // 从表中删除房间
     room?.removeAllListeners(); // 移除房间监听实例
-    this.main.emit("room:remove", roomKey);
+    this.main.emit("room:remove", key);
   }
   /** 获取房间 */
-  public get(roomKey: string) {
-    return this.list.get(roomKey);
+  public get(key: string) {
+    return this.map.get(key);
   }
-  public has(roomKey: string) {
-    return this.list.has(roomKey);
+  public has(key: string) {
+    return this.map.has(key);
   }
   /** 获取房间信息 */
-  public info(roomKey: string) {
-    let room = this.list.get(roomKey);
+  public info(key: string) {
+    let room = this.map.get(key);
     return room ? room.info : undefined;
   }
   /** 更新房间信息 */
-  public update(roomKey: string) {
-    let room = this.list.get(roomKey);
+  public update(key: string) {
+    let room = this.map.get(key);
     room && room.getInfo();
   }
-  /** 获取roomKey列表 */
+  /** 获取房间key列表 */
   get keys(): Array<string> {
-    return [...this.list.keys()];
+    return [...this.map.keys()];
+  }
+  /** 获取房间列表 */
+  getList(): Array<LiveRoom> {
+    return [...this.map.values()];
   }
   /** 打开房间连接 */
-  open(roomKey: string) {
-    let room = this.list.get(roomKey);
+  open(key: string) {
+    let room = this.map.get(key);
     room?.available && !room.opened && room.open();
   }
   /** 关闭房间连接 */
-  close(roomKey: string) {
-    let room = this.list.get(roomKey);
+  close(key: string) {
+    let room = this.map.get(key);
     room?.opened && room.close();
   }
   /** 更改某个房间的顺序 */
-  move(roomKey: string, position: number) {
-    const arr = [...this.list];
-    const index = arr.findIndex(([key]) => key == roomKey);
+  move(key: string, position: number) {
+    const arr = [...this.map];
+    const index = arr.findIndex(([k]) => k == key);
     if (index == -1) return;
     const [item] = arr.splice(index, 1);
     arr.splice(position, 0, item);
-    this.list = new Map(arr);
-    this.main.emit("room:move", roomKey, position);
+    this.map = new Map(arr);
+    this.main.emit("room:move", key, position);
   }
   /** 获取快照 */
   getSnapshot() {
-    return [...this.list.values()].map((room) => room.info);
+    return this.getList().map((room) => room.info);
   }
 }
