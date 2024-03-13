@@ -29,7 +29,6 @@ export class ModValue {
   unregister(name: string): void {
     this.list.delete(name);
     this.main.emit("value:remove", name);
-    this.main.emit("value:change", name, undefined);
   }
   /** 获取值 */
   get<T extends keyof FloatingValueMap>(name: T) {
