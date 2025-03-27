@@ -1,53 +1,22 @@
 {
   "name": "floating-live",
   "version": "0.15.11",
-  "type": "commonjs",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Minteea",
   "license": "MIT",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": "./esm/index.js"
-    },
-    "./core": {
-      "types": "./dist/core/index.d.ts",
-      "require": "./dist/core/index.js",
-      "import": "./esm/core/index.js"
-    },
-    "./types": {
-      "types": "./dist/types/index.d.ts",
-      "require": "./dist/types/index.js",
-      "import": "./esm/types/index.js"
-    },
-    "./enums": {
-      "types": "./dist/enums.d.ts",
-      "require": "./dist/enums.js",
-      "import": "./esm/enums.js"
-    },
-    "./utils": {
-      "types": "./dist/utils.d.ts",
-      "require": "./dist/utils.js",
-      "import": "./esm/utils.js"
-    }
+  "devDependencies": {
+    "@types/node": "^22.8.2",
+    "typescript": "^5.6.3",
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.9.1"
   },
   "scripts": {
     "tsc": "tsc -b",
-    "clear": "rimraf dist esm",
-    "test": "npm run clear && ts-node demo/demo.ts",
-    "build-test": "npm run build && node demo/demo.js",
-    "build": "npm run clear && tsc -b && tsc --project tsconfig.esm.json",
+    "clear": "rimraf dist",
+    "build": "npm run clear && tsc -b",
     "prepack": "npm run build",
     "postpack": "npm run clear"
-  },
-  "devDependencies": {
-    "rimraf": "^3.0.2",
-    "ts-node": "^10.9.1",
-    "typescript": "^4.8.4"
-  },
-  "peerDependencies": {
-    "events": "^3.3.0"
   }
 }
