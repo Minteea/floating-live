@@ -86,7 +86,7 @@ declare module "../.." {
   }
 }
 
-export default class Room extends BasePlugin {
+export class Room extends BasePlugin {
   static pluginName = "room";
   private map = new Map<string, LiveRoom>();
 
@@ -277,3 +277,5 @@ export default class Room extends BasePlugin {
     return this.getList().map((room) => room.toData());
   }
 }
+
+export default Room;

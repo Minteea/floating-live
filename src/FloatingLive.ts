@@ -1,5 +1,5 @@
 import { App } from "./app";
-import Room from "./plugins/room";
+import { Room } from "./plugins/room";
 
 export class FloatingLive extends App {
   room: Room;
