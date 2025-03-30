@@ -107,10 +107,10 @@ export class CommonPluginContext implements PluginContext {
     return this.#app.getPluginExposes(pluginName);
   }
 
-  whenRegister<T>(
+  whenRegister(
     pluginName: string,
     callback: (exposes: any) => (() => void) | undefined
-  ): (() => void) | void {
+  ): void {
     let registered = this.hasPlugin(pluginName);
     let whenUnregistered: (() => void) | undefined;
     if (registered) {

@@ -20,7 +20,11 @@ import {
   HookUseOptions,
 } from "./hook";
 import { HookManager } from "./hook/manager";
-import { PluginContext, PluginInitOptions } from "./plugin";
+import {
+  AppPluginExposesMap,
+  PluginContext,
+  PluginInitOptions,
+} from "./plugin";
 import { PluginManager } from "./plugin/manager";
 import { CustomEventEmitter } from "./utils/EventEmitter";
 import { AppValueMap, ValueOptions } from "./value";
@@ -109,6 +113,14 @@ export class App extends CustomEventEmitter implements PluginContext {
     this.pluginManager.getPlugin(pluginName);
   }
 
+  whenRegister<K extends keyof AppPluginExposesMap>(
+    pluginName: K,
+    callback: (exposes: AppPluginExposesMap[K]) => (() => void) | undefined
+  ): void;
+  whenRegister(
+    pluginName: string,
+    callback: () => (() => void) | undefined
+  ): void;
   whenRegister(
     pluginName: string,
     callback: (exposes: any) => (() => void) | undefined
