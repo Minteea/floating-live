@@ -1,3 +1,5 @@
+import { EnumValue } from "../utils/types";
+
 /** 用户信息 */
 export interface UserInfo {
   /** 用户名 */
@@ -70,30 +72,32 @@ export interface GiftInfo {
   unit?: string;
 }
 
-/** 图片大小 */
-export enum ImageSize {
+export const ImageSize = {
   /** 自定义大小 */
-  custom = 0,
+  custom: 0,
   /** 小表情(文字行高) */
-  small = 1,
+  small: 1,
   /** 大表情 */
-  large = 2,
-}
+  large: 2,
+} as const;
+export type ImageSize = EnumValue<typeof ImageSize>;
 
 /** 弹幕模式 */
-export enum DanmakuMode {
-  left = 1,
-  bottom = 4,
-  top = 5,
-  right = 6,
-}
+export const DanmakuMode = {
+  left: 1,
+  bottom: 4,
+  top: 5,
+  right: 6,
+} as const;
+export type DanmakuMode = EnumValue<typeof DanmakuMode>;
 
 /** 用户类型 */
-export enum UserType {
+export const UserType = {
   /** 普通观众 */
-  normal = 0,
+  normal: 0,
   /** 房管 */
-  admin = 1,
+  admin: 1,
   /** 主播 */
-  anchor = 2,
-}
+  anchor: 2,
+} as const;
+export type UserType = EnumValue<typeof UserType>;

@@ -1,4 +1,5 @@
 import { CustomEventEmitter } from "../utils/EventEmitter";
+import { EnumValue } from "../utils/types";
 import { LiveMessage } from "./message";
 import { UserInfo } from "./messageInfo";
 
@@ -193,32 +194,34 @@ export interface LiveRoomStatsInfo {
 }
 
 /** 直播间状态 */
-export enum LiveRoomStatus {
+export const LiveRoomStatus = {
   /** 未开播 */
-  off = 0,
+  off: 0,
   /** 正在直播 */
-  live = 1,
+  live: 1,
   /** 正在轮播 */
-  round = 2,
+  round: 2,
   /** 被封禁 */
-  banned = -1,
+  banned: -1,
   /** 已上锁 */
-  locked = -2,
-}
+  locked: -2,
+} as const;
+export type LiveRoomStatus = EnumValue<typeof LiveRoomStatus>;
 
 /** 直播间状态 */
-export enum LiveConnectionStatus {
+export const LiveConnectionStatus = {
   /** 未连接 */
-  off = 0,
+  off: 0,
   /** 连接中 */
-  connecting = 1,
+  connecting: 1,
   /** 连接到服务器 */
-  connected = 2,
+  connected: 2,
   /** 连接到房间 */
-  entered = 3,
+  entered: 3,
   /** 连接失败或断开 */
-  disconnected = -1,
-}
+  disconnected: -1,
+};
+export type LiveConnectionStatus = EnumValue<typeof LiveConnectionStatus>;
 
 export interface LiveRoomEventMap {
   status: {

@@ -4,7 +4,7 @@
     "module": "ESNext",
     "noImplicitAny": true,
     "declaration": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "strict": true,
     "rootDir": "./src",
