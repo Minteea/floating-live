@@ -1,3 +1,4 @@
+import { App } from "../../app";
 import { AppError } from "../../error";
 import { LiveMessage } from "../../live/message";
 import {
@@ -21,6 +22,22 @@ interface RoomEventDetail {
   status?: number;
   anchor?: any;
   detail?: any;
+}
+
+interface PluginExposes {
+  add(
+    platform: string,
+    id: number,
+    options?: boolean | Record<string, any>
+  ): void;
+  remove(key: string): void;
+  get(key: string): LiveRoom | undefined;
+  has(key: string): boolean;
+  data(key: string): LiveRoomData | undefined;
+  update(key: string): void;
+  open(key: string): void;
+  close(key: string): void;
+  getList(): LiveRoom[];
 }
 
 declare module "../.." {
@@ -88,6 +105,10 @@ declare module "../.." {
       options: Record<string, any>;
     };
   }
+
+  interface AppPluginExposesMap {
+    room: PluginExposes;
+  }
 }
 
 export class Room extends BasePlugin {
@@ -96,14 +117,27 @@ export class Room extends BasePlugin {
 
   private symbolRoomEventHandlers = Symbol("room.roomEventHandlers");
 
-  constructor(ctx: PluginContext) {
-    super(ctx);
+  init(ctx: PluginContext) {
     ctx.registerCommand("add", bindCommand(this.add, this));
     ctx.registerCommand("remove", bindCommand(this.remove, this));
     ctx.registerCommand("open", bindCommand(this.open, this));
     ctx.registerCommand("close", bindCommand(this.close, this));
     ctx.registerCommand("update", bindCommand(this.update, this));
     ctx.registerCommand("room.snapshot", bindCommand(this.getSnapshot, this));
+  }
+
+  expose(): PluginExposes {
+    return {
+      add: this.add.bind(this),
+      remove: this.remove.bind(this),
+      get: this.get.bind(this),
+      has: this.has.bind(this),
+      data: this.data.bind(this),
+      update: this.update.bind(this),
+      open: this.open.bind(this),
+      close: this.close.bind(this),
+      getList: this.getList.bind(this),
+    };
   }
 
   /** 添加房间监听实例 */
@@ -239,7 +273,7 @@ export class Room extends BasePlugin {
     return this.map.has(key);
   }
   /** 获取房间信息 */
-  public info(key: string) {
+  public data(key: string) {
     let room = this.map.get(key);
     return room ? room.toData() : undefined;
   }
@@ -249,11 +283,11 @@ export class Room extends BasePlugin {
     room && room.getInfo();
   }
   /** 获取房间key列表 */
-  get keys(): Array<string> {
+  get keys() {
     return [...this.map.keys()];
   }
   /** 获取房间列表 */
-  getList(): Array<LiveRoom> {
+  getList() {
     return [...this.map.values()];
   }
   /** 打开房间连接 */

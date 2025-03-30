@@ -1,6 +1,11 @@
 import { App } from "../app";
 import { bindCommand } from "../utils";
-import { ValueAccessOptions, ValueItem, ValueOptions } from "./types";
+import {
+  ValueAccessOptions,
+  ValueContext,
+  ValueItem,
+  ValueOptions,
+} from "./types";
 
 export class ValueManager {
   private list = new Map<string, ValueItem<any>>();
@@ -12,13 +17,21 @@ export class ValueManager {
     app.registerCommand("set", bindCommand(this.set, this));
   }
   /** 注册值 */
-  register<T>(name: string, { get, set, pluginName }: ValueOptions<T>) {
+  register<T>(
+    name: string,
+    { get, set, pluginName }: ValueOptions<T>
+  ): ValueContext<T> {
     this.list.set(name, { get, set, pluginName });
     this.app.emit(
       "value:register",
       { name, value: get() },
       { source: `plugin:${pluginName}` }
     );
+    return {
+      emit: (v: T) => {
+        this.emit(name, v);
+      },
+    };
   }
   /** 取消注册 */
   unregister(name: string): void {

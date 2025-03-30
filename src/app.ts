@@ -22,8 +22,10 @@ import {
 import { HookManager } from "./hook/manager";
 import {
   AppPluginExposesMap,
+  PluginConstructor,
   PluginContext,
   PluginInitOptions,
+  PluginItem,
 } from "./plugin";
 import { PluginManager } from "./plugin/manager";
 import { CustomEventEmitter } from "./utils/EventEmitter";
@@ -100,8 +102,19 @@ export class App extends CustomEventEmitter implements PluginContext {
 
   //--- 插件机制 ---//
   /** 注册插件 */
-  register(plugin: any, options?: PluginInitOptions) {
-    this.pluginManager.register(plugin, options);
+  register<P extends PluginItem>(
+    plugin: PluginConstructor<P>,
+    options?: PluginInitOptions
+  ): Promise<P> {
+    return this.pluginManager.register(plugin, options);
+  }
+
+  /** 同步注册插件 */
+  registerSync<P extends PluginItem>(
+    plugin: PluginConstructor<P>,
+    options?: PluginInitOptions
+  ): P {
+    return this.pluginManager.registerSync(plugin, options);
   }
 
   /** 取消注册插件 */
@@ -224,7 +237,7 @@ export class App extends CustomEventEmitter implements PluginContext {
     name: K,
     options: ValueOptions<AppValueMap[K]>
   ) {
-    this.valueManager.register(name, options);
+    return this.valueManager.register(name, options);
   }
 
   unregisterValue(name: string) {
@@ -263,7 +276,13 @@ export class App extends CustomEventEmitter implements PluginContext {
 
   //--- 其他 ---//
   /** 拓展值 */
-  define() {}
+  define(key: string, value: ((...args: any[]) => any) | PropertyDescriptor) {
+    if (typeof value == "function") {
+      Object.defineProperty(this, key, { value });
+    } else {
+      Object.defineProperty(this, key, value);
+    }
+  }
 
   get signal() {
     return this.abortController.signal;

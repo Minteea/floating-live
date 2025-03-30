@@ -18,12 +18,13 @@ import {
   HookFunction,
   HookContext,
 } from "../../hook";
-import { AppValueMap, ValueOptions } from "../../value";
+import { AppValueMap, ValueContext, ValueOptions } from "../../value";
 import type {
   PluginContext,
   PluginConstructor,
   PluginInitOptions,
   AppPluginExposesMap,
+  PluginItem,
 } from "../types";
 
 class ListMap<K, V> extends Map<K, Set<V>> {
@@ -83,12 +84,16 @@ export class CommonPluginContext implements PluginContext {
     return new AppError(id, options);
   }
 
-  register(plugin: PluginConstructor, options?: PluginInitOptions): void {
+  register<P extends PluginItem>(
+    plugin: PluginConstructor<P>,
+    options?: PluginInitOptions
+  ): Promise<P> {
     try {
-      this.#app.register(plugin, options);
+      const p = this.#app.register(plugin, options);
       this.#registered.plugins.add(plugin.name);
+      return p;
     } catch (err: any) {
-      this.throw(err);
+      throw this.throw(err);
     }
   }
 
@@ -143,12 +148,13 @@ export class CommonPluginContext implements PluginContext {
   registerValue<K extends keyof AppValueMap>(
     name: K,
     options: ValueOptions<AppValueMap[K]>
-  ): void {
+  ) {
     try {
-      this.#app.registerValue(name, options);
+      const ctx = this.#app.registerValue(name, options);
       this.#registered.values.add(name);
+      return ctx;
     } catch (err: any) {
-      this.throw(err);
+      throw this.throw(err);
     }
   }
 

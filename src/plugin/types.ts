@@ -1,3 +1,4 @@
+import { App } from "../app";
 import {
   CommandOptions,
   CommandCallOptions,
@@ -17,30 +18,45 @@ import {
   HookFunction,
   HookUseOptions,
 } from "../hook";
-import { AppValueMap, ValueOptions } from "../value";
+import { AppValueMap, ValueContext, ValueOptions } from "../value";
 
 /** 插件对象 */
 export interface PluginItem {
   pluginName: string;
+  /** 初始化插件 */
   init?(
     ctx: PluginContext,
     options?: Record<string, any>
   ): void | Promise<void>;
+  /** 插件销毁 */
   destroy?(ctx: PluginContext): void | Promise<void>;
+  /** 插件暴露 */
   expose?(ctx: PluginContext): any;
 }
 
 /** 插件构造器 */
-export interface PluginConstructor {
+export interface PluginConstructor<P extends PluginItem> {
   pluginName: string;
-  new (ctx: PluginContext, options: any): PluginItem;
+  new (ctx: PluginContext, options: any): P;
 }
 
 /** 插件初始化选项 */
 export interface PluginInitOptions {}
 
+/** 插件注册选项 */
+export interface PluginRegisterOptions {
+  /** 提供的插件上下文 */
+  context?: PluginContext;
+  /** 核心插件，不可解除注册 */
+  core?: boolean;
+}
+
 /** 插件上下文 */
 export interface PluginContext {
+  /** 安全插件上下文 */
+  safe?: boolean;
+  /** App实例，仅在核心插件上下文提供 */
+  app?: App;
   //--- 事件机制 ---//
   /** 监听事件 */
   on<K extends keyof AppEventDetailMap>(
@@ -75,7 +91,10 @@ export interface PluginContext {
 
   //--- 插件机制 ---//
   /** 注册插件 */
-  register(plugin: PluginConstructor, options?: PluginInitOptions): void;
+  register<P extends PluginItem>(
+    plugin: PluginConstructor<P>,
+    options?: PluginInitOptions
+  ): Promise<P>;
 
   /** 取消注册插件 */
   unregister(pluginName: string): void;
@@ -155,7 +174,7 @@ export interface PluginContext {
   registerValue<K extends keyof AppValueMap>(
     name: K,
     options: ValueOptions<AppValueMap[K]>
-  ): void;
+  ): ValueContext<AppValueMap[K]>;
 
   /** 取消注册值 */
   unregisterValue(name: string): void;

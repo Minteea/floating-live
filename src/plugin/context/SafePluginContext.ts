@@ -59,7 +59,10 @@ export class SafePluginContext extends CommonPluginContext {
     );
   }
 
-  register(plugin: PluginConstructor, options?: PluginInitOptions): void {
+  register<P extends PluginItem>(
+    plugin: PluginConstructor<P>,
+    options?: PluginInitOptions
+  ): Promise<P> {
     if (!this.#permissions["plugin.register"]) {
       this.throwNotPermitted("plugin.register", "无插件安装权限");
     }
