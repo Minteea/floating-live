@@ -28,7 +28,7 @@ export abstract class LiveRoom
   liveId?: string;
   /** 房间是否打开 */
   opened: boolean = false;
-  /** 是否连接上房间 */
+  /** 房间连接状态 */
   connection: LiveConnectionStatus = LiveConnectionStatus.off;
   /** 房间是否可用 */
   abstract available: boolean;
@@ -229,17 +229,19 @@ export interface LiveRoomEventMap {
     timestamp: number;
     liveId?: string | number;
   };
-  update: {};
+  update: { room: LiveRoomData };
   detail: { detail: Partial<LiveRoomDetailInfo> };
-  stats: { stats: LiveRoomStatsInfo };
+  stats: { stats: Partial<LiveRoomStatsInfo> };
 
   message: { message: LiveMessage.All };
   raw: { platform: string; roomId: string | number; data: any };
 
+  init: {};
   connecting: {};
   connected: {};
   disconnect: {};
   enter: {};
+
   open: {};
   close: {};
 }
