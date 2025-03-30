@@ -88,7 +88,7 @@ export interface PluginContext {
   /** 等待plugin注册 */
   whenRegister<K extends keyof AppPluginExposesMap>(
     pluginName: K,
-    callback: (exposes: AppPluginExposesMap[K]) => (() => void) | undefined
+    callback: (exposes: AppPluginExposesMap[K]) => (() => void) | void
   ): void;
   whenRegister(pluginName: string, callback: () => (() => void) | void): void;
 
