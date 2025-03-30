@@ -106,6 +106,9 @@ export interface PluginContext {
   /** 取消注册指令 */
   unregisterCommand(name: string): void;
 
+  /** 检测值是否存在 */
+  hasCommand(name: string): boolean;
+
   /** 调用指令 */
   call<T extends keyof AppCommandMap>(
     name: T,
@@ -168,6 +171,9 @@ export interface PluginContext {
     name: K,
     watcher: (value: AppValueMap[K]) => void
   ): void;
+
+  /** 值是否存在 */
+  hasValue(name: string): boolean;
 
   /** 获取值 */
   getValue<K extends keyof AppValueMap>(name: K): AppValueMap[K];

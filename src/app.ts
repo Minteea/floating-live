@@ -168,6 +168,10 @@ export class App extends CustomEventEmitter implements PluginContext {
     this.commandManager.unregister(name);
   }
 
+  hasCommand(name: string): boolean {
+    return this.commandManager.has(name);
+  }
+
   call<T extends keyof AppCommandMap>(
     name: T,
     ...args: Parameters<AppCommandMap[T]>
@@ -239,6 +243,10 @@ export class App extends CustomEventEmitter implements PluginContext {
     watcher: (value: AppValueMap[K]) => void
   ) {
     this.valueManager.unwatch(name, watcher);
+  }
+
+  hasValue(name: string): boolean {
+    return this.valueManager.has(name);
   }
 
   getValue<K extends keyof AppValueMap>(name: K): AppValueMap[K] {

@@ -183,6 +183,14 @@ export class CommonPluginContext implements PluginContext {
     }
   }
 
+  hasCommand(name: string) {
+    try {
+      return this.#app.hasCommand(name);
+    } catch (err: any) {
+      throw this.throw(err);
+    }
+  }
+
   on<K extends keyof AppEventDetailMap>(
     type: K,
     listener: AppEventListener<AppEventDetailMap[K]>
@@ -319,7 +327,7 @@ export class CommonPluginContext implements PluginContext {
     try {
       this.#app.watch(name, watcher);
     } catch (err: any) {
-      this.throw(err);
+      throw this.throw(err);
     }
   }
   unwatch<K extends keyof AppValueMap>(
@@ -329,7 +337,15 @@ export class CommonPluginContext implements PluginContext {
     try {
       this.#app.unwatch(name, watcher);
     } catch (err: any) {
-      this.throw(err);
+      throw this.throw(err);
+    }
+  }
+
+  hasValue<K extends keyof AppValueMap>(name: K) {
+    try {
+      return this.#app.hasValue(name);
+    } catch (err: any) {
+      throw this.throw(err);
     }
   }
 
@@ -337,15 +353,15 @@ export class CommonPluginContext implements PluginContext {
     try {
       return this.#app.getValue(name);
     } catch (err: any) {
-      this.throw(err);
+      throw this.throw(err);
     }
   }
 
   setValue<K extends keyof AppValueMap>(name: K, value: AppValueMap[K]): void {
     try {
-      this.#app.setValue(name, value);
+      return this.#app.setValue(name, value);
     } catch (err: any) {
-      this.throw(err);
+      throw this.throw(err);
     }
   }
 
