@@ -22,7 +22,7 @@ import { AppValueMap, ValueOptions } from "../../value";
 import type {
   PluginContext,
   PluginConstructor,
-  PluginRegisterOptions,
+  PluginInitOptions,
   AppPluginExposesMap,
 } from "../types";
 
@@ -80,7 +80,7 @@ export class CommonPluginContext implements PluginContext {
     return new AppError(id, options);
   }
 
-  register(plugin: PluginConstructor, options?: PluginRegisterOptions): void {
+  register(plugin: PluginConstructor, options?: PluginInitOptions): void {
     try {
       this.#app.register(plugin, options);
       this.#registered.plugins.add(plugin.name);

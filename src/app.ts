@@ -20,7 +20,7 @@ import {
   HookUseOptions,
 } from "./hook";
 import { HookManager } from "./hook/manager";
-import { PluginContext, PluginRegisterOptions } from "./plugin";
+import { PluginContext, PluginInitOptions } from "./plugin";
 import { PluginManager } from "./plugin/manager";
 import { CustomEventEmitter } from "./utils/EventEmitter";
 import { AppValueMap, ValueOptions } from "./value";
@@ -85,7 +85,7 @@ export class App extends CustomEventEmitter implements PluginContext {
 
   //--- 插件机制 ---//
   /** 注册插件 */
-  register(plugin: any, options?: PluginRegisterOptions) {
+  register(plugin: any, options?: PluginInitOptions) {
     this.pluginManager.register(plugin, options);
   }
 

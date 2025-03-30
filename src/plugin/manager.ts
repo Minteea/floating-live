@@ -61,8 +61,8 @@ export class PluginManager {
           pluginCtx,
           registerCtx.options || {}
         );
-        // 调用插件的register钩子
-        await plugin.register?.(pluginCtx, registerCtx.options || {});
+        // 调用插件的init钩子
+        await plugin.init?.(pluginCtx, registerCtx.options || {});
         // 调用插件的expose钩子
         const exposes = await plugin.expose?.(pluginCtx);
         this.list.set(pluginName, { plugin, context: pluginCtx, exposes });

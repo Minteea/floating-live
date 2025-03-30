@@ -18,7 +18,7 @@ import {
   PluginConstructor,
   PluginContext,
   PluginItem,
-  PluginRegisterOptions,
+  PluginInitOptions,
 } from "../types";
 import { CommonPluginContext } from "./CommonPluginContext";
 
@@ -59,7 +59,7 @@ export class SafePluginContext extends CommonPluginContext {
     );
   }
 
-  register(plugin: PluginConstructor, options?: PluginRegisterOptions): void {
+  register(plugin: PluginConstructor, options?: PluginInitOptions): void {
     if (!this.#permissions["plugin.register"]) {
       this.throwNotPermitted("plugin.register", "无插件安装权限");
     }

@@ -22,7 +22,7 @@ import { AppValueMap, ValueOptions } from "../value";
 /** 插件对象 */
 export interface PluginItem {
   pluginName: string;
-  register?(
+  init?(
     ctx: PluginContext,
     options?: Record<string, any>
   ): void | Promise<void>;
@@ -36,8 +36,8 @@ export interface PluginConstructor {
   new (ctx: PluginContext, options: any): PluginItem;
 }
 
-/** 插件注册选项 */
-export interface PluginRegisterOptions {}
+/** 插件初始化选项 */
+export interface PluginInitOptions {}
 
 /** 插件上下文 */
 export interface PluginContext {
@@ -75,7 +75,7 @@ export interface PluginContext {
 
   //--- 插件机制 ---//
   /** 注册插件 */
-  register(plugin: PluginConstructor, options?: PluginRegisterOptions): void;
+  register(plugin: PluginConstructor, options?: PluginInitOptions): void;
 
   /** 取消注册插件 */
   unregister(pluginName: string): void;
