@@ -22,8 +22,12 @@ import { AppValueMap, ValueOptions } from "../value";
 /** 插件对象 */
 export interface PluginItem {
   pluginName: string;
-  register?(ctx: PluginContext, options?: Record<string, any>): void;
-  destroy?(ctx: PluginContext): void;
+  register?(
+    ctx: PluginContext,
+    options?: Record<string, any>
+  ): void | Promise<void>;
+  destroy?(ctx: PluginContext): void | Promise<void>;
+  expose?(ctx: PluginContext): any;
 }
 
 /** 插件构造器 */
@@ -77,7 +81,9 @@ export interface PluginContext {
   unregister(pluginName: string): void;
 
   /** 获取插件暴露对象 */
-  getPluginExposes<T>(pluginName: string): T;
+  getPluginExposes<K extends keyof AppPluginExposesMap>(
+    pluginName: K
+  ): AppPluginExposesMap[K];
 
   /** 等待plugin注册 */
   whenRegister(
@@ -169,4 +175,8 @@ export interface PluginContext {
   setValue<K extends keyof AppValueMap>(name: K, value: AppValueMap[K]): void;
 
   destroy(): void;
+}
+
+export interface AppPluginExposesMap {
+  "": {};
 }

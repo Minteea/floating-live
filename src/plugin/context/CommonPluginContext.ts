@@ -23,6 +23,7 @@ import type {
   PluginContext,
   PluginConstructor,
   PluginRegisterOptions,
+  AppPluginExposesMap,
 } from "../types";
 
 class ListMap<K, V> extends Map<K, Set<V>> {
@@ -97,7 +98,9 @@ export class CommonPluginContext implements PluginContext {
     }
   }
 
-  getPluginExposes<T>(pluginName: string): T {
+  getPluginExposes<K extends keyof AppPluginExposesMap>(
+    pluginName: K
+  ): AppPluginExposesMap[K] {
     return this.#app.getPluginExposes(pluginName);
   }
 
@@ -108,7 +111,7 @@ export class CommonPluginContext implements PluginContext {
     let registered = this.hasPlugin(pluginName);
     let whenUnregistered: (() => void) | undefined;
     if (registered) {
-      whenUnregistered = callback(this.getPluginExposes(pluginName));
+      whenUnregistered = callback(this.getPluginExposes(pluginName as any));
     }
 
     this.on("plugin:register", ({ pluginName: name }) => {
@@ -116,7 +119,7 @@ export class CommonPluginContext implements PluginContext {
         if (registered) {
           whenUnregistered?.();
         }
-        whenUnregistered = callback(this.getPluginExposes(pluginName));
+        whenUnregistered = callback(this.getPluginExposes(pluginName as any));
         registered = true;
       }
     });
