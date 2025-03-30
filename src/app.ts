@@ -115,18 +115,15 @@ export class App extends CustomEventEmitter implements PluginContext {
 
   whenRegister<K extends keyof AppPluginExposesMap>(
     pluginName: K,
-    callback: (exposes: AppPluginExposesMap[K]) => (() => void) | undefined
+    callback: (exposes: AppPluginExposesMap[K]) => (() => void) | void
   ): void;
+  whenRegister(pluginName: string, callback: () => (() => void) | void): void;
   whenRegister(
     pluginName: string,
-    callback: () => (() => void) | undefined
-  ): void;
-  whenRegister(
-    pluginName: string,
-    callback: (exposes: any) => (() => void) | undefined
+    callback: (exposes: any) => (() => void) | void
   ): void {
     let registered = this.hasPlugin(pluginName);
-    let whenUnregistered: (() => void) | undefined;
+    let whenUnregistered: (() => void) | void;
     if (registered) {
       whenUnregistered = callback(this.getPluginExposes(pluginName));
     }

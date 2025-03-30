@@ -44,6 +44,10 @@ declare module "../.." {
       id: string | number,
       options: Record<string, any>
     ) => LiveRoom | Promise<LiveRoom>;
+
+    [name: `${string}.room.data`]: (
+      id: string | number
+    ) => LiveRoomData | Promise<LiveRoomData>;
   }
 
   interface AppEventDetailMap {
