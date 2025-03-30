@@ -175,6 +175,8 @@ export interface PluginContext {
   setValue<K extends keyof AppValueMap>(name: K, value: AppValueMap[K]): void;
 
   destroy(): void;
+
+  get signal(): AbortSignal;
 }
 
 export interface AppPluginExposesMap {

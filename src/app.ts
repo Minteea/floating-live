@@ -31,6 +31,7 @@ export class App extends CustomEventEmitter implements PluginContext {
   private pluginManager: PluginManager;
   private commandManager: CommandManager;
   private valueManager: ValueManager;
+  private abortController = new AbortController();
   constructor() {
     super();
     this.hookManager = new HookManager(this);
@@ -41,18 +42,28 @@ export class App extends CustomEventEmitter implements PluginContext {
   //--- 事件机制 ---//
   on<K extends keyof AppEventDetailMap>(
     type: K,
-    listener: AppEventListener<AppEventDetailMap[K]>
+    listener: AppEventListener<AppEventDetailMap[K]>,
+    signal?: AbortSignal
   ): void;
-  on<T>(type: string, listener: AppEventListener<T>) {
-    super.on(type, listener);
+  on<T>(
+    type: string,
+    listener: AppEventListener<T>,
+    signal: AbortSignal = this.signal
+  ) {
+    super.on(type, listener, signal);
   }
 
   once<K extends keyof AppEventDetailMap>(
     type: K,
-    listener: AppEventListener<AppEventDetailMap[K]>
+    listener: AppEventListener<AppEventDetailMap[K]>,
+    signal?: AbortSignal
   ): void;
-  once<T>(type: string, listener: AppEventListener<T>) {
-    super.once(type, listener);
+  once<T>(
+    type: string,
+    listener: AppEventListener<T>,
+    signal: AbortSignal = this.signal
+  ) {
+    super.once(type, listener, signal);
   }
 
   off<K extends keyof AppEventDetailMap>(
@@ -229,9 +240,15 @@ export class App extends CustomEventEmitter implements PluginContext {
     this.valueManager.set(name, value);
   }
 
-  destroy(): void {}
+  destroy(): void {
+    this.abortController.abort();
+  }
 
   //--- 其他 ---//
   /** 拓展值 */
   define() {}
+
+  get signal() {
+    return this.abortController.signal;
+  }
 }

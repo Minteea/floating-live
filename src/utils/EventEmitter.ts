@@ -14,15 +14,19 @@ function getListenerCallback(listener: (e: any) => void) {
 }
 
 export class CustomEventEmitter extends EventTarget {
-  on(type: string, listener: (e: any) => void) {
-    this.addEventListener(type, getListenerCallback(listener) as EventListener);
-  }
-
-  once(type: string, listener: (e: any) => void) {
+  on(type: string, listener: (e: any) => void, signal?: AbortSignal) {
     this.addEventListener(
       type,
       getListenerCallback(listener) as EventListener,
-      { once: true }
+      { signal }
+    );
+  }
+
+  once(type: string, listener: (e: any) => void, signal?: AbortSignal) {
+    this.addEventListener(
+      type,
+      getListenerCallback(listener) as EventListener,
+      { once: true, signal }
     );
   }
 

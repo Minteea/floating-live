@@ -48,6 +48,9 @@ export class CommonPluginContext implements PluginContext {
   /** 主程序，插件不可访问 */
   #app: App;
 
+  /** AbortController，插件不可访问 */
+  #abortController = new AbortController();
+
   #registered = {
     plugins: new Set<string>(),
     values: new Set<string>(),
@@ -347,17 +350,17 @@ export class CommonPluginContext implements PluginContext {
   }
 
   destroy() {
-    const { plugins, events, values, hooks, commands } = this.#registered;
+    const { plugins, values, hooks, commands } = this.#registered;
     plugins.forEach((pluginName) => this.#app.unregister(pluginName));
-    events.forEach((listenerList, eventName) =>
-      listenerList.forEach((listener) =>
-        this.#app.off(eventName as any, listener)
-      )
-    );
     hooks.forEach((hookList, name) =>
       hookList.forEach((hookFunc) => this.#app.off(name as any, hookFunc))
     );
     commands.forEach((name) => this.#app.unregisterCommand(name));
     values.forEach((name) => this.#app.unregisterValue(name));
+    this.#abortController.abort();
+  }
+
+  get signal() {
+    return this.#abortController.signal;
   }
 }
