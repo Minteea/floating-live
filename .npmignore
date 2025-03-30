@@ -11,4 +11,4 @@ demo/**/*
 !**/*.d.ts
 
 tsconfig.json
-tsconfig.esm.json
+*.tsbuildinfo

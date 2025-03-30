@@ -1,12 +1,10 @@
 node_modules/
 save/
-test/
 package-lock.json
 yarn.lock
 
 # 编译生成文件
 dist/
-esm/
-!demo/*.js
+*.tsbuildinfo
 
 *.tgz
