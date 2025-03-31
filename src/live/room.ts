@@ -32,15 +32,17 @@ export abstract class LiveRoom
   /** 房间连接状态 */
   connection: LiveConnectionStatus = LiveConnectionStatus.off;
   /** 房间是否可用 */
-  abstract available: boolean;
+  available: boolean = false;
   /** 打开连接 */
   abstract open(): void;
   /** 关闭连接 */
   abstract close(): void;
   /** 更新房间数据 */
-  abstract update(): Promise<void>;
+  abstract update(): Promise<LiveRoomData>;
   /** 从服务器获取房间数据 */
-  abstract fetchData?(): Promise<void>;
+  abstract fetchData?(): Promise<LiveRoomData>;
+  /** 设置房间数据 */
+  abstract setData?(data: LiveRoomData): LiveRoomData;
   /** 销毁 */
   public destroy() {
     this.close();
