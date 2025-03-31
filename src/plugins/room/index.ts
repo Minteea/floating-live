@@ -13,15 +13,8 @@ import { BasePlugin } from "../../plugin";
 import { PluginContext } from "../../plugin/types";
 import { bindCommand } from "../../utils";
 
-interface MessageEventDetail {
-  message: any;
-}
-
-interface RoomEventDetail {
-  key: string;
-  status?: number;
-  anchor?: any;
-  detail?: any;
+interface LiveRoomWithAbortController extends LiveRoom {
+  [key: symbol]: AbortController;
 }
 
 interface PluginExposes {
@@ -115,7 +108,7 @@ export class Room extends BasePlugin {
   static pluginName = "room";
   private map = new Map<string, LiveRoom>();
 
-  private symbolRoomEventHandlers = Symbol("room.roomEventHandlers");
+  private symbolAbortController = Symbol("room.abortController");
 
   init(ctx: PluginContext) {
     ctx.registerCommand("add", bindCommand(this.add, this));
@@ -141,7 +134,7 @@ export class Room extends BasePlugin {
   }
 
   /** 添加房间监听实例 */
-  public attachRoom(room: LiveRoom, open?: boolean) {
+  public attach(room: LiveRoom, open?: boolean) {
     let key = room.key;
     if (this.map.has(key)) {
       this.ctx.throw(
@@ -153,15 +146,15 @@ export class Room extends BasePlugin {
     }
     this.map.set(key, room);
 
-    const eventHandlers: [string, (e: any) => void][] = [];
-    (room as any)[this.symbolRoomEventHandlers] = eventHandlers;
+    const abortController = new AbortController();
+    (room as LiveRoomWithAbortController)[this.symbolAbortController] =
+      abortController;
 
     const setHandler = <K extends keyof LiveRoomEventMap>(
       type: K,
       listener: (e: LiveRoomEventMap[K]) => void
     ) => {
-      room.on(type, listener);
-      eventHandlers.push([type, listener]);
+      room.on(type, listener, abortController.signal);
     };
 
     // 添加监听事件
@@ -243,12 +236,12 @@ export class Room extends BasePlugin {
         this.ctx.error("room:create_fail", { message: "无法创建房间" })
       );
     } else {
-      this.attachRoom(room);
+      this.attach(room);
     }
   }
   /** 移除房间 */
   public remove(key: string) {
-    let room = this.map.get(key);
+    let room = this.map.get(key) as LiveRoomWithAbortController;
     if (!room) {
       this.ctx.throw(
         this.ctx.error("room:remove_unexist", {
@@ -258,11 +251,7 @@ export class Room extends BasePlugin {
     }
     this.map.delete(key); // 从表中删除房间
 
-    (room as any)[this.symbolRoomEventHandlers].forEach(
-      ([type, listener]: [string, (e: any) => void]) => {
-        room?.removeEventListener(type, listener);
-      }
-    ); // 移除房间监听实例
+    room[this.symbolAbortController]?.abort(); // 移除房间监听实例
     this.ctx.emit("room:remove", { key });
   }
   /** 获取房间 */
@@ -280,7 +269,7 @@ export class Room extends BasePlugin {
   /** 更新房间信息 */
   public update(key: string) {
     let room = this.map.get(key);
-    room && room.getInfo();
+    room && room.update();
   }
   /** 获取房间key列表 */
   get keys() {

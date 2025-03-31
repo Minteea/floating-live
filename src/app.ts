@@ -7,7 +7,6 @@ import {
 import { CommandManager } from "./command/manager";
 import { AppError } from "./error";
 import {
-  AppEventDetail,
   AppEventDetailMap,
   AppEventEmitOptions,
   AppEventListener,

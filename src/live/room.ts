@@ -3,6 +3,7 @@ import { EnumValue } from "../utils/types";
 import { LiveMessage } from "./message";
 import { UserInfo } from "./messageInfo";
 
+/** 直播间客户端API */
 export abstract class LiveRoom
   extends CustomEventEmitter
   implements LiveRoomData
@@ -36,15 +37,17 @@ export abstract class LiveRoom
   abstract open(): void;
   /** 关闭连接 */
   abstract close(): void;
-  /** 从服务器获取信息 */
-  abstract getInfo(): Promise<void>;
-  /** 销毁事件 */
-  protected onDestroy?(): void;
+  /** 更新房间数据 */
+  abstract update(): Promise<void>;
+  /** 从服务器获取房间数据 */
+  abstract fetchData?(): Promise<void>;
   /** 销毁 */
   public destroy() {
     this.close();
     this.onDestroy?.();
   }
+  /** 销毁事件 */
+  protected onDestroy?: () => void;
   // 发送消息
   protected emitMessage(msg: LiveMessage.All) {
     // 其他消息 => 先更改状态再发送消息
@@ -107,26 +110,25 @@ export abstract class LiveRoom
   get key(): string {
     return `${this.platform}:${this.id}`;
   }
+}
 
+export interface LiveRoom {
   on<K extends keyof LiveRoomEventMap>(
     type: K,
-    listener: (e: LiveRoomEventMap[K]) => void
-  ) {
-    super.on(type, listener);
-  }
+    listener: (e: LiveRoomEventMap[K]) => void,
+    signal?: AbortSignal
+  ): void;
+
   once<K extends keyof LiveRoomEventMap>(
     type: K,
-    listener: (e: LiveRoomEventMap[K]) => void
-  ) {
-    super.once(type, listener);
-    this.emit("connecting");
-  }
+    listener: (e: LiveRoomEventMap[K]) => void,
+    signal?: AbortSignal
+  ): void;
+
   off<K extends keyof LiveRoomEventMap>(
     type: K,
     listener: (e: LiveRoomEventMap[K]) => void
-  ) {
-    super.off(type, listener);
-  }
+  ): void;
 
   emit<K extends keyof LiveRoomEventMap>(
     type: LiveRoomEventMap[K] extends Record<string, never> ? K : never
@@ -135,12 +137,6 @@ export abstract class LiveRoom
     type: K,
     detail: LiveRoomEventMap[K]
   ): void;
-  emit<K extends keyof LiveRoomEventMap>(
-    type: K,
-    detail?: LiveRoomEventMap[K]
-  ) {
-    super.emit(type, detail);
-  }
 }
 
 /** 房间数据 */
@@ -224,24 +220,39 @@ export const LiveConnectionStatus = {
 export type LiveConnectionStatus = EnumValue<typeof LiveConnectionStatus>;
 
 export interface LiveRoomEventMap {
+  /**  */
   status: {
     status: LiveRoomStatus;
     timestamp: number;
     liveId?: string | number;
   };
+  /** 房间数据更新 */
   update: { room: LiveRoomData };
+  /** 细节改变 */
   detail: { detail: Partial<LiveRoomDetailInfo> };
+  /** 统计信息改变 */
   stats: { stats: Partial<LiveRoomStatsInfo> };
 
+  /** 消息 */
   message: { message: LiveMessage.All };
+  /** 消息源数据 */
   raw: { platform: string; roomId: string | number; data: any };
 
+  /** 初始化 */
   init: {};
+  /** 正在连接 */
   connecting: {};
+  /** 连接到服务器 */
   connected: {};
+  /** 断开连接 */
   disconnect: {};
+  /** 连接到房间 */
   enter: {};
+  /** 连接超时 */
+  timeout: { time: number };
 
+  /** 开启直播间连接 */
   open: {};
+  /** 关闭直播间连接 */
   close: {};
 }
