@@ -33,16 +33,21 @@ export abstract class LiveRoom
   connection: LiveConnectionStatus = LiveConnectionStatus.off;
   /** 房间是否可用 */
   available: boolean = false;
+
   /** 打开连接 */
   abstract open(): void;
   /** 关闭连接 */
   abstract close(): void;
+  /** 重连 */
+  abstract reconnect?(): void;
+
   /** 更新房间数据 */
   abstract update(): Promise<LiveRoomData>;
   /** 从服务器获取房间数据 */
   abstract fetchData?(): Promise<LiveRoomData>;
   /** 设置房间数据 */
   abstract setData?(data: LiveRoomData): LiveRoomData;
+
   /** 销毁 */
   public destroy() {
     this.close();
@@ -50,7 +55,8 @@ export abstract class LiveRoom
   }
   /** 销毁事件 */
   protected onDestroy?: () => void;
-  // 发送消息
+
+  /** 发送消息 */
   protected emitMessage(msg: LiveMessage.All) {
     // 其他消息 => 先更改状态再发送消息
     // 直播结束消息 => 先发送消息再更改状态
@@ -92,7 +98,7 @@ export abstract class LiveRoom
     this.emit("raw", { platform: this.platform, roomId: this.id, data: msg });
   }
 
-  /** 获取数据 */
+  /** 生成房间数据 */
   toData(): LiveRoomData {
     return {
       platform: this.platform,
@@ -218,7 +224,7 @@ export const LiveConnectionStatus = {
   entered: 3,
   /** 连接失败或断开 */
   disconnected: -1,
-};
+} as const;
 export type LiveConnectionStatus = EnumValue<typeof LiveConnectionStatus>;
 
 export interface LiveRoomEventMap {

@@ -225,9 +225,12 @@ export class Room extends BasePlugin {
     const opt = typeof options == "boolean" ? { open: options } : options || {};
     const ctx = { platform, id, options: opt };
     const res = await this.ctx.callHook("room.add", ctx);
-    if (!res.defaultPrevented) {
+    if (res.defaultPrevented) {
       this.ctx.throw(
-        this.ctx.error("room:add_fail", { message: "无法添加房间" })
+        this.ctx.error("room:add_hook_prevented", {
+          message: "无法添加房间",
+          cause: "房间添加被钩子函数阻止",
+        })
       );
     }
     const room = await this.ctx.call(`${platform}.room.create`, id, opt);
