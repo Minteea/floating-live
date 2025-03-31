@@ -160,7 +160,7 @@ export class App extends CustomEventEmitter implements PluginContext {
   }
 
   getPluginExposes(pluginName: string): any {
-    this.pluginManager.getExposes(pluginName);
+    return this.pluginManager.getExposes(pluginName);
   }
 
   hasPlugin(pluginName: string) {
