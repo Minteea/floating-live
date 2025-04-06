@@ -30,7 +30,7 @@ export abstract class LiveRoom
   /** 房间连接状态 */
   connectionStatus: LiveConnectionStatus = LiveConnectionStatus.off;
   /** 房间开启状态 */
-  abstract openStatus: LiveRoomOpenStatus;
+  openStatus: LiveRoomOpenStatus = 0;
 
   get opened() {
     return this.openStatus == 2;
