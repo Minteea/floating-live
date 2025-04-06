@@ -30,15 +30,13 @@ export abstract class LiveRoom
   /** 房间连接状态 */
   connectionStatus: LiveConnectionStatus = LiveConnectionStatus.off;
   /** 房间开启状态 */
-  openStatus: LiveRoomOpenStatus = -1;
+  abstract openStatus: LiveRoomOpenStatus;
 
   get opened() {
     return this.openStatus == 2;
   }
 
-  get available() {
-    return this.openStatus > -1;
-  }
+  available: boolean = false;
 
   /** 打开连接 */
   abstract open(): void;
@@ -244,8 +242,6 @@ export const LiveRoomOpenStatus = {
   opening: 1,
   /** 已开启 */
   opened: 2,
-  /** 不可用 */
-  unavailable: -1,
 } as const;
 export type LiveRoomOpenStatus = EnumValue<typeof LiveRoomOpenStatus>;
 
