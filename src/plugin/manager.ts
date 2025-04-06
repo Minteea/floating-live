@@ -9,18 +9,6 @@ import {
 } from "./types";
 import { CorePluginContext } from "./context/CorePluginContext";
 
-export interface PluginErrorOptions extends ErrorOptions {
-  pluginName: string;
-}
-
-export class PluginError extends AppError {
-  pluginName: string;
-  constructor(id: string, options: PluginErrorOptions) {
-    super(id, options);
-    this.pluginName = options.pluginName;
-  }
-}
-
 export interface PluginData<T> {
   plugin: PluginItem;
   context: PluginContext;
@@ -44,17 +32,17 @@ export class PluginManager {
   ): P {
     const pluginName = pluginConstructor.pluginName;
     if (!pluginName) {
-      throw new PluginError("plugin:register_id_missing", {
+      throw new AppError("plugin:register_id_missing", {
         message: "插件注册失败",
         cause: "插件缺少pluginName字段",
-        pluginName: "",
+        target: "plugin/#unnamed",
       });
     }
     if (this.list.has(pluginName)) {
-      throw new PluginError("plugin:register_id_duplicate", {
+      throw new AppError("plugin:register_id_duplicate", {
         message: `插件注册失败: ${pluginName}`,
         cause: "已存在相同id的插件",
-        pluginName,
+        target: `plugin/${pluginName}`,
       });
     }
     const registerCtx = { pluginName, options };
@@ -63,10 +51,10 @@ export class PluginManager {
     try {
       const ctx = this.app.callHookSync("plugin.register", registerCtx);
       if (ctx.defaultPrevented)
-        throw new PluginError("plugin:register_hook_prevented", {
+        throw new AppError("plugin:register_hook_prevented", {
           message: `插件注册失败: ${pluginName}`,
           cause: "插件注册被钩子函数阻止",
-          pluginName,
+          target: `plugin/${pluginName}`,
         });
       // 执行插件函数
       const plugin = new pluginConstructor(
@@ -86,10 +74,10 @@ export class PluginManager {
       this.app.emit("plugin:register", { pluginName });
       return plugin;
     } catch (err: any) {
-      throw new PluginError("plugin:register_fail", {
+      throw new AppError("plugin:register_fail", {
         message: `插件注册失败: ${pluginName}`,
         cause: err,
-        pluginName,
+        target: `plugin/${pluginName}`,
       });
     }
   }
@@ -102,17 +90,17 @@ export class PluginManager {
   ): Promise<P> {
     const pluginName = pluginConstructor.pluginName;
     if (!pluginName) {
-      throw new PluginError("plugin:register_id_missing", {
+      throw new AppError("plugin:register_id_missing", {
         message: "插件注册失败",
         cause: "插件缺少pluginName字段",
-        pluginName: "",
+        target: "plugin/#unnamed",
       });
     }
     if (this.list.has(pluginName)) {
-      throw new PluginError("plugin:register_id_duplicate", {
+      throw new AppError("plugin:register_id_duplicate", {
         message: `插件注册失败: ${pluginName}`,
         cause: "已存在相同id的插件",
-        pluginName,
+        target: `plugin/${pluginName}`,
       });
     }
     const registerCtx = { pluginName, options };
@@ -122,10 +110,10 @@ export class PluginManager {
       .callHook("plugin.register", registerCtx)
       .then(async (ctx) => {
         if (ctx.defaultPrevented)
-          throw new PluginError("plugin:register_hook_prevented", {
+          throw new AppError("plugin:register_hook_prevented", {
             message: `插件注册失败: ${pluginName}`,
             cause: "插件注册被钩子函数阻止",
-            pluginName,
+            target: `plugin/${pluginName}`,
           });
         // 执行插件函数
         const plugin = new pluginConstructor(
@@ -146,10 +134,10 @@ export class PluginManager {
         return plugin;
       })
       .catch((err: any) => {
-        throw new PluginError("plugin:register_fail", {
+        throw new AppError("plugin:register_fail", {
           message: `插件注册失败: ${pluginName}`,
           cause: err,
-          pluginName,
+          target: `plugin/${pluginName}`,
         });
       });
   }
@@ -158,18 +146,18 @@ export class PluginManager {
     const pluginData = this.list.get(pluginName);
     // 检测插件是否存在
     if (!pluginData) {
-      throw new PluginError("plugin:unregister_unexist", {
+      throw new AppError("plugin:unregister_unexist", {
         message: `插件移除失败: ${pluginName}`,
         cause: "插件不存在",
-        pluginName,
+        target: `plugin/${pluginName}`,
       });
     } else {
       const { plugin, context, core } = pluginData;
       if (core) {
-        throw new PluginError("plugin:unregister_core", {
+        throw new AppError("plugin:unregister_core", {
           message: `插件移除失败: ${pluginName}`,
           cause: "无法移除核心插件",
-          pluginName,
+          target: `plugin/${pluginName}`,
         });
       }
       // 调用插件和上下文的destroy钩子

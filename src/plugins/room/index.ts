@@ -137,7 +137,7 @@ export class Room extends BasePlugin {
   public attach(room: LiveRoom, open?: boolean) {
     let key = room.key;
     if (this.map.has(key)) {
-      this.ctx.throw(
+      this.throw(
         new AppError("room:add_exist", {
           message: "房间已存在",
         })
@@ -226,29 +226,36 @@ export class Room extends BasePlugin {
     const ctx = { platform, id, options: opt };
     const res = await this.ctx.callHook("room.add", ctx);
     if (res.defaultPrevented) {
-      this.ctx.throw(
-        this.ctx.error("room:add_hook_prevented", {
+      this.throw(
+        new this.Error("room:add_hook_prevented", {
           message: "无法添加房间",
           cause: "房间添加被钩子函数阻止",
+          target: `room/${platform}:${id}`,
         })
       );
     }
-    const room = await this.ctx.call(`${platform}.room.create`, id, opt);
-    if (!room) {
-      this.ctx.throw(
-        this.ctx.error("room:create_fail", { message: "无法创建房间" })
+    let room: LiveRoom;
+    try {
+      room = await this.ctx.call(`${platform}.room.create`, id, opt);
+    } catch (e: any) {
+      this.throw(
+        new this.Error("room:create_fail", {
+          message: "无法创建房间",
+          cause: e,
+          target: `room/${platform}:${id}`,
+        })
       );
-    } else {
-      this.attach(room);
     }
+    this.attach(room!);
   }
   /** 移除房间 */
   public remove(key: string) {
     let room = this.map.get(key) as LiveRoomWithAbortController;
     if (!room) {
-      this.ctx.throw(
-        this.ctx.error("room:remove_unexist", {
+      this.throw(
+        new this.Error("room:remove_unexist", {
           message: "房间不存在",
+          target: `room/${key}`,
         })
       );
     }

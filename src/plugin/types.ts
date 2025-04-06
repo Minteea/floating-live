@@ -86,7 +86,7 @@ export interface PluginContext {
   /** 抛出错误 */
   throw(err?: Error): void;
 
-  /** 生成错误 */
+  /** 生成错误 @deprecated */
   error(id: string, options: ErrorOptions): AppError;
 
   //--- 插件机制 ---//
