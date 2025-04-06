@@ -27,12 +27,18 @@ export abstract class LiveRoom
   timestamp: number = 0;
   /** 当前直播id */
   liveId?: string;
-  /** 房间是否打开 */
-  opened: boolean = false;
   /** 房间连接状态 */
-  connection: LiveConnectionStatus = LiveConnectionStatus.off;
-  /** 房间是否可用 */
-  available: boolean = false;
+  connectionStatus: LiveConnectionStatus = LiveConnectionStatus.off;
+  /** 房间开启状态 */
+  openStatus: LiveRoomOpenStatus = -1;
+
+  get opened() {
+    return this.openStatus == 2;
+  }
+
+  get available() {
+    return this.openStatus > -1;
+  }
 
   /** 打开连接 */
   abstract open(): void;
@@ -109,9 +115,10 @@ export abstract class LiveRoom
       timestamp: this.timestamp,
       status: this.status,
       liveId: this.liveId,
-      available: this.available,
+      openStatus: this.openStatus,
       opened: this.opened,
-      connection: this.connection,
+      available: this.available,
+      connectionStatus: this.connectionStatus,
       key: this.key,
     };
   }
@@ -167,12 +174,14 @@ export interface LiveRoomData {
   liveId?: string;
   /** 直播状态 */
   status: LiveRoomStatus;
-  /** 直播间是否可用 */
-  available: boolean;
-  /** 房间监听是否打开 */
-  opened: boolean;
   /** 房间连接状态 */
-  connection: LiveConnectionStatus;
+  connectionStatus: LiveConnectionStatus;
+  /** 房间监听状态 */
+  openStatus: LiveRoomOpenStatus;
+  /** 房间是否开启 */
+  opened: boolean;
+  /** 房间是否可用 */
+  available: boolean;
 }
 
 /** 房间展示信息 */
@@ -226,6 +235,19 @@ export const LiveConnectionStatus = {
   disconnected: -1,
 } as const;
 export type LiveConnectionStatus = EnumValue<typeof LiveConnectionStatus>;
+
+/** 直播间开启状态 */
+export const LiveRoomOpenStatus = {
+  /** 已关闭 */
+  closed: 0,
+  /** 正在开启 */
+  opening: 1,
+  /** 已开启 */
+  opened: 2,
+  /** 不可用 */
+  unavailable: -1,
+} as const;
+export type LiveRoomOpenStatus = EnumValue<typeof LiveRoomOpenStatus>;
 
 export interface LiveRoomEventMap {
   /**  */

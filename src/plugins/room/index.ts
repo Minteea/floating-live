@@ -292,18 +292,41 @@ export class Room extends BasePlugin {
   /** 打开房间连接 */
   open(key: string) {
     let room = this.map.get(key);
-    room?.available && !room.opened && room.open();
+    if (!room) {
+      this.throw(
+        new this.Error("room:open_unexist", {
+          message: "打开的房间不存在",
+          target: `room/${key}`,
+        })
+      );
+    }
+    room!.open();
   }
   /** 关闭房间连接 */
   close(key: string) {
     let room = this.map.get(key);
-    room?.opened && room.close();
+    if (!room) {
+      this.throw(
+        new this.Error("room:close_unexist", {
+          message: "关闭的房间不存在",
+          target: `room/${key}`,
+        })
+      );
+    }
+    room!.close();
   }
   /** 更改某个房间的顺序 */
   move(key: string, position: number) {
     const arr = [...this.map];
     const index = arr.findIndex(([k]) => k == key);
-    if (index == -1) return;
+    if (index == -1) {
+      this.throw(
+        new this.Error("room:move_unexist", {
+          message: "要移动的房间不存在",
+          target: `room/${key}`,
+        })
+      );
+    }
     const [item] = arr.splice(index, 1);
     arr.splice(position, 0, item);
     this.map = new Map(arr);
