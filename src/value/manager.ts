@@ -16,6 +16,7 @@ export class ValueManager {
     this.app = app;
     app.registerCommand("get", bindCommand(this.get, this));
     app.registerCommand("set", bindCommand(this.set, this));
+    app.registerCommand("value.snapshot", bindCommand(this.getSnapshot, this));
   }
   /** 注册值 */
   register<T>(
@@ -79,11 +80,13 @@ export class ValueManager {
   }
 
   /** 获取注册的所有值 */
-  getData() {
-    const map: Record<string, any> = {};
-    this.list.forEach((config, name) => {
-      map[name] = config.get();
-    });
-    return map;
+  getSnapshot(): {
+    name: string;
+    value: string;
+  }[] {
+    return [...this.list].map(([name, config]) => ({
+      name,
+      value: config.get(),
+    }));
   }
 }

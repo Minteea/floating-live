@@ -27,5 +27,8 @@ export interface AppEventDetailMap {
   "value:change": { name: string; value: any };
   "value:unregister": { name: string };
 
+  event: { name: string; detail: AppEventDetail<any> };
+  error: { error: Error };
+
   [name: `change:${string}`]: { value: any };
 }

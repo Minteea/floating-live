@@ -31,4 +31,21 @@ export interface CommandItem {
 export interface AppCommandMap {
   get: <T extends keyof AppValueMap>(name: T) => AppValueMap[T];
   set: <T extends keyof AppValueMap>(name: T, value: AppValueMap[T]) => boolean;
+
+  /** 获取注册值快照 */
+  "value.snapshot": () => {
+    name: string;
+    value: string;
+  }[];
+
+  /** 获取命令快照 */
+  "command.snapshot": () => {
+    name: string;
+  }[];
+
+  /** 获取hook快照 */
+  "hook.snapshot": () => {
+    name: string;
+    list: { pluginName?: string }[];
+  }[];
 }

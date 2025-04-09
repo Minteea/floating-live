@@ -9,6 +9,7 @@ export class HookManager {
 
   constructor(app: App) {
     this.app = app;
+    app.registerCommand("hook.snapshot", () => this.getSnapshot());
   }
   /** 挂载钩子函数 */
   use(name: string, call: HookFunction<any>, options?: HookUseOptions) {
@@ -66,10 +67,13 @@ export class HookManager {
     }
     return ctx;
   }
-  getData() {
-    const map: Record<string, number> = {};
-    return [...this.list].map(([name, fnList]) => {
-      map[name] = fnList.length;
-    });
+  getSnapshot(): {
+    name: string;
+    list: { pluginName?: string }[];
+  }[] {
+    return [...this.list].map(([name, fnList]) => ({
+      name,
+      list: fnList.map(({ pluginName }) => ({ pluginName })),
+    }));
   }
 }

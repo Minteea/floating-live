@@ -87,6 +87,7 @@ export class App extends CustomEventEmitter implements PluginContext {
   emit<T>(type: string, detail: T, options?: AppEventEmitOptions & EventInit) {
     const { source, remote } = options || {};
     super.emit(type, { ...detail, source, remote }, options);
+    super.emit("event", { name: type, detail: { ...detail, source, remote } });
   }
 
   //--- 错误机制 ---//

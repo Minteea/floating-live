@@ -14,6 +14,7 @@ export class CommandManager {
 
   constructor(app: App) {
     this.app = app;
+    app.registerCommand("command.snapshot", () => this.getSnapshot());
   }
 
   /** 注册命令 */
@@ -60,7 +61,7 @@ export class CommandManager {
   }
 
   /** 获取数据 */
-  getData() {
+  getSnapshot() {
     return [...this.list].map(([name, { pluginName }]) => ({
       name,
       pluginName,

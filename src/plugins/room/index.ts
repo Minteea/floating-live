@@ -333,7 +333,7 @@ export class Room extends BasePlugin {
     this.ctx.emit("room:move", { key, position });
   }
   /** 获取快照 */
-  getSnapshot() {
+  getSnapshot(): LiveRoomData[] {
     return this.getList().map((room) => room.toData());
   }
 }
