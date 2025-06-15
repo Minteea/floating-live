@@ -27,22 +27,27 @@ import {
   PluginItem,
 } from "./plugin";
 import { PluginManager } from "./plugin/manager";
+import { bindCommand } from "./utils";
 import { CustomEventEmitter } from "./utils/EventEmitter";
 import { AppValueMap, ValueOptions } from "./value";
 import { ValueManager } from "./value/manager";
 
 export class App extends CustomEventEmitter implements PluginContext {
-  private hookManager: HookManager;
-  private pluginManager: PluginManager;
-  private commandManager: CommandManager;
-  private valueManager: ValueManager;
-  private abortController = new AbortController();
+  protected hookManager: HookManager;
+  protected pluginManager: PluginManager;
+  protected commandManager: CommandManager;
+  protected valueManager: ValueManager;
+  protected abortController = new AbortController();
   constructor() {
     super();
     this.commandManager = new CommandManager(this);
     this.hookManager = new HookManager(this);
     this.valueManager = new ValueManager(this);
     this.pluginManager = new PluginManager(this);
+
+    // 初始化命令
+    this.registerCommand("get", (e, name) => this.getValue(name));
+    this.registerCommand("set", (e, name, value) => this.setValue(name, value));
   }
   //--- 事件机制 ---//
   on<K extends keyof AppEventDetailMap>(
@@ -267,7 +272,7 @@ export class App extends CustomEventEmitter implements PluginContext {
   }
 
   setValue(name: string, value: any) {
-    this.valueManager.set(name, value);
+    return this.valueManager.set(name, value);
   }
 
   destroy(): void {

@@ -14,8 +14,6 @@ export class ValueManager {
 
   constructor(app: App) {
     this.app = app;
-    app.registerCommand("get", bindCommand(this.get, this));
-    app.registerCommand("set", bindCommand(this.set, this));
     app.registerCommand("value.snapshot", bindCommand(this.getSnapshot, this));
   }
   /** 注册值 */
