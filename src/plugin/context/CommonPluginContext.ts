@@ -363,7 +363,10 @@ export class CommonPluginContext implements PluginContext {
     }
   }
 
-  setValue<K extends keyof AppValueMap>(name: K, value: AppValueMap[K]): void {
+  setValue<K extends keyof AppValueMap>(
+    name: K,
+    value: AppValueMap[K]
+  ): boolean {
     try {
       return this.#app.setValue(name, value);
     } catch (err: any) {
