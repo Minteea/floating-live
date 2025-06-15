@@ -18,6 +18,7 @@ import {
   HookFunction,
   HookUseOptions,
 } from "../hook";
+import { LiveRoomData } from "../live";
 import { AppValueMap, ValueContext, ValueOptions } from "../value";
 
 /** 插件对象 */
@@ -207,4 +208,11 @@ export interface PluginContext {
 
 export interface AppPluginExposesMap {
   "": {};
+}
+
+export interface AppSnapshotMap {
+  plugin: { pluginName: string }[];
+  value: { name: string; value: any }[];
+  command: { name: string }[];
+  hook: { name: string; list: { pluginName?: string }[] }[];
 }

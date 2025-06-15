@@ -3,7 +3,7 @@ import { EnumValue } from "../utils/types";
 import { LiveMessage } from "./message";
 import { UserInfo } from "./messageInfo";
 
-/** 直播间客户端API */
+/** 直播间信息流监听类 */
 export abstract class LiveRoom
   extends CustomEventEmitter
   implements LiveRoomData

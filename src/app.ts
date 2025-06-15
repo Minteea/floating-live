@@ -39,10 +39,10 @@ export class App extends CustomEventEmitter implements PluginContext {
   private abortController = new AbortController();
   constructor() {
     super();
-    this.hookManager = new HookManager(this);
-    this.pluginManager = new PluginManager(this);
     this.commandManager = new CommandManager(this);
+    this.hookManager = new HookManager(this);
     this.valueManager = new ValueManager(this);
+    this.pluginManager = new PluginManager(this);
   }
   //--- 事件机制 ---//
   on<K extends keyof AppEventDetailMap>(

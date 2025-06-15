@@ -8,6 +8,7 @@ import {
   PluginRegisterOptions,
 } from "./types";
 import { CorePluginContext } from "./context/CorePluginContext";
+import { bindCommand } from "../utils";
 
 export interface PluginData<T> {
   plugin: PluginItem;
@@ -23,6 +24,7 @@ export class PluginManager {
 
   constructor(app: App) {
     this.app = app;
+    app.registerCommand("plugin.snapshot", bindCommand(this.getSnapshot, this));
   }
 
   registerSync<P extends PluginItem>(
@@ -182,7 +184,7 @@ export class PluginManager {
   getExposes(pluginName: string) {
     return this.list.get(pluginName)?.exposes;
   }
-  toData() {
-    return [...this.list.keys()];
+  getSnapshot() {
+    return [...this.list.keys()].map((n) => ({ pluginName: n }));
   }
 }

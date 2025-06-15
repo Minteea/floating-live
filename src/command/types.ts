@@ -35,12 +35,17 @@ export interface AppCommandMap {
   /** 获取注册值快照 */
   "value.snapshot": () => {
     name: string;
-    value: string;
+    value: any;
   }[];
 
   /** 获取命令快照 */
   "command.snapshot": () => {
     name: string;
+  }[];
+
+  /** 获取插件快照 */
+  "plugin.snapshot": () => {
+    pluginName: string;
   }[];
 
   /** 获取hook快照 */

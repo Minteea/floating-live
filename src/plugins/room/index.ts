@@ -98,6 +98,9 @@ declare module "../.." {
       options: Record<string, any>;
     };
   }
+  interface AppSnapshotMap {
+    room: LiveRoomData[];
+  }
 
   interface AppPluginExposesMap {
     room: PluginExposes;
