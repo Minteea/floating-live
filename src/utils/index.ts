@@ -4,7 +4,7 @@ export function bindCommand<T extends (...args: any) => any>(
   command: T,
   thisArg: any
 ): (e: CommandContext, ...args: Parameters<T>) => ReturnType<T> {
-  const c = ((e: CommandContext, ...args: Parameters<T>) =>
-    command(...args)).bind(thisArg);
+  const fn = command.bind(thisArg);
+  const c = (e: CommandContext, ...args: Parameters<T>) => fn(...args);
   return c;
 }

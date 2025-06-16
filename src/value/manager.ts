@@ -82,6 +82,7 @@ export class ValueManager {
     name: string;
     value: string;
   }[] {
+    console.log(this);
     return [...this.list].map(([name, config]) => ({
       name,
       value: config.get(),
