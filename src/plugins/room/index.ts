@@ -1,4 +1,3 @@
-import { App } from "../../app";
 import { AppError } from "../../error";
 import { LiveMessage } from "../../live/message";
 import {
@@ -119,7 +118,7 @@ export class Room extends BasePlugin {
     ctx.registerCommand("open", bindCommand(this.open, this));
     ctx.registerCommand("close", bindCommand(this.close, this));
     ctx.registerCommand("update", bindCommand(this.update, this));
-    ctx.registerCommand("room.snapshot", bindCommand(this.getSnapshot, this));
+    ctx.registerCommand("room.snapshot", bindCommand(this.toSnapshot, this));
   }
 
   expose(): PluginExposes {
@@ -336,7 +335,7 @@ export class Room extends BasePlugin {
     this.ctx.emit("room:move", { key, position });
   }
   /** 获取快照 */
-  getSnapshot(): LiveRoomData[] {
+  toSnapshot(): LiveRoomData[] {
     return this.getList().map((room) => room.toData());
   }
 }

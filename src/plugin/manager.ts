@@ -24,7 +24,7 @@ export class PluginManager {
 
   constructor(app: App) {
     this.app = app;
-    app.registerCommand("plugin.snapshot", bindCommand(this.getSnapshot, this));
+    app.registerCommand("plugin.snapshot", bindCommand(this.toSnapshot, this));
   }
 
   registerSync<P extends PluginItem>(
@@ -184,7 +184,7 @@ export class PluginManager {
   getExposes(pluginName: string) {
     return this.list.get(pluginName)?.exposes;
   }
-  getSnapshot() {
+  toSnapshot() {
     return [...this.list.keys()].map((n) => ({ pluginName: n }));
   }
 }

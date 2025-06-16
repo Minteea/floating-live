@@ -9,7 +9,7 @@ export class HookManager {
 
   constructor(app: App) {
     this.app = app;
-    app.registerCommand("hook.snapshot", () => this.getSnapshot());
+    app.registerCommand("hook.snapshot", () => this.toSnapshot());
   }
   /** 挂载钩子函数 */
   use(name: string, call: HookFunction<any>, options?: HookUseOptions) {
@@ -67,7 +67,7 @@ export class HookManager {
     }
     return ctx;
   }
-  getSnapshot(): {
+  toSnapshot(): {
     name: string;
     list: { pluginName?: string }[];
   }[] {

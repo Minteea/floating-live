@@ -8,14 +8,15 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^22.8.2",
-    "typescript": "^5.6.3",
     "rimraf": "^3.0.2",
-    "ts-node": "^10.9.1"
+    "ts-node": "^10.9.1",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.6.3"
   },
   "scripts": {
     "tsc": "tsc -b",
     "clear": "rimraf dist",
-    "build": "npm run clear && tsc -b",
+    "build": "npm run clear && tsc -b && tsc-alias",
     "prepack": "npm run build",
     "postpack": "npm run clear"
   }
