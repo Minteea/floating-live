@@ -14,7 +14,6 @@ export class CommandManager {
 
   constructor(app: App) {
     this.app = app;
-    app.registerCommand("command.snapshot", () => this.toSnapshot());
   }
 
   /** 注册命令 */

@@ -46,6 +46,9 @@ export class App extends CustomEventEmitter implements PluginContext {
     this.pluginManager = new PluginManager(this);
 
     // 初始化命令
+    this.registerCommand("command.snapshot", () =>
+      this.commandManager.toSnapshot()
+    );
     this.registerCommand("get", (e, name) => this.getValue(name));
     this.registerCommand("set", (e, name, value) => this.setValue(name, value));
   }
