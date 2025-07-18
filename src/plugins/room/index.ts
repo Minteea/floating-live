@@ -118,6 +118,7 @@ export class Room extends BasePlugin {
     ctx.registerCommand("open", bindCommand(this.open, this));
     ctx.registerCommand("close", bindCommand(this.close, this));
     ctx.registerCommand("update", bindCommand(this.update, this));
+    ctx.registerCommand("move", bindCommand(this.move, this));
     ctx.registerCommand("room.snapshot", bindCommand(this.toSnapshot, this));
   }
 
