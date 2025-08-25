@@ -52,16 +52,22 @@ export interface GiftInfo {
   id: number | string;
   /** 礼物数量 */
   num: number;
-  /** 总价值 */
-  value: number;
-  /** 平台货币 */
-  currency?: string | number;
+  /** 礼物价值(总价，按平台货币计算) */
+  value?: number;
+  /** 价值类型 */
+  valueType?: string | number;
+  /** 礼物显示价格(总价，按平台货币计算) */
+  price?: number;
+  /** 平台货币名称 */
+  currency?: string;
   /** 礼物连击数 */
   combo?: string;
   /** 礼物连击id */
   comboId?: string;
-  /** 人民币价值 */
+  /** 礼物金额(总价，按消费现金计算) */
   money?: number;
+  /** 礼物金额货币 */
+  moneyCurrency?: string;
   /** 行为 */
   action?: string;
   /** 随机礼物信息 */
@@ -69,7 +75,7 @@ export interface GiftInfo {
   /** 图片信息 */
   image?: string;
   /** 单位 */
-  unit?: string;
+  unit?: string | TimeUnit;
 }
 
 export const ImageSize = {
@@ -101,3 +107,12 @@ export const UserType = {
   anchor: 2,
 } as const;
 export type UserType = EnumValue<typeof UserType>;
+
+export type TimeUnit =
+  | "second"
+  | "minute"
+  | "hour"
+  | "day"
+  | "week"
+  | "month"
+  | "year";

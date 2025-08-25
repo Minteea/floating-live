@@ -82,7 +82,7 @@ export namespace LiveMessage {
       name: string;
       /** 开通vip等级 */
       level?: number;
-      /** 持续时间(天数) */
+      /** 持续时间(ms) */
       duration: number;
     };
   }
@@ -101,7 +101,7 @@ export namespace LiveMessage {
       color?: number | string;
       /** 礼物信息 */
       gift: GiftInfo;
-      /** (SC)持续时间 */
+      /** (SC)持续时间(ms) */
       duration: number;
     };
   }
@@ -113,7 +113,7 @@ export namespace LiveMessage {
       /** 用户信息 */
       user: UserInfo;
       /** 操作者 */
-      operator: UserInfo | { type: null | UserType };
+      operator?: UserInfo | { type: UserType };
     };
   }
 

@@ -15,5 +15,6 @@ export class AppError extends Error {
     this.id = id;
     this.source = options?.source;
     this.cause = options?.cause;
+    this.target = options?.target;
   }
 }
