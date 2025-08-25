@@ -27,14 +27,10 @@ export interface LivePlatformInfo {
   /** 统计信息 */
   stats?: Record<string, string>;
   /** 货币信息 */
-  currency?: {
+  valueType?: {
     [key: string | number]: {
       /** 货币名称 */
       name: string;
-      /** 1货币面值等值value (1面值/1数值) */
-      ratio: number;
-      /** 1单位消费金额等值value (1.00CNY/1数值) (若为0则为免费货币) */
-      money?: number;
     };
   };
 }
