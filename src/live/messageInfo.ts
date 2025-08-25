@@ -56,18 +56,16 @@ export interface GiftInfo {
   value?: number;
   /** 价值类型 */
   valueType?: string | number;
-  /** 礼物显示价格(总价，按平台货币计算) */
-  price?: number;
   /** 平台货币名称 */
-  currency?: string;
+  valueName?: string;
   /** 礼物连击数 */
-  combo?: string;
+  combo?: number;
   /** 礼物连击id */
   comboId?: string;
   /** 礼物金额(总价，按消费现金计算) */
-  money?: number;
+  price?: number;
   /** 礼物金额货币 */
-  moneyCurrency?: string;
+  currency?: string;
   /** 行为 */
   action?: string;
   /** 随机礼物信息 */
