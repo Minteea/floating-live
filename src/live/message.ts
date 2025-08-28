@@ -92,7 +92,7 @@ export namespace LiveMessage {
     type: "superchat";
     info: {
       /** 留言id */
-      id: string;
+      id: string | number;
       /** 用户信息 */
       user: UserInfo;
       /** 文本内容 */
@@ -160,8 +160,16 @@ export namespace LiveMessage {
   export interface Lottery extends Base {
     type: "lottery";
     info: {
-      id: number;
-      award: GiftInfo;
+      title: string;
+      role: "user" | "anchor";
+      user?: UserInfo;
+      gift?: GiftInfo;
+      id: string | number;
+      award?: GiftInfo | GiftInfo[];
+      value?: number;
+      valueType?: string | number;
+      price?: number;
+      currency?: string;
     };
   }
 
@@ -169,9 +177,10 @@ export namespace LiveMessage {
   export interface LotteryResult extends Base {
     type: "lottery_result";
     info: {
-      id: number;
-      award: GiftInfo;
-      result: UserInfo[];
+      title: string;
+      role: "user" | "anchor";
+      id: string | number;
+      result: { user: UserInfo; award: GiftInfo | GiftInfo[] }[];
     };
   }
 
@@ -179,7 +188,7 @@ export namespace LiveMessage {
   export interface Redpacket extends Base {
     type: "redpacket";
     info: {
-      id: number;
+      id: string | number;
       gifts?: GiftInfo[];
       value?: number;
       currency?: string | number;
@@ -190,7 +199,7 @@ export namespace LiveMessage {
   export interface RedpacketResult extends Base {
     type: "redpacket_result";
     info: {
-      id: number;
+      id: string | number;
       result: {
         user: UserInfo;
         gift?: GiftInfo;
@@ -213,7 +222,5 @@ export namespace LiveMessage {
     | LiveDetail
     | LiveStats
     | Lottery
-    | LotteryResult
-    | Redpacket
-    | RedpacketResult;
+    | LotteryResult;
 }
