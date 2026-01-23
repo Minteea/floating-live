@@ -23,11 +23,14 @@ import { AppValueMap, ValueContext, ValueOptions } from "../value";
 
 /** 插件对象 */
 export interface PluginItem {
+  /** 插件名称 */
   pluginName: string;
+  /** 插件作用 */
+  role?: string;
   /** 初始化插件 */
   init?(
     ctx: PluginContext,
-    options?: Record<string, any>
+    options?: Record<string, any>,
   ): void | Promise<void>;
   /** 插件销毁 */
   destroy?(ctx: PluginContext): void | Promise<void>;
@@ -62,26 +65,26 @@ export interface PluginContext {
   /** 监听事件 */
   on<K extends keyof AppEventDetailMap>(
     type: K,
-    listener: AppEventListener<AppEventDetailMap[K]>
+    listener: AppEventListener<AppEventDetailMap[K]>,
   ): void;
 
   /** 单次监听事件 */
   once<K extends keyof AppEventDetailMap>(
     type: K,
-    listener: AppEventListener<AppEventDetailMap[K]>
+    listener: AppEventListener<AppEventDetailMap[K]>,
   ): void;
 
   /** 取消监听事件 */
   off<K extends keyof AppEventDetailMap>(
     type: K,
-    listener: AppEventListener<AppEventDetailMap[K]>
+    listener: AppEventListener<AppEventDetailMap[K]>,
   ): void;
 
   /** 发送事件 */
   emit<K extends keyof AppEventDetailMap>(
     type: K,
     detail: AppEventDetailMap[K],
-    options?: AppEventEmitOptions & EventInit
+    options?: AppEventEmitOptions & EventInit,
   ): void;
 
   /** 抛出错误 */
@@ -94,7 +97,7 @@ export interface PluginContext {
   /** 注册插件 */
   register<P extends PluginItem>(
     plugin: PluginConstructor<P>,
-    options?: PluginInitOptions
+    options?: PluginInitOptions,
   ): Promise<P>;
 
   /** 取消注册插件 */
@@ -102,13 +105,13 @@ export interface PluginContext {
 
   /** 获取插件暴露对象 */
   getPluginExposes<K extends keyof AppPluginExposesMap>(
-    pluginName: K
+    pluginName: K,
   ): AppPluginExposesMap[K];
 
   /** 等待plugin注册 */
   whenRegister<K extends keyof AppPluginExposesMap>(
     pluginName: K,
-    callback: (exposes: AppPluginExposesMap[K]) => (() => void) | void
+    callback: (exposes: AppPluginExposesMap[K]) => (() => void) | void,
   ): void;
   whenRegister(pluginName: string, callback: () => (() => void) | void): void;
 
@@ -120,7 +123,7 @@ export interface PluginContext {
   registerCommand<T extends keyof AppCommandMap>(
     name: T,
     func: CommandFunction<AppCommandMap[T]>,
-    options?: CommandOptions
+    options?: CommandOptions,
   ): void;
 
   /** 取消注册指令 */
@@ -147,34 +150,34 @@ export interface PluginContext {
   useHook<T extends keyof AppHookMap>(
     name: T,
     func: HookFunction<AppHookMap[T]>,
-    options?: HookUseOptions
+    options?: HookUseOptions,
   ): void;
 
   /** 取消挂载钩子 */
   unuseHook<T extends keyof AppHookMap>(
     name: T,
-    func: HookFunction<AppHookMap[T]>
+    func: HookFunction<AppHookMap[T]>,
   ): void;
 
   /** 调用钩子 */
   callHook<T extends keyof AppHookMap>(
     name: T,
     ctx: AppHookMap[T],
-    options?: HookCallOptions
+    options?: HookCallOptions,
   ): Promise<HookContext<AppHookMap[T]>>;
 
   /** 调用同步钩子 */
   callHookSync<T extends keyof AppHookMap>(
     name: T,
     ctx: AppHookMap[T],
-    options?: HookCallOptions
+    options?: HookCallOptions,
   ): HookContext<AppHookMap[T]>;
 
   //--- 值机制 ---//
   /** 注册值 */
   registerValue<K extends keyof AppValueMap>(
     name: K,
-    options: ValueOptions<AppValueMap[K]>
+    options: ValueOptions<AppValueMap[K]>,
   ): ValueContext<AppValueMap[K]>;
 
   /** 取消注册值 */
@@ -183,13 +186,13 @@ export interface PluginContext {
   /** 监听值 */
   watch<K extends keyof AppValueMap>(
     name: K,
-    watcher: (value: AppValueMap[K]) => void
+    watcher: (value: AppValueMap[K]) => void,
   ): void;
 
   /** 取消监听值 */
   unwatch<K extends keyof AppValueMap>(
     name: K,
-    watcher: (value: AppValueMap[K]) => void
+    watcher: (value: AppValueMap[K]) => void,
   ): void;
 
   /** 值是否存在 */

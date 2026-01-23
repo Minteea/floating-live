@@ -5,7 +5,9 @@ export type * from "./types";
 
 export class BasePlugin implements PluginItem {
   static pluginName: string;
-  pluginName!: string;
+  get pluginName() {
+    return (this.constructor as typeof BasePlugin).pluginName;
+  }
   ctx: PluginContext;
   readonly Error = AppError;
   readonly throw: (err?: Error) => void;

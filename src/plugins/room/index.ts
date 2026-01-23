@@ -62,8 +62,11 @@ declare module "../.." {
   interface AppEventDetailMap {
     "live:message": { message: LiveMessage.All };
     "live:raw": {
+      /** 平台 */
       platform: string;
       roomId: string | number;
+      /** 服务来源 */
+      service?: string;
       data: any;
     };
 

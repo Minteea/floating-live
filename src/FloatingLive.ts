@@ -1,12 +1,15 @@
 import { LiveRoom } from ".";
 import { App } from "./app";
 import { Room } from "./plugins/room";
+import { Platform } from "./plugins/platform";
 
 export class FloatingLive extends App {
   room: Room;
+  platform: Platform;
   constructor() {
     super();
     this.room = this.registerSync(Room, { core: true });
+    this.platform = this.registerSync(Platform, { core: true });
   }
   /** 添加房间 */
   add(platform: string, id: number, options?: boolean | Record<string, any>) {
