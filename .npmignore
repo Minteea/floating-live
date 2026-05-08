@@ -12,3 +12,9 @@ demo/**/*
 
 tsconfig.json
 *.tsbuildinfo
+
+.yarnrc.yml
+.yarn
+/playground
+.deprecated
+/src
