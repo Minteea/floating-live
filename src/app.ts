@@ -25,8 +25,9 @@ import {
   PluginContext,
   PluginInitOptions,
   PluginItem,
+  PluginRegisterOptions,
 } from "./plugin";
-import { PluginManager } from "./plugin/manager";
+import { PluginManager, WhenRegisterCallback } from "./plugin/manager";
 import { bindCommand } from "./utils";
 import { CustomEventEmitter } from "./utils/EventEmitter";
 import { AppValueMap, ValueOptions } from "./value";
@@ -112,20 +113,22 @@ export class App extends CustomEventEmitter implements PluginContext {
   /** 注册插件 */
   register<P extends PluginItem>(
     plugin: PluginConstructor<P>,
-    options?: PluginInitOptions
+    options?: PluginInitOptions,
+    registerOptions?: PluginRegisterOptions
   ): Promise<P> {
-    return this.pluginManager.register(plugin, options);
+    return this.pluginManager.register(plugin, options, registerOptions);
   }
 
   /** 同步注册插件 */
   registerSync<P extends PluginItem>(
     plugin: PluginConstructor<P>,
-    options?: PluginInitOptions
+    options?: PluginInitOptions,
+    registerOptions?: PluginRegisterOptions
   ): P {
-    return this.pluginManager.registerSync(plugin, options);
+    return this.pluginManager.registerSync(plugin, options, registerOptions);
   }
 
-  /** 取消注册插件 */
+  /** 注销插件 */
   unregister(pluginName: string) {
     this.pluginManager.unregister(pluginName);
   }
@@ -134,38 +137,18 @@ export class App extends CustomEventEmitter implements PluginContext {
     this.pluginManager.getPlugin(pluginName);
   }
 
-  whenRegister<K extends keyof AppPluginExposesMap>(
-    pluginName: K,
-    callback: (exposes: AppPluginExposesMap[K]) => (() => void) | void
-  ): void;
-  whenRegister(pluginName: string, callback: () => (() => void) | void): void;
   whenRegister(
     pluginName: string,
-    callback: (exposes: any) => (() => void) | void
+    callback: WhenRegisterCallback
   ): void {
-    let registered = this.hasPlugin(pluginName);
-    let whenUnregistered: (() => void) | void;
-    if (registered) {
-      whenUnregistered = callback(this.getPluginExposes(pluginName));
-    }
+    return this.pluginManager.whenRegister(pluginName, callback);
+  }
 
-    this.on("plugin:register", ({ pluginName: name }: any) => {
-      if (pluginName == name) {
-        if (registered) {
-          whenUnregistered?.();
-        }
-        whenUnregistered = callback(this.getPluginExposes(pluginName));
-        registered = true;
-      }
-    });
-
-    this.on("plugin:unregister", ({ pluginName: name }: any) => {
-      if (pluginName == name) {
-        whenUnregistered?.();
-        whenUnregistered = undefined;
-        registered = false;
-      }
-    });
+  cancelWhenRegister(
+    pluginName: string,
+    callback: WhenRegisterCallback
+  ): void {
+    return this.pluginManager.cancelWhenRegister(pluginName, callback);
   }
 
   getPluginExposes(pluginName: string): any {
@@ -290,6 +273,10 @@ export class App extends CustomEventEmitter implements PluginContext {
     } else {
       Object.defineProperty(this, key, value);
     }
+  }
+
+  getApp(): App {
+    return this;
   }
 
   get signal() {

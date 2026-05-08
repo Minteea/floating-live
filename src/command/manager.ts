@@ -27,7 +27,7 @@ export class CommandManager {
     this.app.emit("command:register", { name });
   }
 
-  /** 取消注册命令 */
+  /** 注销命令 */
   unregister(name: string): void {
     this.list.delete(name);
     this.app.emit("command:unregister", { name });

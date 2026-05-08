@@ -19,6 +19,7 @@ import {
   HookContext,
 } from "../../hook";
 import { AppValueMap, ValueContext, ValueOptions } from "../../value";
+import { WhenRegisterCallback } from "../manager";
 import type {
   PluginContext,
   PluginConstructor,
@@ -46,8 +47,14 @@ export class CommonPluginContext implements PluginContext {
     return false;
   }
 
+  getApp(): App | null {
+    return this.#accessApp ? this.#app : null;
+  }
+
   /** 主程序，插件不可访问 */
   #app: App;
+
+  readonly #accessApp: boolean;
 
   /** AbortController，插件不可访问 */
   #abortController = new AbortController();
@@ -60,15 +67,18 @@ export class CommonPluginContext implements PluginContext {
     events: new ListMap<string, AppEventListener<any>>(),
   };
 
+  #whenRegisterMap = new ListMap<string, WhenRegisterCallback>();
+
   getRegisteredPlugins() {
     return [...this.#registered.plugins];
   }
 
   /** 插件名称 */
   readonly pluginName: string;
-  constructor(app: App, pluginName: string) {
+  constructor(app: App, pluginName: string, options?: { accessApp?: boolean }) {
     this.#app = app;
     this.pluginName = pluginName;
+    this.#accessApp = options?.accessApp ?? false;
   }
 
   /** 抛出错误
@@ -114,31 +124,18 @@ export class CommonPluginContext implements PluginContext {
 
   whenRegister(
     pluginName: string,
-    callback: (exposes: any) => (() => void) | void
+    callback: WhenRegisterCallback
   ): void {
-    let registered = this.hasPlugin(pluginName);
-    let whenUnregistered: (() => void) | void;
-    if (registered) {
-      whenUnregistered = callback(this.getPluginExposes(pluginName as any));
-    }
+    this.#app.whenRegister(pluginName, callback);
+    this.#whenRegisterMap.addItem(pluginName, callback);
+  }
 
-    this.on("plugin:register", ({ pluginName: name }) => {
-      if (pluginName == name) {
-        if (registered) {
-          whenUnregistered?.();
-        }
-        whenUnregistered = callback(this.getPluginExposes(pluginName as any));
-        registered = true;
-      }
-    });
-
-    this.on("plugin:unregister", ({ pluginName: name }) => {
-      if (pluginName == name) {
-        whenUnregistered?.();
-        whenUnregistered = undefined;
-        registered = false;
-      }
-    });
+  cancelWhenRegister(
+    pluginName: string,
+    callback: WhenRegisterCallback
+  ): void {
+    this.#app.cancelWhenRegister(pluginName, callback);
+    this.#whenRegisterMap.deleteItem(pluginName, callback);
   }
 
   hasPlugin(pluginName: string): boolean {
@@ -375,6 +372,11 @@ export class CommonPluginContext implements PluginContext {
   }
 
   destroy() {
+
+    this.#whenRegisterMap.forEach((callbacks, pluginName) => {
+      callbacks.forEach((callback) => this.#app.cancelWhenRegister(pluginName, callback));
+    });
+
     const { plugins, values, hooks, commands } = this.#registered;
     plugins.forEach((pluginName) => this.#app.unregister(pluginName));
     hooks.forEach((hookList, name) =>

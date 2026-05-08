@@ -6,11 +6,14 @@ import { UserInfo } from "./messageInfo";
 /** 直播间信息流监听类 */
 export abstract class LiveRoom
   extends CustomEventEmitter
-  implements LiveRoomData
-{
+  implements LiveRoomData {
   constructor() {
     super();
   }
+  get valid() {
+    return true;
+  }
+
   /** 平台 */
   abstract readonly platform: string;
   /** 房间id */
@@ -105,6 +108,7 @@ export abstract class LiveRoom
   /** 生成房间数据 */
   toData(): LiveRoomData {
     return {
+      valid: this.valid,
       platform: this.platform,
       id: this.id,
       detail: this.detail,
@@ -154,6 +158,8 @@ export interface LiveRoom {
 
 /** 房间数据 */
 export interface LiveRoomData {
+  /** 房间有效性 */
+  valid: boolean;
   /** 平台id */
   platform: string;
   /** 房间id */
@@ -281,4 +287,52 @@ export interface LiveRoomEventMap {
   open: {};
   /** 关闭直播间连接 */
   close: {};
+}
+
+
+export class InvalidLiveRoom implements LiveRoomData {
+  get valid(): false {
+    return false;
+  }
+  constructor(platform: string, id: string | number) {
+    this.platform = platform;
+    this.id = id;
+  }
+  readonly platform: string;
+  readonly id: string | number;
+  detail: LiveRoomDetailInfo = {};
+  stats?: LiveRoomStatsInfo;
+  anchor: UserInfo = { name: "", id: 0 };
+  status: LiveRoomStatus = LiveRoomStatus.off;
+  timestamp: number = 0;
+  connectionStatus: LiveConnectionStatus = LiveConnectionStatus.off;
+  openStatus: LiveRoomOpenStatus = 0;
+  liveId?: string;
+  get opened() {
+    return this.openStatus == 2;
+  }
+  available: boolean = false;
+
+  /** 生成房间数据 */
+  toData(): LiveRoomData {
+    return {
+      valid: this.valid,
+      platform: this.platform,
+      id: this.id,
+      detail: this.detail,
+      stats: this.stats,
+      anchor: this.anchor,
+      timestamp: this.timestamp,
+      status: this.status,
+      liveId: this.liveId,
+      openStatus: this.openStatus,
+      opened: this.opened,
+      available: this.available,
+      connectionStatus: this.connectionStatus,
+      key: this.key,
+    };
+  }
+  get key(): string {
+    return `${this.platform}:${this.id}`;
+  }
 }

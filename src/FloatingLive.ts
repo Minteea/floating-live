@@ -8,8 +8,8 @@ export class FloatingLive extends App {
   platform: Platform;
   constructor() {
     super();
-    this.room = this.registerSync(Room, { core: true });
-    this.platform = this.registerSync(Platform, { core: true });
+    this.room = this.registerSync(Room, {}, { unremovable: true, accessApp: true, pluginType: "core" });
+    this.platform = this.registerSync(Platform, {}, { unremovable: true, accessApp: true, pluginType: "core" });
   }
   /** 添加房间 */
   add(platform: string, id: number, options?: boolean | Record<string, any>) {

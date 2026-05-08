@@ -33,7 +33,7 @@ export class ValueManager {
       },
     };
   }
-  /** 取消注册 */
+  /** 注销值 */
   unregister(name: string): void {
     this.list.delete(name);
     this.app.emit("value:unregister", { name });

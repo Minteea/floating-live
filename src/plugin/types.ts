@@ -20,6 +20,7 @@ import {
 } from "../hook";
 import { LiveRoomData } from "../live";
 import { AppValueMap, ValueContext, ValueOptions } from "../value";
+import { WhenRegisterCallback } from "./manager";
 
 /** 插件对象 */
 export interface PluginItem {
@@ -41,26 +42,33 @@ export interface PluginItem {
 /** 插件构造器 */
 export interface PluginConstructor<P extends PluginItem> {
   pluginName: string;
-  new (ctx: PluginContext, options: any): P;
+  new(ctx: PluginContext, options: any): P;
 }
 
 /** 插件初始化选项 */
-export interface PluginInitOptions {}
+export interface PluginInitOptions { }
 
 /** 插件注册选项 */
 export interface PluginRegisterOptions {
   /** 提供的插件上下文 */
   context?: PluginContext;
-  /** 核心插件，不可解除注册 */
+  /** 核心插件，不可解除注册 @deprecated */
   core?: boolean;
+  /** 不可注销 */
+  unremovable?: boolean;
+  /** 可访问App实例 */
+  accessApp?: boolean;
+  /** 插件类型 */
+  pluginType?: "core" | "framework" | "";
 }
 
 /** 插件上下文 */
 export interface PluginContext {
   /** 安全插件上下文 */
   safe?: boolean;
-  /** App实例，仅在核心插件上下文提供 */
-  app?: App;
+  /** 获取App实例，仅在核心插件上下文提供 */
+  getApp(): App | null;
+
   //--- 事件机制 ---//
   /** 监听事件 */
   on<K extends keyof AppEventDetailMap>(
@@ -100,7 +108,7 @@ export interface PluginContext {
     options?: PluginInitOptions,
   ): Promise<P>;
 
-  /** 取消注册插件 */
+  /** 注销插件 */
   unregister(pluginName: string): void;
 
   /** 获取插件暴露对象 */
@@ -109,11 +117,10 @@ export interface PluginContext {
   ): AppPluginExposesMap[K];
 
   /** 等待plugin注册 */
-  whenRegister<K extends keyof AppPluginExposesMap>(
-    pluginName: K,
-    callback: (exposes: AppPluginExposesMap[K]) => (() => void) | void,
-  ): void;
-  whenRegister(pluginName: string, callback: () => (() => void) | void): void;
+
+  whenRegister(pluginName: string, callback: WhenRegisterCallback): void;
+
+  cancelWhenRegister(pluginName: string, callback: WhenRegisterCallback): void;
 
   /** 是否存在插件 */
   hasPlugin(pluginName: string): boolean;
@@ -126,7 +133,7 @@ export interface PluginContext {
     options?: CommandOptions,
   ): void;
 
-  /** 取消注册指令 */
+  /** 注销指令 */
   unregisterCommand(name: string): void;
 
   /** 检测值是否存在 */
@@ -180,7 +187,7 @@ export interface PluginContext {
     options: ValueOptions<AppValueMap[K]>,
   ): ValueContext<AppValueMap[K]>;
 
-  /** 取消注册值 */
+  /** 注销值 */
   unregisterValue(name: string): void;
 
   /** 监听值 */
