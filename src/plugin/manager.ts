@@ -237,8 +237,8 @@ export class PluginManager {
       // 如果目标插件的回调列表不存在，创建一个新的回调列表并添加回调函数
       this.whenRegisterMap.set(pluginName, new Map([[callback, null]]));
     } else {
-      // 确保回调函数不重复注册
-      if (!this.whenRegisterMap.get(pluginName)!.has(callback)) {
+      // 确保回调函数不重复注册，如果重复，则直接返回
+      if (this.whenRegisterMap.get(pluginName)!.has(callback)) {
         return;
       }
       // 如果目标插件的回调列表已存在，直接添加回调函数
