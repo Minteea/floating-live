@@ -199,7 +199,7 @@ export class CommonPluginContext implements PluginContext {
     listener: AppEventListener<AppEventDetailMap[K]>
   ) {
     try {
-      this.#app.on(type, listener);
+      this.#app.on(type, listener, this.signal);
       this.#registered.events.addItem(type, listener);
     } catch (err: any) {
       this.throw(err);
@@ -211,7 +211,7 @@ export class CommonPluginContext implements PluginContext {
     listener: AppEventListener<AppEventDetailMap[K]>
   ) {
     try {
-      this.#app.once(type, listener);
+      this.#app.once(type, listener, this.signal);
       this.#registered.events.addItem(type, listener);
     } catch (err: any) {
       this.throw(err);
@@ -380,7 +380,7 @@ export class CommonPluginContext implements PluginContext {
     const { plugins, values, hooks, commands } = this.#registered;
     plugins.forEach((pluginName) => this.#app.unregister(pluginName));
     hooks.forEach((hookList, name) =>
-      hookList.forEach((hookFunc) => this.#app.off(name as any, hookFunc))
+      hookList.forEach((hookFunc) => this.#app.unuseHook(name as any, hookFunc))
     );
     commands.forEach((name) => this.#app.unregisterCommand(name));
     values.forEach((name) => this.#app.unregisterValue(name));
