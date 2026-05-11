@@ -6,16 +6,22 @@ import { UserInfo } from "./messageInfo";
 /** 直播间信息流监听类 */
 export abstract class LiveRoom
   extends CustomEventEmitter
-  implements LiveRoomData {
+  implements LiveRoomData
+{
   constructor() {
     super();
   }
-  get valid() {
+  get valid(): true {
     return true;
+  }
+  get serviceId() {
+    return this.service ? `${this.platform}.${this.service}` : this.platform;
   }
 
   /** 平台 */
   abstract readonly platform: string;
+  /** api服务 */
+  abstract readonly service: string;
   /** 房间id */
   abstract readonly id: string | number;
   /** 房间详情 */
@@ -54,14 +60,18 @@ export abstract class LiveRoom
   abstract fetchData?(): Promise<LiveRoomData>;
   /** 设置房间数据 */
   abstract setData?(data: LiveRoomData): LiveRoomData;
+  /** 销毁钩子 */
+  protected abstract onDestroy?(): void;
 
-  /** 销毁 */
+  /** 销毁
+   * @internal 请勿在继承 LiveRoom 的子类中声明该方法，应使用 onDestroy 钩子
+   */
   public destroy() {
+    // 关闭房间
     this.close();
+    // 调用 onDestory 钩子
     this.onDestroy?.();
   }
-  /** 销毁事件 */
-  protected onDestroy?: () => void;
 
   /** 发送消息 */
   protected emitMessage(msg: LiveMessage.All) {
@@ -110,6 +120,7 @@ export abstract class LiveRoom
     return {
       valid: this.valid,
       platform: this.platform,
+      service: this.service,
       id: this.id,
       detail: this.detail,
       stats: this.stats,
@@ -122,10 +133,67 @@ export abstract class LiveRoom
       available: this.available,
       connectionStatus: this.connectionStatus,
       key: this.key,
+      serviceId: this.serviceId,
     };
   }
   get key(): string {
-    return `${this.platform}:${this.id}`;
+    return `${this.serviceId}:${this.id}`;
+  }
+}
+
+/** 无效房间 */
+export class InvalidLiveRoom implements LiveRoomData {
+  get valid(): false {
+    return false;
+  }
+  get serviceId() {
+    return this.service ? `${this.platform}.${this.service}` : this.platform;
+  }
+  constructor(serviceId: string, id: string | number) {
+    const [platform, ...serviceIdArr] = serviceId.split(".");
+    this.platform = platform;
+    this.id = id;
+    this.service = serviceIdArr.join(".");
+  }
+  readonly platform: string;
+  readonly id: string | number;
+  readonly service: string;
+  detail: LiveRoomDetailInfo = {};
+  stats?: LiveRoomStatsInfo;
+  anchor: UserInfo = { name: "", id: 0 };
+  status: LiveRoomStatus = LiveRoomStatus.off;
+  timestamp: number = 0;
+  connectionStatus: LiveConnectionStatus = LiveConnectionStatus.off;
+  openStatus: LiveRoomOpenStatus = 0;
+  liveId?: string;
+  get opened() {
+    return this.openStatus == 2;
+  }
+  available: boolean = false;
+
+  /** 生成房间数据 */
+  toData(): LiveRoomData {
+    return {
+      valid: this.valid,
+      platform: this.platform,
+      service: this.service,
+      id: this.id,
+      detail: this.detail,
+      stats: this.stats,
+      anchor: this.anchor,
+      timestamp: this.timestamp,
+      status: this.status,
+      liveId: this.liveId,
+      openStatus: this.openStatus,
+      opened: this.opened,
+      available: this.available,
+      connectionStatus: this.connectionStatus,
+      serviceId: this.serviceId,
+      key: this.key,
+    };
+  }
+  get key(): string {
+    return `${this.serviceId}:${this.id}`;
   }
 }
 
@@ -133,26 +201,26 @@ export interface LiveRoom {
   on<K extends keyof LiveRoomEventMap>(
     type: K,
     listener: (e: LiveRoomEventMap[K]) => void,
-    signal?: AbortSignal
+    signal?: AbortSignal,
   ): void;
 
   once<K extends keyof LiveRoomEventMap>(
     type: K,
     listener: (e: LiveRoomEventMap[K]) => void,
-    signal?: AbortSignal
+    signal?: AbortSignal,
   ): void;
 
   off<K extends keyof LiveRoomEventMap>(
     type: K,
-    listener: (e: LiveRoomEventMap[K]) => void
+    listener: (e: LiveRoomEventMap[K]) => void,
   ): void;
 
   emit<K extends keyof LiveRoomEventMap>(
-    type: LiveRoomEventMap[K] extends Record<string, never> ? K : never
+    type: LiveRoomEventMap[K] extends Record<string, never> ? K : never,
   ): void;
   emit<K extends keyof LiveRoomEventMap>(
     type: K,
-    detail: LiveRoomEventMap[K]
+    detail: LiveRoomEventMap[K],
   ): void;
 }
 
@@ -162,8 +230,12 @@ export interface LiveRoomData {
   valid: boolean;
   /** 平台id */
   platform: string;
+  /** API服务 */
+  service: string;
   /** 房间id */
   id: number | string;
+  /** API服务id */
+  serviceId: string;
   /** 房间key */
   key: string;
   /** 基本信息 */
@@ -287,52 +359,4 @@ export interface LiveRoomEventMap {
   open: {};
   /** 关闭直播间连接 */
   close: {};
-}
-
-
-export class InvalidLiveRoom implements LiveRoomData {
-  get valid(): false {
-    return false;
-  }
-  constructor(platform: string, id: string | number) {
-    this.platform = platform;
-    this.id = id;
-  }
-  readonly platform: string;
-  readonly id: string | number;
-  detail: LiveRoomDetailInfo = {};
-  stats?: LiveRoomStatsInfo;
-  anchor: UserInfo = { name: "", id: 0 };
-  status: LiveRoomStatus = LiveRoomStatus.off;
-  timestamp: number = 0;
-  connectionStatus: LiveConnectionStatus = LiveConnectionStatus.off;
-  openStatus: LiveRoomOpenStatus = 0;
-  liveId?: string;
-  get opened() {
-    return this.openStatus == 2;
-  }
-  available: boolean = false;
-
-  /** 生成房间数据 */
-  toData(): LiveRoomData {
-    return {
-      valid: this.valid,
-      platform: this.platform,
-      id: this.id,
-      detail: this.detail,
-      stats: this.stats,
-      anchor: this.anchor,
-      timestamp: this.timestamp,
-      status: this.status,
-      liveId: this.liveId,
-      openStatus: this.openStatus,
-      opened: this.opened,
-      available: this.available,
-      connectionStatus: this.connectionStatus,
-      key: this.key,
-    };
-  }
-  get key(): string {
-    return `${this.platform}:${this.id}`;
-  }
 }

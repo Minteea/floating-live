@@ -1,5 +1,5 @@
 import { App } from "../app";
-import { AppError } from "../error";
+import { AppErrorLegacy } from "../error";
 import {
   CommandItem,
   CommandFunction,
@@ -20,7 +20,7 @@ export class CommandManager {
   register(
     name: string,
     call: CommandFunction<any>,
-    options?: CommandOptions
+    options?: CommandOptions,
   ): void {
     const { pluginName } = options || {};
     this.list.set(name, { call, pluginName });
@@ -42,14 +42,14 @@ export class CommandManager {
   callWithOptions(name: string, options: CommandCallOptions, ...args: any[]) {
     const command = this.list.get(name);
     if (!command) {
-      throw new AppError("command:call_unexist", {
+      throw new AppErrorLegacy("command:call_unexist", {
         message: `命令不存在: ${name}`,
         target: `command/${name}`,
       });
     } else {
       return command.call(
         { source: options.source, client: options.client },
-        ...args
+        ...args,
       );
     }
   }

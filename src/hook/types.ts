@@ -1,5 +1,5 @@
 export type HookFunction<T> = (
-  ctx: T
+  ctx: T,
 ) => boolean | void | Promise<boolean | void>;
 
 export interface HookItem<T> {
@@ -9,6 +9,7 @@ export interface HookItem<T> {
 
 export interface HookUseOptions {
   pluginName?: string;
+  // signal?: AbortSignal
 }
 export interface HookCallOptions {
   pluginName?: string;

@@ -5,7 +5,7 @@ import type {
   CommandFunction,
   AppCommandMap,
 } from "../../command";
-import { AppError, ErrorOptions } from "../../error";
+import { AppErrorLegacy, ErrorOptions } from "../../error";
 import {
   AppEventListener,
   AppEventEmitOptions,
@@ -19,13 +19,13 @@ import {
   HookContext,
 } from "../../hook";
 import { AppValueMap, ValueContext, ValueOptions } from "../../value";
-import { WhenRegisterCallback } from "../manager";
 import type {
   PluginContext,
   PluginConstructor,
   PluginInitOptions,
   AppPluginExposesMap,
   PluginItem,
+  WhenRegisterCallback,
 } from "../types";
 
 class ListMap<K, V> extends Map<K, Set<V>> {
@@ -85,18 +85,18 @@ export class CommonPluginContext implements PluginContext {
    *
    * 一般用于自身导致的错误，若非插件本身导致的错误，使用throw语句即可
    */
-  throw(err: AppError) {
+  throw(err: AppErrorLegacy): never {
     err.source ??= `plugin:${this.pluginName}`;
     throw err;
   }
 
   error(id: string, options: ErrorOptions) {
-    return new AppError(id, options);
+    return new AppErrorLegacy(id, options);
   }
 
   register<P extends PluginItem>(
     plugin: PluginConstructor<P>,
-    options?: PluginInitOptions
+    options?: PluginInitOptions,
   ): Promise<P> {
     try {
       const p = this.#app.register(plugin, options);
@@ -117,23 +117,17 @@ export class CommonPluginContext implements PluginContext {
   }
 
   getPluginExposes<K extends keyof AppPluginExposesMap>(
-    pluginName: K
+    pluginName: K,
   ): AppPluginExposesMap[K] {
     return this.#app.getPluginExposes(pluginName);
   }
 
-  whenRegister(
-    pluginName: string,
-    callback: WhenRegisterCallback
-  ): void {
+  whenRegister(pluginName: string, callback: WhenRegisterCallback): void {
     this.#app.whenRegister(pluginName, callback);
     this.#whenRegisterMap.addItem(pluginName, callback);
   }
 
-  cancelWhenRegister(
-    pluginName: string,
-    callback: WhenRegisterCallback
-  ): void {
+  cancelWhenRegister(pluginName: string, callback: WhenRegisterCallback): void {
     this.#app.cancelWhenRegister(pluginName, callback);
     this.#whenRegisterMap.deleteItem(pluginName, callback);
   }
@@ -144,7 +138,7 @@ export class CommonPluginContext implements PluginContext {
 
   registerValue<K extends keyof AppValueMap>(
     name: K,
-    options: ValueOptions<AppValueMap[K]>
+    options: ValueOptions<AppValueMap[K]>,
   ) {
     try {
       const ctx = this.#app.registerValue(name, options);
@@ -167,7 +161,7 @@ export class CommonPluginContext implements PluginContext {
   registerCommand<T extends keyof AppCommandMap>(
     name: T,
     func: CommandFunction<AppCommandMap[T]>,
-    options?: CommandOptions
+    options?: CommandOptions,
   ): void {
     try {
       this.#app.registerCommand(name, func, options);
@@ -196,7 +190,7 @@ export class CommonPluginContext implements PluginContext {
 
   on<K extends keyof AppEventDetailMap>(
     type: K,
-    listener: AppEventListener<AppEventDetailMap[K]>
+    listener: AppEventListener<AppEventDetailMap[K]>,
   ) {
     try {
       this.#app.on(type, listener);
@@ -208,7 +202,7 @@ export class CommonPluginContext implements PluginContext {
 
   once<K extends keyof AppEventDetailMap>(
     type: K,
-    listener: AppEventListener<AppEventDetailMap[K]>
+    listener: AppEventListener<AppEventDetailMap[K]>,
   ) {
     try {
       this.#app.once(type, listener);
@@ -220,7 +214,7 @@ export class CommonPluginContext implements PluginContext {
 
   off<K extends keyof AppEventDetailMap>(
     type: K,
-    listener: AppEventListener<AppEventDetailMap[K]>
+    listener: AppEventListener<AppEventDetailMap[K]>,
   ) {
     try {
       this.#app.off(type, listener);
@@ -233,7 +227,7 @@ export class CommonPluginContext implements PluginContext {
   emit<K extends keyof AppEventDetailMap>(
     type: K,
     detail: AppEventDetailMap[K],
-    options?: AppEventEmitOptions & EventInit
+    options?: AppEventEmitOptions & EventInit,
   ) {
     try {
       this.#app.emit(type, detail || {}, {
@@ -253,7 +247,7 @@ export class CommonPluginContext implements PluginContext {
       return this.#app.callWithOptions(
         name,
         { source: `plugin:${this.pluginName}` },
-        ...args
+        ...args,
       );
     } catch (err: any) {
       this.throw(err);
@@ -277,7 +271,7 @@ export class CommonPluginContext implements PluginContext {
   useHook<T extends keyof AppHookMap>(
     name: T,
     func: HookFunction<AppHookMap[T]>,
-    options?: HookUseOptions
+    options?: HookUseOptions,
   ): void {
     try {
       this.#app.useHook(name, func, options);
@@ -289,7 +283,7 @@ export class CommonPluginContext implements PluginContext {
 
   unuseHook<T extends keyof AppHookMap>(
     name: T,
-    func: HookFunction<AppHookMap[T]>
+    func: HookFunction<AppHookMap[T]>,
   ): void {
     try {
       this.#app.unuseHook(name, func);
@@ -302,7 +296,7 @@ export class CommonPluginContext implements PluginContext {
   callHook<T extends keyof AppHookMap>(
     name: T,
     ctx: AppHookMap[T],
-    options?: HookCallOptions
+    options?: HookCallOptions,
   ): Promise<HookContext<AppHookMap[T]>> {
     try {
       return this.#app.callHook(name, ctx);
@@ -314,7 +308,7 @@ export class CommonPluginContext implements PluginContext {
   callHookSync<T extends keyof AppHookMap>(
     name: T,
     ctx: AppHookMap[T],
-    options?: HookCallOptions
+    options?: HookCallOptions,
   ): HookContext<AppHookMap[T]> {
     try {
       return this.#app.callHookSync(name, ctx);
@@ -325,7 +319,7 @@ export class CommonPluginContext implements PluginContext {
 
   watch<K extends keyof AppValueMap>(
     name: K,
-    watcher: (value: AppValueMap[K]) => void
+    watcher: (value: AppValueMap[K]) => void,
   ): void {
     try {
       this.#app.watch(name, watcher);
@@ -335,7 +329,7 @@ export class CommonPluginContext implements PluginContext {
   }
   unwatch<K extends keyof AppValueMap>(
     name: K,
-    watcher: (value: AppValueMap[K]) => void
+    watcher: (value: AppValueMap[K]) => void,
   ): void {
     try {
       this.#app.unwatch(name, watcher);
@@ -362,7 +356,7 @@ export class CommonPluginContext implements PluginContext {
 
   setValue<K extends keyof AppValueMap>(
     name: K,
-    value: AppValueMap[K]
+    value: AppValueMap[K],
   ): boolean {
     try {
       return this.#app.setValue(name, value);
@@ -372,15 +366,16 @@ export class CommonPluginContext implements PluginContext {
   }
 
   destroy() {
-
     this.#whenRegisterMap.forEach((callbacks, pluginName) => {
-      callbacks.forEach((callback) => this.#app.cancelWhenRegister(pluginName, callback));
+      callbacks.forEach((callback) =>
+        this.#app.cancelWhenRegister(pluginName, callback),
+      );
     });
 
     const { plugins, values, hooks, commands } = this.#registered;
     plugins.forEach((pluginName) => this.#app.unregister(pluginName));
     hooks.forEach((hookList, name) =>
-      hookList.forEach((hookFunc) => this.#app.off(name as any, hookFunc))
+      hookList.forEach((hookFunc) => this.#app.off(name as any, hookFunc)),
     );
     commands.forEach((name) => this.#app.unregisterCommand(name));
     values.forEach((name) => this.#app.unregisterValue(name));

@@ -1,35 +1,23 @@
 import { CommonPluginContext } from "./context/CommonPluginContext";
 import type { App } from "../app";
-import { AppError, ErrorOptions } from "../error";
+import { AppErrorLegacy, ErrorOptions } from "../error";
 import {
   PluginItem,
   PluginConstructor,
   PluginContext,
   PluginRegisterOptions,
+  PluginData,
+  WhenRegisterCallback,
 } from "./types";
 import { bindCommand } from "../utils";
-
-export interface PluginData<T> {
-  plugin: PluginItem;
-  context: PluginContext;
-  exposes?: T;
-  unremovable: boolean;
-  /** 可访问App实例 */
-  accessApp: boolean;
-  /** 插件类型 */
-  pluginType: "core" | "framework" | "";
-}
-
-/** 插件注册监听回调
- * 当目标插件已经注册时，回调会被立即调用，否则将在目标插件注册时调用。
- * 回调可以返回一个函数作为注销时的回调。
- */
-export type WhenRegisterCallback = () => (() => void) | void;
 
 export class PluginManager {
   /** 插件列表 */
   private list = new Map<string, PluginData<any>>();
-  private whenRegisterMap = new Map<string, Map<WhenRegisterCallback, (() => void) | null>>();
+  private whenRegisterMap = new Map<
+    string,
+    Map<WhenRegisterCallback, (() => void) | null>
+  >();
 
   protected readonly app: App;
 
@@ -41,18 +29,24 @@ export class PluginManager {
   registerSync<P extends PluginItem>(
     pluginConstructor: PluginConstructor<P>,
     options: Record<string, any> = {},
-    { context, core, unremovable, accessApp, pluginType }: PluginRegisterOptions = {}
+    {
+      context,
+      core,
+      unremovable,
+      accessApp,
+      pluginType,
+    }: PluginRegisterOptions = {},
   ): P {
     const pluginName = pluginConstructor.pluginName;
     if (!pluginName) {
-      throw new AppError("plugin:register_id_missing", {
+      throw new AppErrorLegacy("plugin:register_id_missing", {
         message: "插件注册失败",
         cause: "插件缺少pluginName字段",
         target: "plugin/#unnamed",
       });
     }
     if (this.list.has(pluginName)) {
-      throw new AppError("plugin:register_id_duplicate", {
+      throw new AppErrorLegacy("plugin:register_id_duplicate", {
         message: `插件注册失败: ${pluginName}`,
         cause: "已存在相同id的插件",
         target: `plugin/${pluginName}`,
@@ -64,7 +58,7 @@ export class PluginManager {
     try {
       const ctx = this.app.callHookSync("plugin.register", registerCtx);
       if (ctx.defaultPrevented)
-        throw new AppError("plugin:register_hook_prevented", {
+        throw new AppErrorLegacy("plugin:register_hook_prevented", {
           message: `插件注册失败: ${pluginName}`,
           cause: "插件注册被钩子函数阻止",
           target: `plugin/${pluginName}`,
@@ -72,7 +66,7 @@ export class PluginManager {
       // 执行插件函数
       const plugin = new pluginConstructor(
         pluginCtx,
-        registerCtx.options || {}
+        registerCtx.options || {},
       );
       // 调用插件的init钩子
       plugin.init?.(pluginCtx, registerCtx.options || {});
@@ -100,7 +94,7 @@ export class PluginManager {
 
       return plugin;
     } catch (err: any) {
-      throw new AppError("plugin:register_fail", {
+      throw new AppErrorLegacy("plugin:register_fail", {
         message: `插件注册失败: ${pluginName}`,
         cause: err,
         target: `plugin/${pluginName}`,
@@ -112,18 +106,24 @@ export class PluginManager {
   async register<P extends PluginItem>(
     pluginConstructor: PluginConstructor<P>,
     options: Record<string, any> = {},
-    { context, core, unremovable, accessApp, pluginType }: PluginRegisterOptions = {}
+    {
+      context,
+      core,
+      unremovable,
+      accessApp,
+      pluginType,
+    }: PluginRegisterOptions = {},
   ): Promise<P> {
     const pluginName = pluginConstructor.pluginName;
     if (!pluginName) {
-      throw new AppError("plugin:register_id_missing", {
+      throw new AppErrorLegacy("plugin:register_id_missing", {
         message: "插件注册失败",
         cause: "插件缺少pluginName字段",
         target: "plugin/#unnamed",
       });
     }
     if (this.list.has(pluginName)) {
-      throw new AppError("plugin:register_id_duplicate", {
+      throw new AppErrorLegacy("plugin:register_id_duplicate", {
         message: `插件注册失败: ${pluginName}`,
         cause: "已存在相同id的插件",
         target: `plugin/${pluginName}`,
@@ -136,7 +136,7 @@ export class PluginManager {
       .callHook("plugin.register", registerCtx)
       .then(async (ctx) => {
         if (ctx.defaultPrevented)
-          throw new AppError("plugin:register_hook_prevented", {
+          throw new AppErrorLegacy("plugin:register_hook_prevented", {
             message: `插件注册失败: ${pluginName}`,
             cause: "插件注册被钩子函数阻止",
             target: `plugin/${pluginName}`,
@@ -144,7 +144,7 @@ export class PluginManager {
         // 执行插件函数
         const plugin = new pluginConstructor(
           pluginCtx,
-          registerCtx.options || {}
+          registerCtx.options || {},
         );
         // 调用插件的init钩子
         await plugin.init?.(pluginCtx, registerCtx.options || {});
@@ -172,7 +172,7 @@ export class PluginManager {
         return plugin;
       })
       .catch((err: any) => {
-        throw new AppError("plugin:register_fail", {
+        throw new AppErrorLegacy("plugin:register_fail", {
           message: `插件注册失败: ${pluginName}`,
           cause: err,
           target: `plugin/${pluginName}`,
@@ -184,7 +184,7 @@ export class PluginManager {
     const pluginData = this.list.get(pluginName);
     // 检测插件是否存在
     if (!pluginData) {
-      throw new AppError("plugin:unregister_unexist", {
+      throw new AppErrorLegacy("plugin:unregister_unexist", {
         message: `插件移除失败: ${pluginName}`,
         cause: "插件不存在",
         target: `plugin/${pluginName}`,
@@ -192,7 +192,7 @@ export class PluginManager {
     } else {
       const { plugin, context, unremovable } = pluginData;
       if (unremovable) {
-        throw new AppError("plugin:unregister_unremovable", {
+        throw new AppErrorLegacy("plugin:unregister_unremovable", {
           message: `插件移除失败: ${pluginName}`,
           cause: "不可移除的插件",
           target: `plugin/${pluginName}`,
@@ -232,7 +232,10 @@ export class PluginManager {
   /** 在插件已注册时执行回调
    * param skipError 在安装来源插件调用该方法且目标插件已安装时，是否跳过回调函数抛出的错误（默认为false）
    */
-  whenRegister(pluginName: string, callback: WhenRegisterCallback /*, { skipError = false }: { skipError?: boolean } = {} */) {
+  whenRegister(
+    pluginName: string,
+    callback: WhenRegisterCallback /*, { skipError = false }: { skipError?: boolean } = {} */,
+  ) {
     if (!this.whenRegisterMap.has(pluginName)) {
       // 如果目标插件的回调列表不存在，创建一个新的回调列表并添加回调函数
       this.whenRegisterMap.set(pluginName, new Map([[callback, null]]));
@@ -247,7 +250,9 @@ export class PluginManager {
     // 如果目标插件已经注册，直接调用回调
     if (this.has(pluginName)) {
       const whenUnregistered = callback();
-      this.whenRegisterMap.get(pluginName)!.set(callback, whenUnregistered || null);
+      this.whenRegisterMap
+        .get(pluginName)!
+        .set(callback, whenUnregistered || null);
     }
   }
   /** 取消插件已注册时的执行回调 */

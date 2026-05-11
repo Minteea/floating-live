@@ -5,7 +5,7 @@ import {
   AppCommandMap,
   CommandFunction,
 } from "../command";
-import { AppError, ErrorOptions } from "../error";
+import { AppErrorLegacy, ErrorOptions } from "../error";
 import {
   AppEventListener,
   AppEventEmitOptions,
@@ -20,7 +20,12 @@ import {
 } from "../hook";
 import { LiveRoomData } from "../live";
 import { AppValueMap, ValueContext, ValueOptions } from "../value";
-import { WhenRegisterCallback } from "./manager";
+
+/** 插件注册监听回调
+ * 当目标插件已经注册时，回调会被立即调用，否则将在目标插件注册时调用。
+ * 回调可以返回一个函数作为注销时的回调。
+ */
+export type WhenRegisterCallback = () => (() => void) | void;
 
 /** 插件对象 */
 export interface PluginItem {
@@ -42,11 +47,11 @@ export interface PluginItem {
 /** 插件构造器 */
 export interface PluginConstructor<P extends PluginItem> {
   pluginName: string;
-  new(ctx: PluginContext, options: any): P;
+  new (ctx: PluginContext, options: any): P;
 }
 
 /** 插件初始化选项 */
-export interface PluginInitOptions { }
+export interface PluginInitOptions {}
 
 /** 插件注册选项 */
 export interface PluginRegisterOptions {
@@ -60,6 +65,17 @@ export interface PluginRegisterOptions {
   accessApp?: boolean;
   /** 插件类型 */
   pluginType?: "core" | "framework" | "";
+}
+
+export interface PluginData<T> {
+  plugin: PluginItem;
+  context: PluginContext;
+  exposes?: T;
+  unremovable: boolean;
+  /** 可访问App实例 */
+  accessApp: boolean;
+  /** 插件类型 */
+  pluginType: "core" | "framework" | "";
 }
 
 /** 插件上下文 */
@@ -96,10 +112,10 @@ export interface PluginContext {
   ): void;
 
   /** 抛出错误 */
-  throw(err?: Error): void;
+  throw(err?: Error): never;
 
   /** 生成错误 @deprecated */
-  error(id: string, options: ErrorOptions): AppError;
+  error(id: string, options: ErrorOptions): AppErrorLegacy;
 
   //--- 插件机制 ---//
   /** 注册插件 */

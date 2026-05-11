@@ -5,7 +5,7 @@ import {
   CommandFunction,
   CommandOptions,
 } from "../../command";
-import { AppError } from "../../error";
+import { AppErrorLegacy } from "../../error";
 import { AppEventDetailMap, AppEventEmitOptions } from "../../event";
 import {
   AppHookMap,
@@ -43,7 +43,7 @@ export class SafePluginContext extends CommonPluginContext {
   constructor(
     app: App,
     pluginName: string,
-    options: { permissions: PluginPermissions }
+    options: { permissions: PluginPermissions },
   ) {
     super(app, pluginName);
     this.#permissions = options.permissions;
@@ -51,17 +51,17 @@ export class SafePluginContext extends CommonPluginContext {
 
   private throwNotPermitted(permission: string, cause: string) {
     this.throw(
-      new AppError("plugin:no_permission", {
+      new AppErrorLegacy("plugin:no_permission", {
         message: "插件权限不足",
         cause,
         permission,
-      })
+      }),
     );
   }
 
   register<P extends PluginItem>(
     plugin: PluginConstructor<P>,
-    options?: PluginInitOptions
+    options?: PluginInitOptions,
   ): Promise<P> {
     if (!this.#permissions["plugin.register"]) {
       this.throwNotPermitted("plugin.register", "无插件安装权限");
@@ -77,7 +77,7 @@ export class SafePluginContext extends CommonPluginContext {
   emit<K extends keyof AppEventDetailMap>(
     type: K,
     detail: AppEventDetailMap[K],
-    options?: AppEventEmitOptions & EventInit
+    options?: AppEventEmitOptions & EventInit,
   ): void {
     if (
       !(
@@ -104,7 +104,7 @@ export class SafePluginContext extends CommonPluginContext {
     ) {
       this.throwNotPermitted(
         `command.call:${name}`,
-        `无命令[${name}]的调用权限`
+        `无命令[${name}]的调用权限`,
       );
     }
     return super.call(name, ...args);
@@ -122,12 +122,12 @@ export class SafePluginContext extends CommonPluginContext {
   registerCommand<T extends keyof AppCommandMap>(
     name: T,
     func: CommandFunction<AppCommandMap[T]>,
-    options?: CommandOptions
+    options?: CommandOptions,
   ): void {
     if (!this.#permissions["command.register"]?.includes(name)) {
       this.throwNotPermitted(
         `command.call:${name}`,
-        `无命令[${name}]的注册权限`
+        `无命令[${name}]的注册权限`,
       );
     }
     return super.registerCommand(name, func, options);
@@ -135,7 +135,7 @@ export class SafePluginContext extends CommonPluginContext {
   useHook<T extends keyof AppHookMap>(
     name: T,
     func: HookFunction<AppHookMap[T]>,
-    options?: HookUseOptions
+    options?: HookUseOptions,
   ): void {
     if (!this.#permissions["hook.use"]?.includes(name)) {
       this.throwNotPermitted(`hook.use:${name}`, `无钩子[${name}]的挂载权限`);
@@ -144,7 +144,7 @@ export class SafePluginContext extends CommonPluginContext {
   }
   unuseHook<T extends keyof AppHookMap>(
     name: T,
-    func: HookFunction<AppHookMap[T]>
+    func: HookFunction<AppHookMap[T]>,
   ): void {
     if (!this.#permissions["hook.use"]?.includes(name)) {
       this.throwNotPermitted(`hook.use:${name}`, `无钩子[${name}]的挂载权限`);
@@ -154,7 +154,7 @@ export class SafePluginContext extends CommonPluginContext {
   callHook<T extends keyof AppHookMap>(
     name: T,
     ctx: AppHookMap[T],
-    options?: HookCallOptions
+    options?: HookCallOptions,
   ): Promise<HookContext<AppHookMap[T]>> {
     if (!this.#permissions["hook.call"]?.includes(name)) {
       this.throwNotPermitted(`hook.call:${name}`, `无钩子[${name}]的调用权限`);

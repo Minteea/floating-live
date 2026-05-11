@@ -5,7 +5,7 @@ import {
   CommandFunction,
 } from "./command";
 import { CommandManager } from "./command/manager";
-import { AppError } from "./error";
+import { AppErrorLegacy } from "./error";
 import {
   AppEventDetailMap,
   AppEventEmitOptions,
@@ -26,8 +26,9 @@ import {
   PluginInitOptions,
   PluginItem,
   PluginRegisterOptions,
+  WhenRegisterCallback,
 } from "./plugin";
-import { PluginManager, WhenRegisterCallback } from "./plugin/manager";
+import { PluginManager } from "./plugin/manager";
 import { bindCommand } from "./utils";
 import { CustomEventEmitter } from "./utils/EventEmitter";
 import { AppValueMap, ValueOptions } from "./value";
@@ -48,7 +49,7 @@ export class App extends CustomEventEmitter implements PluginContext {
 
     // 初始化命令
     this.registerCommand("command.snapshot", () =>
-      this.commandManager.toSnapshot()
+      this.commandManager.toSnapshot(),
     );
     this.registerCommand("get", (e, name) => this.getValue(name));
     this.registerCommand("set", (e, name, value) => this.setValue(name, value));
@@ -57,12 +58,12 @@ export class App extends CustomEventEmitter implements PluginContext {
   on<K extends keyof AppEventDetailMap>(
     type: K,
     listener: AppEventListener<AppEventDetailMap[K]>,
-    signal?: AbortSignal
+    signal?: AbortSignal,
   ): void;
   on<T>(
     type: string,
     listener: AppEventListener<T>,
-    signal: AbortSignal = this.signal
+    signal: AbortSignal = this.signal,
   ) {
     super.on(type, listener, signal);
   }
@@ -70,19 +71,19 @@ export class App extends CustomEventEmitter implements PluginContext {
   once<K extends keyof AppEventDetailMap>(
     type: K,
     listener: AppEventListener<AppEventDetailMap[K]>,
-    signal?: AbortSignal
+    signal?: AbortSignal,
   ): void;
   once<T>(
     type: string,
     listener: AppEventListener<T>,
-    signal: AbortSignal = this.signal
+    signal: AbortSignal = this.signal,
   ) {
     super.once(type, listener, signal);
   }
 
   off<K extends keyof AppEventDetailMap>(
     type: K,
-    listener: AppEventListener<AppEventDetailMap[K]>
+    listener: AppEventListener<AppEventDetailMap[K]>,
   ): void;
   off<T>(type: string, listener: AppEventListener<T>) {
     super.off(type, listener);
@@ -91,7 +92,7 @@ export class App extends CustomEventEmitter implements PluginContext {
   emit<K extends keyof AppEventDetailMap>(
     type: K,
     detail: AppEventDetailMap[K],
-    options?: AppEventEmitOptions & EventInit
+    options?: AppEventEmitOptions & EventInit,
   ): void;
   emit<T>(type: string, detail: T, options?: AppEventEmitOptions & EventInit) {
     const { source, remote } = options || {};
@@ -101,12 +102,12 @@ export class App extends CustomEventEmitter implements PluginContext {
 
   //--- 错误机制 ---//
   /** 发送错误 */
-  throw(err?: Error) {
+  throw(err?: Error): never {
     throw err;
   }
 
   error(id: string, detail?: Record<string, any>) {
-    return new AppError(id, detail || {});
+    return new AppErrorLegacy(id, detail || {});
   }
 
   //--- 插件机制 ---//
@@ -114,7 +115,7 @@ export class App extends CustomEventEmitter implements PluginContext {
   register<P extends PluginItem>(
     plugin: PluginConstructor<P>,
     options?: PluginInitOptions,
-    registerOptions?: PluginRegisterOptions
+    registerOptions?: PluginRegisterOptions,
   ): Promise<P> {
     return this.pluginManager.register(plugin, options, registerOptions);
   }
@@ -123,7 +124,7 @@ export class App extends CustomEventEmitter implements PluginContext {
   registerSync<P extends PluginItem>(
     plugin: PluginConstructor<P>,
     options?: PluginInitOptions,
-    registerOptions?: PluginRegisterOptions
+    registerOptions?: PluginRegisterOptions,
   ): P {
     return this.pluginManager.registerSync(plugin, options, registerOptions);
   }
@@ -137,17 +138,11 @@ export class App extends CustomEventEmitter implements PluginContext {
     this.pluginManager.getPlugin(pluginName);
   }
 
-  whenRegister(
-    pluginName: string,
-    callback: WhenRegisterCallback
-  ): void {
+  whenRegister(pluginName: string, callback: WhenRegisterCallback): void {
     return this.pluginManager.whenRegister(pluginName, callback);
   }
 
-  cancelWhenRegister(
-    pluginName: string,
-    callback: WhenRegisterCallback
-  ): void {
+  cancelWhenRegister(pluginName: string, callback: WhenRegisterCallback): void {
     return this.pluginManager.cancelWhenRegister(pluginName, callback);
   }
 
@@ -163,7 +158,7 @@ export class App extends CustomEventEmitter implements PluginContext {
   registerCommand<T extends keyof AppCommandMap>(
     name: T,
     func: CommandFunction<AppCommandMap[T]>,
-    options?: CommandOptions
+    options?: CommandOptions,
   ) {
     this.commandManager.register(name, func, options);
   }
@@ -195,14 +190,14 @@ export class App extends CustomEventEmitter implements PluginContext {
   useHook<T extends keyof AppHookMap>(
     name: T,
     func: HookFunction<AppHookMap[T]>,
-    options?: HookUseOptions
+    options?: HookUseOptions,
   ) {
     this.hookManager.use(name, func, options);
   }
 
   unuseHook<T extends keyof AppHookMap>(
     name: T,
-    func: HookFunction<AppHookMap[T]>
+    func: HookFunction<AppHookMap[T]>,
   ) {
     this.hookManager.unuse(name, func);
   }
@@ -210,7 +205,7 @@ export class App extends CustomEventEmitter implements PluginContext {
   callHook<T extends keyof AppHookMap>(
     name: T,
     ctx: AppHookMap[T],
-    options?: HookCallOptions
+    options?: HookCallOptions,
   ): Promise<HookContext<AppHookMap[T]>> {
     return this.hookManager.call(name, ctx);
   }
@@ -218,7 +213,7 @@ export class App extends CustomEventEmitter implements PluginContext {
   callHookSync<T extends keyof AppHookMap>(
     name: T,
     ctx: AppHookMap[T],
-    options?: HookCallOptions
+    options?: HookCallOptions,
   ): HookContext<AppHookMap[T]> {
     return this.hookManager.callSync(name, ctx);
   }
@@ -226,7 +221,7 @@ export class App extends CustomEventEmitter implements PluginContext {
   //--- 值机制 ---//
   registerValue<K extends keyof AppValueMap>(
     name: K,
-    options: ValueOptions<AppValueMap[K]>
+    options: ValueOptions<AppValueMap[K]>,
   ) {
     return this.valueManager.register(name, options);
   }
@@ -237,14 +232,14 @@ export class App extends CustomEventEmitter implements PluginContext {
 
   watch<K extends keyof AppValueMap>(
     name: K,
-    watcher: (value: AppValueMap[K]) => void
+    watcher: (value: AppValueMap[K]) => void,
   ) {
     this.valueManager.watch(name, watcher);
   }
 
   unwatch<K extends keyof AppValueMap>(
     name: K,
-    watcher: (value: AppValueMap[K]) => void
+    watcher: (value: AppValueMap[K]) => void,
   ) {
     this.valueManager.unwatch(name, watcher);
   }

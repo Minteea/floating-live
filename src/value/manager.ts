@@ -1,5 +1,5 @@
 import { App } from "../app";
-import { AppError } from "../error";
+import { AppErrorLegacy } from "../error";
 import { bindCommand } from "../utils";
 import {
   ValueAccessOptions,
@@ -19,13 +19,13 @@ export class ValueManager {
   /** 注册值 */
   register<T>(
     name: string,
-    { get, set, pluginName }: ValueOptions<T>
+    { get, set, pluginName }: ValueOptions<T>,
   ): ValueContext<T> {
     this.list.set(name, { get, set, pluginName });
     this.app.emit(
       "value:register",
       { name, value: get() },
-      { source: `plugin:${pluginName}` }
+      { source: `plugin:${pluginName}` },
     );
     return {
       emit: (v: T) => {
@@ -42,7 +42,7 @@ export class ValueManager {
   get(name: string, options?: ValueAccessOptions) {
     const item = this.list.get(name);
     if (!item)
-      throw new AppError("value:get_unexist", {
+      throw new AppErrorLegacy("value:get_unexist", {
         message: "无法获取未注册的值",
       });
     return item.get(options);

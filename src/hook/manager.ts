@@ -1,5 +1,5 @@
 import { App } from "../app";
-import { AppError, ErrorOptions } from "../error";
+import { AppErrorLegacy, ErrorOptions } from "../error";
 import { HookFunction, HookItem, HookUseOptions } from "./types";
 
 export class HookManager {
@@ -19,7 +19,7 @@ export class HookManager {
       hooks = [];
       this.list.set(name, hooks);
     } else if (hooks.includes(call)) {
-      throw new AppError("hook:use_duplicate", {
+      throw new AppErrorLegacy("hook:use_duplicate", {
         message: `钩子函数挂载失败: ${name}`,
         cause: "重复挂载同一函数",
         target: `hook/${name}`,
@@ -32,7 +32,7 @@ export class HookManager {
     let hooks = this.list.get(name);
     const index = hooks?.findIndex((item) => item.call == call) ?? -1;
     if (!hooks || index < 0)
-      throw new AppError("hook:unuse_unexist", {
+      throw new AppErrorLegacy("hook:unuse_unexist", {
         message: `钩子函数卸载失败: ${name}`,
         cause: "卸载不存在的钩子函数",
         target: `hook/${name}`,
