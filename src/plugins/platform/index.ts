@@ -1,4 +1,4 @@
-import { BasePlugin, LivePlatformInfo } from "../..";
+import { appError, BasePlugin, LivePlatformInfo } from "../..";
 
 interface PluginExposes {
   register(name: string, info: LivePlatformInfo, signal: AbortSignal): void;
@@ -36,7 +36,7 @@ export class Platform extends BasePlugin {
   /** 注册直播平台信息 */
   register(name: string, info: LivePlatformInfo, signal?: AbortSignal) {
     if (this.list.has(name)) {
-      throw new this.Error("platform:register_duplicated", {
+      throw appError("platform:register_duplicated", {
         message: "平台信息重复注册",
       });
     }
@@ -54,7 +54,7 @@ export class Platform extends BasePlugin {
   /** 解除注册直播平台信息 */
   unregister(name: string) {
     if (!this.list.has(name)) {
-      throw new this.Error("platform:unregister_unexisted", {
+      throw appError("platform:unregister_unexisted", {
         message: "无法解除不存在的平台信息注册",
       });
     }

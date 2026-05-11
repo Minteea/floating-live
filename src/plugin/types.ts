@@ -47,11 +47,11 @@ export interface PluginItem {
 /** 插件构造器 */
 export interface PluginConstructor<P extends PluginItem> {
   pluginName: string;
-  new (ctx: PluginContext, options: any): P;
+  new(ctx: PluginContext, options: any): P;
 }
 
 /** 插件初始化选项 */
-export interface PluginInitOptions {}
+export interface PluginInitOptions { }
 
 /** 插件注册选项 */
 export interface PluginRegisterOptions {
@@ -110,12 +110,6 @@ export interface PluginContext {
     detail: AppEventDetailMap[K],
     options?: AppEventEmitOptions & EventInit,
   ): void;
-
-  /** 抛出错误 */
-  throw(err?: Error): never;
-
-  /** 生成错误 @deprecated */
-  error(id: string, options: ErrorOptions): AppErrorLegacy;
 
   //--- 插件机制 ---//
   /** 注册插件 */

@@ -1,4 +1,4 @@
-import { AppErrorLegacy } from "../../error";
+import { appError, AppErrorLegacy } from "../../error";
 import { LiveMessage } from "../../live/message";
 import {
   LiveRoom,
@@ -15,6 +15,12 @@ import { bindCommand } from "../../utils";
 
 interface LiveRoomWithAbortController extends LiveRoom {
   [key: symbol]: AbortController;
+}
+
+export interface RoomCreateOptions {
+  allowInvalidRoom?: boolean
+  open?: boolean
+  [option: string]: any
 }
 
 interface PluginExposes {
@@ -50,6 +56,9 @@ declare module "../.." {
 
     "room.snapshot": () => LiveRoomData[];
 
+    "room.validate": (key: string) => void;
+    "room.invalidate": (key: string) => void;
+
     [name: `${string}.room.create`]: (
       id: string | number,
       options: Record<string, any>,
@@ -61,13 +70,16 @@ declare module "../.." {
   }
 
   interface AppEventDetailMap {
-    "live:message": { message: LiveMessage.All };
-    "live:raw": {
-      /** 平台 */
+    "live:message": {
+      key: string;
       platform: string;
       roomId: string | number;
-      /** 服务来源 */
-      service?: string;
+      message: LiveMessage.All
+    };
+    "live:raw": {
+      key: string;
+      platform: string;
+      roomId: string | number;
       data: any;
     };
 
@@ -97,7 +109,12 @@ declare module "../.." {
     };
   }
   interface AppHookMap {
-    "live.message": { message: LiveMessage.All };
+    "live.message": {
+      key: string;
+      platform: string;
+      roomId: string | number;
+      message: LiveMessage.All;
+    };
     "room.create": {
       serviceId: string;
       id: string | number;
@@ -151,12 +168,10 @@ export class Room extends BasePlugin {
   public attach(room: LiveRoom | InvalidLiveRoom, open?: boolean) {
     const key = room.key;
     if (this.map.has(key)) {
-      this.throw(
-        new AppErrorLegacy("room:add_exist", {
-          message: "房间已存在",
-        }),
-      );
-      return;
+      throw appError("room:add_exist", {
+        message: `房间已存在[${key}]`,
+        target: `room/${key}`,
+      })
     }
     this.map.set(key, room);
 
@@ -171,9 +186,31 @@ export class Room extends BasePlugin {
     }
   }
 
+  /** 移除房间监听实例 */
+  public detach(key: string): LiveRoom | InvalidLiveRoom {
+    const room = this.map.get(key) as LiveRoomWithAbortController;
+    if (!room) {
+      throw appError("room:remove_unexist", {
+        message: `房间不存在[${key}]`,
+        target: `room/${key}`,
+      })
+    }
+    this.map.delete(key); // 从表中删除房间
+
+    // 移除插件实例对该房间的所有监听
+    room[this.symbolAbortController]?.abort();
+    (room as any)[this.symbolAbortController] = undefined;
+
+    this.ctx.emit("room:remove", { key });
+
+    return room
+  }
+
   /** 绑定房间事件监听 */
   private bindEvent(room: LiveRoom) {
     const key = room.key;
+    const platform = room.platform
+    const roomId = room.id
     const abortController = new AbortController();
     (room as LiveRoomWithAbortController)[this.symbolAbortController] =
       abortController;
@@ -188,15 +225,15 @@ export class Room extends BasePlugin {
     // 添加监听事件
     // 直播消息
     setHandler("message", ({ message }) => {
-      const ctx = { message };
+      const ctx = { key, platform, roomId, message };
       this.ctx.callHook("live.message", ctx).then((ctx) => {
         !ctx.defaultPrevented &&
-          this.ctx.emit("live:message", { message: ctx.message });
+          this.ctx.emit("live:message", { key, platform, roomId, message: ctx.message });
       });
     });
     // 直播消息源数据
     setHandler("raw", ({ platform, roomId, data }) => {
-      this.ctx.emit("live:raw", { platform, roomId, data });
+      this.ctx.emit("live:raw", { key, platform, roomId, data });
     });
     // 正在连接服务器
     setHandler("connecting", () => {
@@ -244,7 +281,7 @@ export class Room extends BasePlugin {
   public async add(
     serviceId: string,
     id: number,
-    options?: boolean | Record<string, any>,
+    options?: boolean | RoomCreateOptions,
   ) {
     const opt = typeof options == "boolean" ? { open: options } : options || {};
 
@@ -257,18 +294,21 @@ export class Room extends BasePlugin {
   public async create(
     serviceId: string,
     id: number | string,
-    options: Record<string, any> = {},
+    options: RoomCreateOptions = {},
   ) {
     const ctx = { serviceId, id, options };
-    const res = await this.ctx.callHook("room.create", ctx);
+    const res = await this.ctx.callHook("room.create", ctx).catch((reason) => {
+      throw appError("room:create_hook_error", {
+        message: `无法创建房间监听实例[${serviceId}:${id}]：调用钩子函数出错`,
+        target: `room/${serviceId}:${id}`,
+      });
+
+    });
     if (res.defaultPrevented) {
-      this.throw(
-        new this.Error("room:add_hook_prevented", {
-          message: "无法添加房间",
-          cause: "房间添加被钩子函数阻止",
-          target: `room/${serviceId}:${id}`,
-        }),
-      );
+      throw appError("room:create_hook_prevented", {
+        message: `无法创建房间监听实例[${serviceId}:${id}]：房间添加被钩子函数阻止`,
+        target: `room/${serviceId}:${id}`,
+      });
     }
     let room: LiveRoom | InvalidLiveRoom;
     try {
@@ -277,48 +317,47 @@ export class Room extends BasePlugin {
       if (options.allowInvalidRoom) {
         room = new InvalidLiveRoom(serviceId, id);
       } else {
-        this.throw(
-          new this.Error("room:create_fail", {
-            message: "无法创建房间",
-            cause: e,
-            target: `room/${serviceId}:${id}`,
-          }),
-        );
+        throw appError("room:create_fail", {
+          message: `创建房间监听实例失败[${serviceId}:${id}]`,
+          reason: e,
+          target: `room/${serviceId}:${id}`,
+        })
       }
     }
     return room;
   }
 
-  /** 移除房间 */
+  /** 移除并销毁房间 */
   public remove(key: string) {
-    let room = this.map.get(key) as LiveRoomWithAbortController;
-    if (!room) {
-      this.throw(
-        new this.Error("room:remove_unexist", {
-          message: "房间不存在",
+    const room = this.detach(key)
+    if (room.valid) {
+      try { room.destroy?.() } catch (e: any) {
+        throw appError("room:destroy_fail", {
+          message: `销毁房间实例失败[${key}]`,
+          reason: e,
           target: `room/${key}`,
-        }),
-      );
+        });
+      }
     }
-    this.map.delete(key); // 从表中删除房间
-
-    // 移除插件实例对该房间的所有监听
-    room[this.symbolAbortController]?.abort();
-    (room as any)[this.symbolAbortController] = undefined;
-
-    this.ctx.emit("room:remove", { key });
   }
+
   /** 激活无效房间 */
-  public async validate(key: string, options: Record<string, any>) {
+  public async validate(key: string, options: RoomCreateOptions) {
     let invalidRoom = this.map.get(key);
     if (!invalidRoom) {
-      throw new Error(`找不到房间: ${key}`);
+      throw appError("room:validate_unexist", {
+        message: `房间不存在[${key}]`,
+        target: `room/${key}`,
+      })
     }
     if (invalidRoom.valid == true) {
-      throw new Error(`无法激活有效房间: ${key}`);
+      throw appError("room:validate_valid", {
+        message: `无法将已经有效的房间再次设为有效[${key}]`,
+        target: `room/${key}`,
+      })
     }
     const { serviceId, id } = invalidRoom;
-    const room = await this.create(serviceId, id, options);
+    const room = await this.create(serviceId, id, { ...options, allowInvalidRoom: false });
     this.map.set(key, room);
 
     if (room.valid) {
@@ -326,21 +365,40 @@ export class Room extends BasePlugin {
     }
   }
 
-  /** 使房间无效 */
+  /** 使有效的房间设为无效 */
   public invalidate(key: string) {
-    // let invalidRoom = this.map.get(key);
-    // if (!invalidRoom) {
-    //   throw new Error(`找不到房间: ${key}`);
-    // }
-    // if (invalidRoom.valid == true) {
-    //   throw new Error(`无法激活有效房间: ${key}`);
-    // }
-    // const { serviceId, id } = invalidRoom;
-    // const room = await this.create(serviceId, id, options);
-    // this.map.set(key, room);
-    // if (room.valid) {
-    //   this.ctx.emit("room:validate", { key, room: room.toData() });
-    // }
+    let room = this.map.get(key) as LiveRoomWithAbortController | undefined;
+    if (!room) {
+      throw appError("room:invalidate_unexist", {
+        message: `房间不存在[${key}]`,
+        target: `room/${key}`,
+      })
+    }
+    if (room.valid == true) {
+      throw appError("room:invalidate_invalid", {
+        message: `无法将已经无效的房间再次设为无效[${key}]`,
+        target: `room/${key}`,
+      })
+    }
+
+    // 用无效房间替换掉原房间
+    const { serviceId, id } = room;
+    const invalidRoom = new InvalidLiveRoom(serviceId, id)
+    this.map.set(key, invalidRoom)
+
+    // 移除插件实例对原房间的所有监听
+    room[this.symbolAbortController]?.abort();
+    (room as any)[this.symbolAbortController] = undefined;
+
+    this.ctx.emit("room:remove", { key });
+
+    try { room.destroy?.() } catch (e: any) {
+      throw appError("room:destroy_fail", {
+        message: `销毁房间实例失败[${key}]`,
+        reason: e,
+        target: `room/${key}`,
+      });
+    }
   }
 
   /** 获取房间 */
@@ -372,20 +430,18 @@ export class Room extends BasePlugin {
   open(key: string) {
     let room = this.map.get(key);
     if (!room) {
-      this.throw(
-        new this.Error("room:open_unexist", {
+      throw (
+        appError("room:open_unexist", {
           message: "要打开的房间不存在",
           target: `room/${key}`,
-        }),
-      );
+        })
+      )
     }
     if (!room.valid) {
-      this.throw(
-        new this.Error("room:open_invalid", {
-          message: "要打开的房间无效",
-          target: `room/${key}`,
-        }),
-      );
+      throw appError("room:open_invalid", {
+        message: "要打开的房间无效",
+        target: `room/${key}`,
+      })
     }
     room!.open();
   }
@@ -393,20 +449,18 @@ export class Room extends BasePlugin {
   close(key: string) {
     let room = this.map.get(key);
     if (!room) {
-      this.throw(
-        new this.Error("room:close_unexist", {
-          message: "关闭的房间不存在",
-          target: `room/${key}`,
-        }),
-      );
+      throw appError("room:close_unexist", {
+        message: "关闭的房间不存在",
+        target: `room/${key}`,
+      })
+      ;
     }
     if (!room.valid) {
-      this.throw(
-        new this.Error("room:close_invalid", {
-          message: "要关闭的房间无效",
-          target: `room/${key}`,
-        }),
-      );
+      throw appError("room:close_invalid", {
+        message: "要关闭的房间无效",
+        target: `room/${key}`,
+      })
+      ;
     }
     room!.close();
   }
@@ -415,12 +469,10 @@ export class Room extends BasePlugin {
     const arr = [...this.map];
     const index = arr.findIndex(([k]) => k == key);
     if (index == -1) {
-      this.throw(
-        new this.Error("room:move_unexist", {
-          message: "要移动的房间不存在",
-          target: `room/${key}`,
-        }),
-      );
+      throw appError("room:move_unexist", {
+        message: "要移动的房间不存在",
+        target: `room/${key}`,
+      })
     }
     const [item] = arr.splice(index, 1);
     arr.splice(position, 0, item);
@@ -432,5 +484,6 @@ export class Room extends BasePlugin {
     return this.getList().map((room) => room.toData());
   }
 }
+
 
 export default Room;

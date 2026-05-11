@@ -98,22 +98,14 @@ export class CommonPluginContext implements PluginContext {
     plugin: PluginConstructor<P>,
     options?: PluginInitOptions,
   ): Promise<P> {
-    try {
-      const p = this.#app.register(plugin, options);
-      this.#registered.plugins.add(plugin.name);
-      return p;
-    } catch (err: any) {
-      throw this.throw(err);
-    }
+    const p = this.#app.register(plugin, options);
+    this.#registered.plugins.add(plugin.name);
+    return p;
   }
 
   unregister(pluginName: string): void {
-    try {
-      this.#app.unregister(pluginName);
-      this.#registered.plugins.delete(pluginName);
-    } catch (err: any) {
-      this.throw(err);
-    }
+    this.#app.unregister(pluginName);
+    this.#registered.plugins.delete(pluginName);
   }
 
   getPluginExposes<K extends keyof AppPluginExposesMap>(
@@ -140,22 +132,14 @@ export class CommonPluginContext implements PluginContext {
     name: K,
     options: ValueOptions<AppValueMap[K]>,
   ) {
-    try {
-      const ctx = this.#app.registerValue(name, options);
-      this.#registered.values.add(name);
-      return ctx;
-    } catch (err: any) {
-      throw this.throw(err);
-    }
+    const ctx = this.#app.registerValue(name, options);
+    this.#registered.values.add(name);
+    return ctx;
   }
 
   unregisterValue(name: string): void {
-    try {
-      this.#app.unregisterValue(name);
-      this.#registered.values.delete(name);
-    } catch (err: any) {
-      this.throw(err);
-    }
+    this.#app.unregisterValue(name);
+    this.#registered.values.delete(name);
   }
 
   registerCommand<T extends keyof AppCommandMap>(
@@ -163,65 +147,47 @@ export class CommonPluginContext implements PluginContext {
     func: CommandFunction<AppCommandMap[T]>,
     options?: CommandOptions,
   ): void {
-    try {
-      this.#app.registerCommand(name, func, options);
-      this.#registered.commands.add(name);
-    } catch (err: any) {
-      this.throw(err);
-    }
+    this.#app.registerCommand(name, func, options);
+    this.#registered.commands.add(name);
   }
 
   unregisterCommand(name: string): void {
-    try {
-      this.#app.unregisterCommand(name);
-      this.#registered.commands.delete(name);
-    } catch (err: any) {
-      this.throw(err);
-    }
+    this.#app.unregisterCommand(name);
+    this.#registered.commands.delete(name);
   }
 
   hasCommand(name: string) {
-    try {
-      return this.#app.hasCommand(name);
-    } catch (err: any) {
-      throw this.throw(err);
-    }
+    return this.#app.hasCommand(name);
   }
 
   on<K extends keyof AppEventDetailMap>(
     type: K,
     listener: AppEventListener<AppEventDetailMap[K]>,
   ) {
-    try {
-      this.#app.on(type, listener, this.signal);
-      this.#registered.events.addItem(type, listener);
-    } catch (err: any) {
-      this.throw(err);
-    }
+
+    this.#app.on(type, listener, this.signal);
+    this.#registered.events.addItem(type, listener);
+
   }
 
   once<K extends keyof AppEventDetailMap>(
     type: K,
     listener: AppEventListener<AppEventDetailMap[K]>,
   ) {
-    try {
-      this.#app.once(type, listener, this.signal);
-      this.#registered.events.addItem(type, listener);
-    } catch (err: any) {
-      this.throw(err);
-    }
+
+    this.#app.once(type, listener, this.signal);
+    this.#registered.events.addItem(type, listener);
+
   }
 
   off<K extends keyof AppEventDetailMap>(
     type: K,
     listener: AppEventListener<AppEventDetailMap[K]>,
   ) {
-    try {
-      this.#app.off(type, listener);
-      this.#registered.events.deleteItem(type, listener);
-    } catch (err: any) {
-      this.throw(err);
-    }
+
+    this.#app.off(type, listener);
+    this.#registered.events.deleteItem(type, listener);
+
   }
 
   emit<K extends keyof AppEventDetailMap>(
@@ -229,30 +195,25 @@ export class CommonPluginContext implements PluginContext {
     detail: AppEventDetailMap[K],
     options?: AppEventEmitOptions & EventInit,
   ) {
-    try {
-      this.#app.emit(type, detail || {}, {
-        source: `plugin:${this.pluginName}`,
-        ...options,
-      });
-    } catch (err: any) {
-      this.throw(err);
-    }
+
+    this.#app.emit(type, detail || {}, {
+      source: `plugin:${this.pluginName}`,
+      ...options,
+    });
+
   }
 
   call<T extends keyof AppCommandMap>(
     name: T,
     ...args: Parameters<AppCommandMap[T]>
   ): ReturnType<AppCommandMap[T]> {
-    try {
-      return this.#app.callWithOptions(
-        name,
-        { source: `plugin:${this.pluginName}` },
-        ...args,
-      );
-    } catch (err: any) {
-      this.throw(err);
-      throw "";
-    }
+
+    return this.#app.callWithOptions(
+      name,
+      { source: `plugin:${this.pluginName}` },
+      ...args,
+    );
+
   }
 
   callWithOptions<T extends keyof AppCommandMap>(
@@ -260,12 +221,9 @@ export class CommonPluginContext implements PluginContext {
     options: CommandCallOptions,
     ...args: Parameters<AppCommandMap[T]>
   ): ReturnType<AppCommandMap[T]> {
-    try {
-      return this.#app.callWithOptions(name, options, ...args);
-    } catch (err: any) {
-      this.throw(err);
-      throw "";
-    }
+
+    return this.#app.callWithOptions(name, options, ...args);
+
   }
 
   useHook<T extends keyof AppHookMap>(
@@ -273,24 +231,20 @@ export class CommonPluginContext implements PluginContext {
     func: HookFunction<AppHookMap[T]>,
     options?: HookUseOptions,
   ): void {
-    try {
-      this.#app.useHook(name, func, options);
-      this.#registered.hooks.addItem(name, func);
-    } catch (err: any) {
-      this.throw(err);
-    }
+
+    this.#app.useHook(name, func, options);
+    this.#registered.hooks.addItem(name, func);
+
   }
 
   unuseHook<T extends keyof AppHookMap>(
     name: T,
     func: HookFunction<AppHookMap[T]>,
   ): void {
-    try {
-      this.#app.unuseHook(name, func);
-      this.#registered.hooks.deleteItem(name, func);
-    } catch (err: any) {
-      throw this.throw(err);
-    }
+
+    this.#app.unuseHook(name, func);
+    this.#registered.hooks.deleteItem(name, func);
+
   }
 
   callHook<T extends keyof AppHookMap>(
@@ -298,11 +252,9 @@ export class CommonPluginContext implements PluginContext {
     ctx: AppHookMap[T],
     options?: HookCallOptions,
   ): Promise<HookContext<AppHookMap[T]>> {
-    try {
-      return this.#app.callHook(name, ctx);
-    } catch (err: any) {
-      throw this.throw(err);
-    }
+
+    return this.#app.callHook(name, ctx);
+
   }
 
   callHookSync<T extends keyof AppHookMap>(
@@ -310,59 +262,47 @@ export class CommonPluginContext implements PluginContext {
     ctx: AppHookMap[T],
     options?: HookCallOptions,
   ): HookContext<AppHookMap[T]> {
-    try {
-      return this.#app.callHookSync(name, ctx);
-    } catch (err: any) {
-      throw this.throw(err);
-    }
+
+    return this.#app.callHookSync(name, ctx);
+
   }
 
   watch<K extends keyof AppValueMap>(
     name: K,
     watcher: (value: AppValueMap[K]) => void,
   ): void {
-    try {
-      this.#app.watch(name, watcher);
-    } catch (err: any) {
-      throw this.throw(err);
-    }
+
+    this.#app.watch(name, watcher);
+
   }
   unwatch<K extends keyof AppValueMap>(
     name: K,
     watcher: (value: AppValueMap[K]) => void,
   ): void {
-    try {
-      this.#app.unwatch(name, watcher);
-    } catch (err: any) {
-      throw this.throw(err);
-    }
+
+    this.#app.unwatch(name, watcher);
+
   }
 
   hasValue<K extends keyof AppValueMap>(name: K) {
-    try {
-      return this.#app.hasValue(name);
-    } catch (err: any) {
-      throw this.throw(err);
-    }
+
+    return this.#app.hasValue(name);
+
   }
 
   getValue<K extends keyof AppValueMap>(name: K) {
-    try {
-      return this.#app.getValue(name);
-    } catch (err: any) {
-      throw this.throw(err);
-    }
+
+    return this.#app.getValue(name);
+
   }
 
   setValue<K extends keyof AppValueMap>(
     name: K,
     value: AppValueMap[K],
   ): boolean {
-    try {
-      return this.#app.setValue(name, value);
-    } catch (err: any) {
-      throw this.throw(err);
-    }
+
+    return this.#app.setValue(name, value);
+
   }
 
   destroy() {
