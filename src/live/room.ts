@@ -6,8 +6,7 @@ import { UserInfo } from "./messageInfo";
 /** 直播间信息流监听类 */
 export abstract class LiveRoom
   extends CustomEventEmitter
-  implements LiveRoomData
-{
+  implements LiveRoomData {
   constructor() {
     super();
   }
@@ -21,7 +20,7 @@ export abstract class LiveRoom
   /** 平台 */
   abstract readonly platform: string;
   /** api服务 */
-  abstract readonly service: string;
+  readonly service: string = "";
   /** 房间id */
   abstract readonly id: string | number;
   /** 房间详情 */
@@ -61,7 +60,7 @@ export abstract class LiveRoom
   /** 设置房间数据 */
   abstract setData?(data: LiveRoomData): LiveRoomData;
   /** 销毁钩子 */
-  protected abstract onDestroy?(): void;
+  protected onDestroy?(): void;
 
   /** 销毁
    * @internal 请勿在继承 LiveRoom 的子类中声明该方法，应使用 onDestroy 钩子
