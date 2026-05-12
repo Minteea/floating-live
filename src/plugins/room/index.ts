@@ -56,7 +56,7 @@ declare module "../.." {
 
     "room.snapshot": () => LiveRoomData[];
 
-    "room.validate": (key: string) => void;
+    "room.validate": (key: string, options: RoomCreateOptions) => void;
     "room.invalidate": (key: string) => void;
 
     [name: `${string}.room.create`]: (
@@ -148,6 +148,8 @@ export class Room extends BasePlugin {
     ctx.registerCommand("update", bindCommand(this.update, this));
     ctx.registerCommand("move", bindCommand(this.move, this));
     ctx.registerCommand("room.snapshot", bindCommand(this.toSnapshot, this));
+    ctx.registerCommand("room.validate", bindCommand(this.validate, this));
+    ctx.registerCommand("room.invalidate", bindCommand(this.invalidate, this));
   }
 
   expose(): PluginExposes {
@@ -182,8 +184,9 @@ export class Room extends BasePlugin {
       if (open) {
         room.open();
       }
-      this.ctx.emit("room:add", { key, room: room.toData() });
     }
+
+    this.ctx.emit("room:add", { key, room: room.toData() });
   }
 
   /** 移除房间监听实例 */
