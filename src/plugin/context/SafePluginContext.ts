@@ -1,3 +1,4 @@
+import { appError } from "~/error";
 import { App } from "../../app";
 import {
   AppCommandMap,
@@ -5,7 +6,6 @@ import {
   CommandFunction,
   CommandOptions,
 } from "../../command";
-import { AppErrorLegacy } from "../../error";
 import { AppEventDetailMap, AppEventEmitOptions } from "../../event";
 import {
   AppHookMap,
@@ -49,14 +49,12 @@ export class SafePluginContext extends CommonPluginContext {
     this.#permissions = options.permissions;
   }
 
-  private throwNotPermitted(permission: string, cause: string) {
-    this.throw(
-      new AppErrorLegacy("plugin:no_permission", {
-        message: "插件权限不足",
-        cause,
-        permission,
-      }),
-    );
+  private throwNotPermitted(permission: string, reason: string) {
+    throw appError("plugin:no_permission", {
+      message: "插件权限不足",
+      reason,
+      permission,
+    });
   }
 
   register<P extends PluginItem>(

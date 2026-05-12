@@ -6,7 +6,8 @@ import { UserInfo } from "./messageInfo";
 /** 直播间信息流监听类 */
 export abstract class LiveRoom
   extends CustomEventEmitter
-  implements LiveRoomData {
+  implements LiveRoomData
+{
   constructor() {
     super();
   }

@@ -5,7 +5,6 @@ import {
   CommandFunction,
 } from "./command";
 import { CommandManager } from "./command/manager";
-import { AppErrorLegacy } from "./error";
 import {
   AppEventDetailMap,
   AppEventEmitOptions,
@@ -98,16 +97,6 @@ export class App extends CustomEventEmitter implements PluginContext {
     const { source, remote } = options || {};
     super.emit(type, { ...detail, source, remote }, options);
     super.emit("event", { name: type, detail: { ...detail, source, remote } });
-  }
-
-  //--- 错误机制 ---//
-  /** 发送错误 */
-  throw(err?: Error): never {
-    throw err;
-  }
-
-  error(id: string, detail?: Record<string, any>) {
-    return new AppErrorLegacy(id, detail || {});
   }
 
   //--- 插件机制 ---//

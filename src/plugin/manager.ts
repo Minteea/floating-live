@@ -1,6 +1,5 @@
 import { CommonPluginContext } from "./context/CommonPluginContext";
 import type { App } from "../app";
-import { AppErrorLegacy, ErrorOptions } from "../error";
 import {
   PluginItem,
   PluginConstructor,
@@ -10,6 +9,7 @@ import {
   WhenRegisterCallback,
 } from "./types";
 import { bindCommand } from "../utils";
+import { appError } from "~/error";
 
 export class PluginManager {
   /** 插件列表 */
@@ -39,16 +39,16 @@ export class PluginManager {
   ): P {
     const pluginName = pluginConstructor.pluginName;
     if (!pluginName) {
-      throw new AppErrorLegacy("plugin:register_id_missing", {
+      throw appError("plugin:register_id_missing", {
         message: "插件注册失败",
-        cause: "插件缺少pluginName字段",
+        reason: "插件缺少pluginName字段",
         target: "plugin/#unnamed",
       });
     }
     if (this.list.has(pluginName)) {
-      throw new AppErrorLegacy("plugin:register_id_duplicate", {
+      throw appError("plugin:register_id_duplicate", {
         message: `插件注册失败: ${pluginName}`,
-        cause: "已存在相同id的插件",
+        reason: "已存在相同id的插件",
         target: `plugin/${pluginName}`,
       });
     }
@@ -58,9 +58,9 @@ export class PluginManager {
     try {
       const ctx = this.app.callHookSync("plugin.register", registerCtx);
       if (ctx.defaultPrevented)
-        throw new AppErrorLegacy("plugin:register_hook_prevented", {
+        throw appError("plugin:register_hook_prevented", {
           message: `插件注册失败: ${pluginName}`,
-          cause: "插件注册被钩子函数阻止",
+          reason: "插件注册被钩子函数阻止",
           target: `plugin/${pluginName}`,
         });
       // 执行插件函数
@@ -94,9 +94,9 @@ export class PluginManager {
 
       return plugin;
     } catch (err: any) {
-      throw new AppErrorLegacy("plugin:register_fail", {
+      throw appError("plugin:register_fail", {
         message: `插件注册失败: ${pluginName}`,
-        cause: err,
+        reason: err,
         target: `plugin/${pluginName}`,
       });
     }
@@ -116,16 +116,16 @@ export class PluginManager {
   ): Promise<P> {
     const pluginName = pluginConstructor.pluginName;
     if (!pluginName) {
-      throw new AppErrorLegacy("plugin:register_id_missing", {
+      throw appError("plugin:register_id_missing", {
         message: "插件注册失败",
-        cause: "插件缺少pluginName字段",
+        reason: "插件缺少pluginName字段",
         target: "plugin/#unnamed",
       });
     }
     if (this.list.has(pluginName)) {
-      throw new AppErrorLegacy("plugin:register_id_duplicate", {
+      throw appError("plugin:register_id_duplicate", {
         message: `插件注册失败: ${pluginName}`,
-        cause: "已存在相同id的插件",
+        reason: "已存在相同id的插件",
         target: `plugin/${pluginName}`,
       });
     }
@@ -136,9 +136,9 @@ export class PluginManager {
       .callHook("plugin.register", registerCtx)
       .then(async (ctx) => {
         if (ctx.defaultPrevented)
-          throw new AppErrorLegacy("plugin:register_hook_prevented", {
+          throw appError("plugin:register_hook_prevented", {
             message: `插件注册失败: ${pluginName}`,
-            cause: "插件注册被钩子函数阻止",
+            reason: "插件注册被钩子函数阻止",
             target: `plugin/${pluginName}`,
           });
         // 执行插件函数
@@ -172,9 +172,9 @@ export class PluginManager {
         return plugin;
       })
       .catch((err: any) => {
-        throw new AppErrorLegacy("plugin:register_fail", {
+        throw appError("plugin:register_fail", {
           message: `插件注册失败: ${pluginName}`,
-          cause: err,
+          reason: err,
           target: `plugin/${pluginName}`,
         });
       });
@@ -184,17 +184,17 @@ export class PluginManager {
     const pluginData = this.list.get(pluginName);
     // 检测插件是否存在
     if (!pluginData) {
-      throw new AppErrorLegacy("plugin:unregister_unexist", {
+      throw appError("plugin:unregister_unexist", {
         message: `插件移除失败: ${pluginName}`,
-        cause: "插件不存在",
+        reason: "插件不存在",
         target: `plugin/${pluginName}`,
       });
     } else {
       const { plugin, context, unremovable } = pluginData;
       if (unremovable) {
-        throw new AppErrorLegacy("plugin:unregister_unremovable", {
+        throw appError("plugin:unregister_unremovable", {
           message: `插件移除失败: ${pluginName}`,
-          cause: "不可移除的插件",
+          reason: "不可移除的插件",
           target: `plugin/${pluginName}`,
         });
       }

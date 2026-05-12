@@ -1,5 +1,5 @@
+import { appError } from "~/error";
 import { App } from "../app";
-import { AppErrorLegacy } from "../error";
 import {
   CommandItem,
   CommandFunction,
@@ -42,7 +42,7 @@ export class CommandManager {
   callWithOptions(name: string, options: CommandCallOptions, ...args: any[]) {
     const command = this.list.get(name);
     if (!command) {
-      throw new AppErrorLegacy("command:call_unexist", {
+      throw appError("command:call_unexist", {
         message: `命令不存在: ${name}`,
         target: `command/${name}`,
       });

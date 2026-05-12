@@ -5,7 +5,6 @@ import {
   AppCommandMap,
   CommandFunction,
 } from "../command";
-import { AppErrorLegacy, ErrorOptions } from "../error";
 import {
   AppEventListener,
   AppEventEmitOptions,
@@ -47,11 +46,11 @@ export interface PluginItem {
 /** 插件构造器 */
 export interface PluginConstructor<P extends PluginItem> {
   pluginName: string;
-  new(ctx: PluginContext, options: any): P;
+  new (ctx: PluginContext, options: any): P;
 }
 
 /** 插件初始化选项 */
-export interface PluginInitOptions { }
+export interface PluginInitOptions {}
 
 /** 插件注册选项 */
 export interface PluginRegisterOptions {

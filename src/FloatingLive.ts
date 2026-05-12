@@ -1,6 +1,6 @@
 import { LiveRoom } from ".";
 import { App } from "./app";
-import { Room } from "./plugins/room";
+import { Room, RoomCreateOptions } from "./plugins/room";
 import { Platform } from "./plugins/platform";
 
 export class FloatingLive extends App {
@@ -8,11 +8,19 @@ export class FloatingLive extends App {
   platform: Platform;
   constructor() {
     super();
-    this.room = this.registerSync(Room, {}, { unremovable: true, accessApp: true, pluginType: "core" });
-    this.platform = this.registerSync(Platform, {}, { unremovable: true, accessApp: true, pluginType: "core" });
+    this.room = this.registerSync(
+      Room,
+      {},
+      { unremovable: true, accessApp: true, pluginType: "core" },
+    );
+    this.platform = this.registerSync(
+      Platform,
+      {},
+      { unremovable: true, accessApp: true, pluginType: "core" },
+    );
   }
   /** 添加房间 */
-  add(platform: string, id: number, options?: boolean | Record<string, any>) {
+  add(platform: string, id: number, options?: boolean | RoomCreateOptions) {
     return this.room.add(platform, id, options);
   }
   /** 移除房间 */

@@ -1,4 +1,3 @@
-import { AppErrorLegacy } from "../error";
 import type { PluginItem, PluginContext } from "./types";
 
 export type * from "./types";

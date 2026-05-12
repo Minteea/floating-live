@@ -1,5 +1,5 @@
 import { App } from "../app";
-import { AppErrorLegacy } from "../error";
+import { appError } from "../error";
 import { bindCommand } from "../utils";
 import {
   ValueAccessOptions,
@@ -42,7 +42,7 @@ export class ValueManager {
   get(name: string, options?: ValueAccessOptions) {
     const item = this.list.get(name);
     if (!item)
-      throw new AppErrorLegacy("value:get_unexist", {
+      throw appError("value:get_unexist", {
         message: "无法获取未注册的值",
       });
     return item.get(options);
