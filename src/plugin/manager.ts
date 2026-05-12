@@ -203,7 +203,7 @@ export class PluginManager {
         target: `plugin/${pluginName}`,
       });
     } else {
-      const { plugin, context, unremovable } = pluginData;
+      const { plugin, context, unremovable, role } = pluginData;
       if (unremovable) {
         throw appError("plugin:unregister_unremovable", {
           message: `插件移除失败: ${pluginName}`,
@@ -217,7 +217,7 @@ export class PluginManager {
       // 从列表中移除插件
       this.list.delete(pluginName);
       // 移除插件注册事件
-      this.app.emit("plugin:unregister", { pluginName, role: pluginData.role });
+      this.app.emit("plugin:unregister", { pluginName, role });
 
       // 如果有whenRegister的回调，调用whenUnregistered函数并将回调函数从列表中移除
       const callbackMap = this.whenRegisterMap.get(pluginName);

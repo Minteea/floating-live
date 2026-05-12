@@ -361,7 +361,7 @@ export class Room extends BasePlugin {
     }
     if (invalidRoom.valid == true) {
       throw appError("room:validate_valid", {
-        message: `无法将已经有效的房间再次设为有效[${key}]`,
+        message: `无法使已经有效的房间生效[${key}]`,
         target: `room/${key}`,
       });
     }
@@ -384,9 +384,9 @@ export class Room extends BasePlugin {
         target: `room/${key}`,
       });
     }
-    if (room.valid == true) {
+    if (!room.valid) {
       throw appError("room:invalidate_invalid", {
-        message: `无法将已经无效的房间再次设为无效[${key}]`,
+        message: `无法使已经无效的房间失效[${key}]`,
         target: `room/${key}`,
       });
     }
