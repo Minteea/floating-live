@@ -370,6 +370,12 @@ export class Room extends BasePlugin {
       ...options,
       allowInvalidRoom: false,
     });
+
+    // 如果房间有效，则绑定事件
+    if (room.valid) {
+      this.bindEvent(room);
+    }
+
     this.map.set(key, room);
 
     this.ctx.emit("room:validate", { key, room: room.toData() });
