@@ -28,7 +28,7 @@ interface PluginExposes {
     platform: string,
     id: number,
     options?: boolean | RoomCreateOptions,
-  ): void;
+  ): Promise<void>;
   remove(key: string): void;
   get(key: string): LiveRoom | InvalidLiveRoom | undefined;
   has(key: string): boolean;

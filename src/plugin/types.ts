@@ -46,6 +46,7 @@ export interface PluginItem {
 /** 插件构造器 */
 export interface PluginConstructor<P extends PluginItem> {
   pluginName: string;
+  role?: string;
   new (ctx: PluginContext, options: any): P;
 }
 
@@ -56,8 +57,6 @@ export interface PluginInitOptions {}
 export interface PluginRegisterOptions {
   /** 提供的插件上下文 */
   context?: PluginContext;
-  /** 核心插件，不可解除注册 @deprecated */
-  core?: boolean;
   /** 不可注销 */
   unremovable?: boolean;
   /** 可访问App实例 */
@@ -70,6 +69,16 @@ export interface PluginData<T> {
   plugin: PluginItem;
   context: PluginContext;
   exposes?: T;
+  unremovable: boolean;
+  /** 可访问App实例 */
+  accessApp: boolean;
+  /** 插件类型 */
+  pluginType: "core" | "framework" | "";
+}
+
+export interface PluginInfo {
+  pluginName: string;
+  role: string;
   unremovable: boolean;
   /** 可访问App实例 */
   accessApp: boolean;

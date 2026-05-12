@@ -1,3 +1,5 @@
+import { PluginInfo } from "~/plugin";
+
 export interface AppEventEmitOptions {
   /** 事件来源 */
   source?: string;
@@ -20,7 +22,7 @@ export interface AppEventDetailMap {
   "command:register": { name: string };
   "command:unregister": { name: string };
 
-  "plugin:register": { pluginName: string };
+  "plugin:register": PluginInfo;
   "plugin:unregister": { pluginName: string };
 
   "value:register": { name: string; value: any };

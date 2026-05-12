@@ -3,7 +3,6 @@ import type { App } from "../app";
 import {
   PluginItem,
   PluginConstructor,
-  PluginContext,
   PluginRegisterOptions,
   PluginData,
   WhenRegisterCallback,
@@ -31,13 +30,13 @@ export class PluginManager {
     options: Record<string, any> = {},
     {
       context,
-      core,
-      unremovable,
-      accessApp,
-      pluginType,
+      unremovable = false,
+      accessApp = false,
+      pluginType = "",
     }: PluginRegisterOptions = {},
   ): P {
     const pluginName = pluginConstructor.pluginName;
+    const role = pluginConstructor.role || "";
     if (!pluginName) {
       throw appError("plugin:register_id_missing", {
         message: "插件注册失败",
@@ -77,11 +76,17 @@ export class PluginManager {
         plugin,
         context: pluginCtx,
         exposes,
-        unremovable: core || unremovable || false,
-        accessApp: core || accessApp || false,
-        pluginType: core ? "core" : pluginType || "",
+        unremovable: unremovable || false,
+        accessApp: accessApp || false,
+        pluginType: pluginType || "",
       });
-      this.app.emit("plugin:register", { pluginName });
+      this.app.emit("plugin:register", {
+        pluginName,
+        role,
+        unremovable,
+        accessApp,
+        pluginType,
+      });
 
       // 如果有whenRegister的回调，调用回调函数
       const callbackMap = this.whenRegisterMap.get(pluginName);
@@ -108,13 +113,13 @@ export class PluginManager {
     options: Record<string, any> = {},
     {
       context,
-      core,
-      unremovable,
-      accessApp,
-      pluginType,
+      unremovable = false,
+      accessApp = false,
+      pluginType = "",
     }: PluginRegisterOptions = {},
   ): Promise<P> {
     const pluginName = pluginConstructor.pluginName;
+    const role = pluginConstructor.role || "";
     if (!pluginName) {
       throw appError("plugin:register_id_missing", {
         message: "插件注册失败",
@@ -154,11 +159,17 @@ export class PluginManager {
           plugin,
           context: pluginCtx,
           exposes,
-          unremovable: core || unremovable || false,
-          accessApp: core || accessApp || false,
-          pluginType: core ? "core" : pluginType || "",
+          unremovable: unremovable,
+          accessApp: accessApp,
+          pluginType: pluginType,
         });
-        this.app.emit("plugin:register", { pluginName });
+        this.app.emit("plugin:register", {
+          pluginName,
+          role,
+          unremovable,
+          accessApp,
+          pluginType,
+        });
 
         // 如果有whenRegister的回调，调用回调函数
         const callbackMap = this.whenRegisterMap.get(pluginName);
