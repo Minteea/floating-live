@@ -74,6 +74,7 @@ export class PluginManager {
       // 将插件数据注册到列表中
       this.list.set(pluginName, {
         plugin,
+        role,
         context: pluginCtx,
         exposes,
         unremovable: unremovable || false,
@@ -157,6 +158,7 @@ export class PluginManager {
         const exposes = await plugin.expose?.(pluginCtx);
         this.list.set(pluginName, {
           plugin,
+          role,
           context: pluginCtx,
           exposes,
           unremovable: unremovable,
@@ -215,7 +217,7 @@ export class PluginManager {
       // 从列表中移除插件
       this.list.delete(pluginName);
       // 移除插件注册事件
-      this.app.emit("plugin:unregister", { pluginName });
+      this.app.emit("plugin:unregister", { pluginName, role: pluginData.role });
 
       // 如果有whenRegister的回调，调用whenUnregistered函数并将回调函数从列表中移除
       const callbackMap = this.whenRegisterMap.get(pluginName);

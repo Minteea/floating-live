@@ -67,6 +67,7 @@ export interface PluginRegisterOptions {
 
 export interface PluginData<T> {
   plugin: PluginItem;
+  role: string;
   context: PluginContext;
   exposes?: T;
   unremovable: boolean;

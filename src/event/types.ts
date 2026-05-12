@@ -23,7 +23,7 @@ export interface AppEventDetailMap {
   "command:unregister": { name: string };
 
   "plugin:register": PluginInfo;
-  "plugin:unregister": { pluginName: string };
+  "plugin:unregister": { pluginName: string; role: string };
 
   "value:register": { name: string; value: any };
   "value:change": { name: string; value: any };
