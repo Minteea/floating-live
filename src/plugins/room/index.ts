@@ -350,7 +350,7 @@ export class Room extends BasePlugin {
     }
   }
 
-  /** 激活无效房间 */
+  /** 使无效房间生效 */
   public async validate(key: string, options: RoomCreateOptions) {
     let invalidRoom = this.map.get(key);
     if (!invalidRoom) {
@@ -372,12 +372,10 @@ export class Room extends BasePlugin {
     });
     this.map.set(key, room);
 
-    if (room.valid) {
-      this.ctx.emit("room:validate", { key, room: room.toData() });
-    }
+    this.ctx.emit("room:validate", { key, room: room.toData() });
   }
 
-  /** 使有效的房间设为无效 */
+  /** 使有效的房间失效 */
   public invalidate(key: string) {
     let room = this.map.get(key) as LiveRoomWithAbortController | undefined;
     if (!room) {
@@ -402,7 +400,7 @@ export class Room extends BasePlugin {
     room[this.symbolAbortController]?.abort();
     (room as any)[this.symbolAbortController] = undefined;
 
-    this.ctx.emit("room:remove", { key });
+    this.ctx.emit("room:invalidate", { key, room: invalidRoom.toData() });
 
     try {
       room.destroy?.();
