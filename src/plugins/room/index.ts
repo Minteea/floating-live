@@ -18,53 +18,79 @@ interface LiveRoomWithAbortController extends LiveRoom {
 }
 
 export interface RoomCreateOptions {
+  /** 允许立即添加房间，如果不能立即添加，则先添加待定状态的房间，以免房间添加顺序混乱或重复执行 */
+  allowPending?: boolean;
+  /** 允许在创建房间失败后，设置为无效房间 */
   allowInvalidRoom?: boolean;
   open?: boolean;
   [option: string]: any;
 }
 
 interface PluginExposes {
+  // 指令方法
   add(
     platform: string,
     id: number,
     options?: boolean | RoomCreateOptions,
   ): Promise<void>;
   remove(key: string): void;
-  get(key: string): LiveRoom | InvalidLiveRoom | undefined;
-  has(key: string): boolean;
-  data(key: string): LiveRoomData | undefined;
-  update(key: string): void;
+  move: (key: string, position: number) => void;
+
   open(key: string): void;
   close(key: string): void;
+
+  has(key: string): boolean;
+  info(key: string): LiveRoomData | null;
+  update(key: string): void;
+
+  validate: (key: string, options: RoomCreateOptions) => void;
+  invalidate: (key: string) => void;
+
+  getData(): LiveRoomData[];
+
+  // 非指令方法
+  get(key: string): LiveRoom | InvalidLiveRoom | undefined;
   getList(): (LiveRoom | InvalidLiveRoom)[];
 }
 
 declare module "../.." {
+  interface AppCommandAliasMap {
+    add: "room.add";
+    remove: "room.remove";
+    move: "room.move";
+
+    open: "room.open";
+    close: "room.close";
+
+    update: "room.update";
+    room: "room.info";
+  }
   interface AppCommandMap {
-    add: (
+    "room.add": (
       platform: string,
       id: number,
       options?: boolean | RoomCreateOptions,
     ) => void;
-    remove: (key: string) => void;
-    move: (key: string, position: number) => void;
+    "room.remove": (key: string) => void;
+    "room.move": (key: string, position: number) => void;
 
-    open: (key: string) => void;
-    close: (key: string) => void;
+    "room.open": (key: string) => void;
+    "room.close": (key: string) => void;
 
-    update: (key: string) => void;
-
-    "room.snapshot": () => LiveRoomData[];
+    "room.update": (key: string) => void;
+    "room.info": (key: string) => LiveRoomData | null;
 
     "room.validate": (key: string, options: RoomCreateOptions) => void;
     "room.invalidate": (key: string) => void;
+
+    "room.getData": () => LiveRoomData[];
 
     [name: `${string}.room.create`]: (
       id: string | number,
       options: RoomCreateOptions,
     ) => LiveRoom | Promise<LiveRoom>;
 
-    [name: `${string}.room.data`]: (
+    [name: `${string}.room.info`]: (
       id: string | number,
     ) => LiveRoomData | Promise<LiveRoomData>;
   }
@@ -94,6 +120,8 @@ declare module "../.." {
 
     "room:validate": { key: string; room: LiveRoomData };
     "room:invalidate": { key: string; room: LiveRoomData };
+    "room:replace": { key: string; room: LiveRoomData };
+    "room:changeKey": { oldKey: string; newKey: string; room: LiveRoomData };
 
     "room:open": { key: string; room: LiveRoomData };
     "room:close": { key: string; room: LiveRoomData };
@@ -116,7 +144,7 @@ declare module "../.." {
       message: LiveMessage.All;
     };
     "room.create": {
-      serviceId: string;
+      service: string;
       id: string | number;
       options: RoomCreateOptions;
     };
@@ -141,27 +169,49 @@ export class Room extends BasePlugin {
   private symbolAbortController = Symbol("room.abortController");
 
   init(ctx: PluginContext) {
-    ctx.registerCommand("add", bindCommand(this.add, this));
-    ctx.registerCommand("remove", bindCommand(this.remove, this));
-    ctx.registerCommand("open", bindCommand(this.open, this));
-    ctx.registerCommand("close", bindCommand(this.close, this));
-    ctx.registerCommand("update", bindCommand(this.update, this));
-    ctx.registerCommand("move", bindCommand(this.move, this));
-    ctx.registerCommand("room.snapshot", bindCommand(this.toSnapshot, this));
+    ctx.registerCommand("room.add", bindCommand(this.add, this));
+    ctx.registerCommand("room.remove", bindCommand(this.remove, this));
+    ctx.registerCommand("room.move", bindCommand(this.move, this));
+
+    ctx.registerCommand("room.open", bindCommand(this.open, this));
+    ctx.registerCommand("room.close", bindCommand(this.close, this));
+
+    ctx.registerCommand("room.update", bindCommand(this.update, this));
+    ctx.registerCommand("room.info", bindCommand(this.info, this));
+
     ctx.registerCommand("room.validate", bindCommand(this.validate, this));
     ctx.registerCommand("room.invalidate", bindCommand(this.invalidate, this));
+
+    ctx.registerCommand("room.getData", bindCommand(this.getData, this));
+
+    ctx.registerCommandAlias("add", "room.add");
+    ctx.registerCommandAlias("remove", "room.remove");
+    ctx.registerCommandAlias("move", "room.move");
+    ctx.registerCommandAlias("open", "room.open");
+    ctx.registerCommandAlias("close", "room.close");
+    ctx.registerCommandAlias("update", "room.update");
+    ctx.registerCommandAlias("room", "room.info");
   }
 
   expose(): PluginExposes {
     return {
       add: this.add.bind(this),
       remove: this.remove.bind(this),
-      get: this.get.bind(this),
-      has: this.has.bind(this),
-      data: this.data.bind(this),
-      update: this.update.bind(this),
+      move: this.move.bind(this),
+
       open: this.open.bind(this),
       close: this.close.bind(this),
+
+      has: this.has.bind(this),
+      update: this.update.bind(this),
+      info: this.info.bind(this),
+
+      validate: this.validate.bind(this),
+      invalidate: this.invalidate.bind(this),
+
+      getData: this.getData.bind(this),
+
+      get: this.get.bind(this),
       getList: this.getList.bind(this),
     };
   }
@@ -287,47 +337,106 @@ export class Room extends BasePlugin {
 
   /** 添加房间 */
   public async add(
-    serviceId: string,
+    service: string,
     id: number,
     options?: boolean | RoomCreateOptions,
   ) {
     const opt = typeof options == "boolean" ? { open: options } : options || {};
 
-    const room = await this.create(serviceId, id, opt);
+    if (opt.allowPending) {
+      const promiseRoom = this.create(service, id, opt);
 
-    this.attach(room);
+      await Promise.race([promiseRoom, 0 as const]).then(async (result) => {
+        if (result === 0) {
+          // pending: 房间尚未创建完毕
+          // 先添加一个待定状态的房间，以免房间添加顺序混乱或重复执行
+          const pendingRoom = new InvalidLiveRoom(service, id);
+          this.attach(pendingRoom);
+
+          // 等待房间创建完毕后，再用真正的房间实例替换掉待定房间
+          const room = await promiseRoom.catch((e) => {
+            // 如果创建房间失败且不返回无效房间，则直接移除待定房间，并抛出错误
+            this.detach(pendingRoom.key);
+            throw e;
+          });
+          // 如果房间key与待定房间key不一致，则更改房间key（通常是因为输入的房间key与实际返回的房间key不一致的特殊情况），并触发 changeKey 事件
+          if (pendingRoom.key != room.key) {
+            // 更改房间数据以匹配实际返回的房间key
+            (pendingRoom as LiveRoomData).platform = room.platform;
+            (pendingRoom as LiveRoomData).id = room.id;
+            // 更改列表中的房间key
+            this.changeKey(pendingRoom.key, room.key);
+          }
+          // 用真正的房间实例替换掉待定房间
+          this.map.set(pendingRoom.key, room);
+          if (room.valid) {
+            this.bindEvent(room);
+            if (opt.open) {
+              room.open();
+            }
+            // 如果房间有效，则触发 validate 事件
+            this.ctx.emit("room:validate", {
+              key: room.key,
+              room: room.toData(),
+            });
+          } else {
+            // 如果房间无效，则触发 invalidate 事件
+            this.ctx.emit("room:invalidate", {
+              key: room.key,
+              room: room.toData(),
+            });
+          }
+        } else {
+          // fulfilled: 房间已经立即创建完毕
+          this.attach(result, opt.open);
+        }
+      });
+    } else {
+      const room = await this.create(service, id, opt);
+      this.attach(room, opt.open);
+    }
   }
 
   /** 创建房间实例 */
   public async create(
-    serviceId: string,
+    service: string,
     id: number | string,
     options: RoomCreateOptions = {},
   ) {
-    const ctx = { serviceId, id, options };
-    const res = await this.ctx.callHook("room.create", ctx).catch((reason) => {
-      throw appError("room:create_hook_error", {
-        message: `无法创建房间监听实例[${serviceId}:${id}]：调用钩子函数出错`,
-        target: `room/${serviceId}:${id}`,
-      });
-    });
-    if (res.defaultPrevented) {
-      throw appError("room:create_hook_prevented", {
-        message: `无法创建房间监听实例[${serviceId}:${id}]：房间添加被钩子函数阻止`,
-        target: `room/${serviceId}:${id}`,
-      });
+    const ctx = { service, id, options };
+    try {
+      const res = await this.ctx
+        .callHook("room.create", ctx)
+        .catch((reason) => {
+          throw appError("room:create_hook_error", {
+            message: `无法创建房间监听实例[${service}:${id}]: 调用钩子函数出错`,
+            target: `room/${service}:${id}`,
+          });
+        });
+      if (res.defaultPrevented) {
+        throw appError("room:create_hook_prevented", {
+          message: `无法创建房间监听实例[${service}:${id}]: 房间添加被钩子函数阻止`,
+          target: `room/${service}:${id}`,
+        });
+      }
+    } catch (e: any) {
+      if (options.allowInvalidRoom) {
+        return new InvalidLiveRoom(service, id);
+      } else {
+        throw e;
+      }
     }
     let room: LiveRoom | InvalidLiveRoom;
     try {
-      room = await this.ctx.call(`${serviceId}.room.create`, id, options);
+      room = await this.ctx.call(`${service}.room.create`, id, options);
     } catch (e: any) {
       if (options.allowInvalidRoom) {
-        room = new InvalidLiveRoom(serviceId, id);
+        room = new InvalidLiveRoom(service, id);
       } else {
         throw appError("room:create_fail", {
-          message: `创建房间监听实例失败[${serviceId}:${id}]`,
+          message: `创建房间监听实例失败[${service}:${id}]`,
           reason: e,
-          target: `room/${serviceId}:${id}`,
+          target: `room/${service}:${id}`,
         });
       }
     }
@@ -365,8 +474,8 @@ export class Room extends BasePlugin {
         target: `room/${key}`,
       });
     }
-    const { serviceId, id } = invalidRoom;
-    const room = await this.create(serviceId, id, {
+    const { service, id } = invalidRoom;
+    const room = await this.create(service, id, {
       ...options,
       allowInvalidRoom: false,
     });
@@ -398,8 +507,8 @@ export class Room extends BasePlugin {
     }
 
     // 用无效房间替换掉原房间
-    const { serviceId, id } = room;
-    const invalidRoom = new InvalidLiveRoom(serviceId, id);
+    const { service, id } = room;
+    const invalidRoom = new InvalidLiveRoom(service, id);
     this.map.set(key, invalidRoom);
 
     // 移除插件实例对原房间的所有监听
@@ -427,9 +536,9 @@ export class Room extends BasePlugin {
     return this.map.has(key);
   }
   /** 获取房间信息 */
-  public data(key: string) {
+  public info(key: string) {
     let room = this.map.get(key);
-    return room ? room.toData() : undefined;
+    return room?.toData() || null;
   }
   /** 更新房间信息 */
   public update(key: string) {
@@ -493,8 +602,27 @@ export class Room extends BasePlugin {
     this.map = new Map(arr);
     this.ctx.emit("room:move", { key, position });
   }
-  /** 获取快照 */
-  toSnapshot(): LiveRoomData[] {
+  /** 在不更改列表排序的情况下更改某个房间的key，目前仅用于处理输入房间key与返回房间key不一致的特殊情况，不提供指令，通常情况下请勿使用该方法 */
+  changeKey(oldKey: string, newKey: string) {
+    const arr = [...this.map];
+    const index = arr.findIndex(([k]) => k == oldKey);
+    if (index == -1) {
+      throw appError("room:changekey_unexist", {
+        message: "要更改key的房间不存在",
+        target: `room/${oldKey}`,
+      });
+    }
+    let room = arr[index][1];
+    arr[index][0] = newKey;
+    this.map = new Map(arr);
+    this.ctx.emit("room:changeKey", {
+      oldKey,
+      newKey,
+      room: room.toData(),
+    });
+  }
+  /** 获取当前数据 */
+  getData(): LiveRoomData[] {
     return this.getList().map((room) => room.toData());
   }
 }

@@ -3,6 +3,7 @@ import {
   CommandCallOptions,
   AppCommandMap,
   CommandFunction,
+  AppCommandAliasMap,
 } from "./command";
 import { CommandManager } from "./command/manager";
 import {
@@ -47,8 +48,8 @@ export class App extends CustomEventEmitter implements PluginContext {
     this.pluginManager = new PluginManager(this);
 
     // 初始化命令
-    this.registerCommand("command.snapshot", () =>
-      this.commandManager.toSnapshot(),
+    this.registerCommand("command.getData", () =>
+      this.commandManager.getData(),
     );
     this.registerCommand("get", (e, name) => this.getValue(name));
     this.registerCommand("set", (e, name, value) => this.setValue(name, value));
@@ -150,6 +151,13 @@ export class App extends CustomEventEmitter implements PluginContext {
     options?: CommandOptions,
   ) {
     this.commandManager.register(name, func, options);
+  }
+  registerCommandAlias<T extends keyof AppCommandAliasMap>(
+    name: T,
+    targetName: AppCommandAliasMap[T],
+    options?: CommandOptions,
+  ): void {
+    this.commandManager.registerAlias(name, targetName, options);
   }
 
   unregisterCommand(name: string) {

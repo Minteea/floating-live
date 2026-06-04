@@ -22,7 +22,7 @@ export class PluginManager {
 
   constructor(app: App) {
     this.app = app;
-    app.registerCommand("plugin.snapshot", bindCommand(this.toSnapshot, this));
+    app.registerCommand("plugin.getData", bindCommand(this.getData, this));
   }
 
   registerSync<P extends PluginItem>(
@@ -39,15 +39,13 @@ export class PluginManager {
     const role = pluginConstructor.role || "";
     if (!pluginName) {
       throw appError("plugin:register_id_missing", {
-        message: "插件注册失败",
-        reason: "插件缺少pluginName字段",
+        message: "插件注册失败: 插件缺少pluginName字段",
         target: "plugin/#unnamed",
       });
     }
     if (this.list.has(pluginName)) {
       throw appError("plugin:register_id_duplicate", {
-        message: `插件注册失败: ${pluginName}`,
-        reason: "已存在相同id的插件",
+        message: `插件注册失败[${pluginName}]: 已存在相同id的插件`,
         target: `plugin/${pluginName}`,
       });
     }
@@ -58,8 +56,7 @@ export class PluginManager {
       const ctx = this.app.callHookSync("plugin.register", registerCtx);
       if (ctx.defaultPrevented)
         throw appError("plugin:register_hook_prevented", {
-          message: `插件注册失败: ${pluginName}`,
-          reason: "插件注册被钩子函数阻止",
+          message: `插件注册失败${pluginName}: 插件注册被钩子函数阻止`,
           target: `plugin/${pluginName}`,
         });
       // 执行插件函数
@@ -123,15 +120,13 @@ export class PluginManager {
     const role = pluginConstructor.role || "";
     if (!pluginName) {
       throw appError("plugin:register_id_missing", {
-        message: "插件注册失败",
-        reason: "插件缺少pluginName字段",
+        message: "插件注册失败: 插件缺少pluginName字段",
         target: "plugin/#unnamed",
       });
     }
     if (this.list.has(pluginName)) {
       throw appError("plugin:register_id_duplicate", {
-        message: `插件注册失败: ${pluginName}`,
-        reason: "已存在相同id的插件",
+        message: `插件注册失败[${pluginName}]: 已存在相同id的插件`,
         target: `plugin/${pluginName}`,
       });
     }
@@ -143,8 +138,7 @@ export class PluginManager {
       .then(async (ctx) => {
         if (ctx.defaultPrevented)
           throw appError("plugin:register_hook_prevented", {
-            message: `插件注册失败: ${pluginName}`,
-            reason: "插件注册被钩子函数阻止",
+            message: `插件注册失败${pluginName}: 插件注册被钩子函数阻止`,
             target: `plugin/${pluginName}`,
           });
         // 执行插件函数
@@ -198,16 +192,14 @@ export class PluginManager {
     // 检测插件是否存在
     if (!pluginData) {
       throw appError("plugin:unregister_unexist", {
-        message: `插件移除失败: ${pluginName}`,
-        reason: "插件不存在",
+        message: `插件移除失败[${pluginName}]: 插件不存在`,
         target: `plugin/${pluginName}`,
       });
     } else {
       const { plugin, context, unremovable, role } = pluginData;
       if (unremovable) {
         throw appError("plugin:unregister_unremovable", {
-          message: `插件移除失败: ${pluginName}`,
-          reason: "不可移除的插件",
+          message: `插件移除失败[${pluginName}]: 该插件已配置为不可移除`,
           target: `plugin/${pluginName}`,
         });
       }
@@ -279,7 +271,7 @@ export class PluginManager {
     }
   }
 
-  toSnapshot() {
+  getData() {
     return [...this.list.keys()].map((n) => ({ pluginName: n }));
   }
 }

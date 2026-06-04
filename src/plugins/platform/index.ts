@@ -1,9 +1,11 @@
-import { appError, BasePlugin, LivePlatformInfo } from "../..";
+import { bindCommand } from "~/utils";
+import { appError, BasePlugin, LivePlatformInfo, PluginContext } from "../..";
 
 interface PluginExposes {
   register(name: string, info: LivePlatformInfo, signal: AbortSignal): void;
   get(name: string): LivePlatformInfo | undefined;
-  toSnapshot(): { name: string }[];
+  info(name: string): LivePlatformInfo | undefined;
+  getData(): { name: string }[];
 }
 
 declare module "../.." {
@@ -15,8 +17,13 @@ declare module "../.." {
     "platform:register": { name: string; info: LivePlatformInfo };
     "platform:unregister": { name: string };
   }
+
+  interface AppCommandAliasMap {
+    platform: "platform.info";
+  }
   interface AppCommandMap {
-    "platform.snapshot": () => {
+    "platform.info": (name: string) => LivePlatformInfo | undefined;
+    "platform.getData": () => {
       name: string;
       info: LivePlatformInfo;
     }[];
@@ -33,6 +40,13 @@ export class Platform extends BasePlugin {
   static pluginName = "platform";
   private list = new Map<string, LivePlatformInfo>();
 
+  init(ctx: PluginContext) {
+    ctx.registerCommand("platform.getData", this.getData.bind(this));
+    ctx.registerCommand("platform.info", bindCommand(this.info, this));
+
+    ctx.registerCommandAlias("platform", "platform.info");
+  }
+
   /** 注册直播平台信息 */
   register(name: string, info: LivePlatformInfo, signal?: AbortSignal) {
     if (this.list.has(name)) {
@@ -47,7 +61,7 @@ export class Platform extends BasePlugin {
         () => {
           this.unregister(name);
         },
-        { once: true },
+        { once: true, signal: this.ctx.signal },
       );
     }
   }
@@ -60,9 +74,14 @@ export class Platform extends BasePlugin {
     }
     this.list.delete(name);
   }
-  /** 获取直播平台信息 */
+  /** 直接获取直播平台信息 */
   get(name: string): LivePlatformInfo | undefined {
     return this.list.get(name);
+  }
+
+  /** 获取直播平台信息 */
+  info(name: string): LivePlatformInfo | undefined {
+    return structuredClone(this.list.get(name));
   }
 
   expose(): PluginExposes {
@@ -71,11 +90,12 @@ export class Platform extends BasePlugin {
         this.register(name, info, signal);
       },
       get: (name: string) => this.get(name),
-      toSnapshot: () => this.toSnapshot(),
+      info: (name: string) => this.info(name),
+      getData: () => this.getData(),
     };
   }
 
-  toSnapshot() {
+  getData() {
     return [...this.list].map(([name, info]) => ({ name, info }));
   }
 }

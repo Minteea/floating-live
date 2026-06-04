@@ -34,10 +34,6 @@ export class FloatingLive extends App {
   has(key: string) {
     return this.room.has(key);
   }
-  /** 获取房间信息 */
-  data(key: string) {
-    return this.room.data(key);
-  }
   /** 更新房间信息 */
   update(key: string) {
     return this.room.update(key);

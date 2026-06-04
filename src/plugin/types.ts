@@ -4,6 +4,7 @@ import {
   CommandCallOptions,
   AppCommandMap,
   CommandFunction,
+  AppCommandAliasMap,
 } from "../command";
 import {
   AppEventListener,
@@ -152,10 +153,17 @@ export interface PluginContext {
     options?: CommandOptions,
   ): void;
 
+  /** 注册指令别名，别名指令通常只作为手动输入指令的简写，不应在代码中直接使用 */
+  registerCommandAlias<T extends keyof AppCommandAliasMap>(
+    name: T,
+    targetName: AppCommandAliasMap[T],
+    options?: CommandOptions,
+  ): void;
+
   /** 注销指令 */
   unregisterCommand(name: string): void;
 
-  /** 检测值是否存在 */
+  /** 检测指令是否存在 */
   hasCommand(name: string): boolean;
 
   /** 调用指令 */

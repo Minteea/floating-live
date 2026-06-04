@@ -14,14 +14,19 @@ export abstract class LiveRoom
   get valid(): true {
     return true;
   }
-  get serviceId() {
-    return this.service ? `${this.platform}.${this.service}` : this.platform;
+  get pending(): false {
+    return false;
+  }
+  get service() {
+    return this.serviceName
+      ? `${this.platform}.${this.serviceName}`
+      : this.platform;
   }
 
   /** 平台 */
   abstract readonly platform: string;
   /** api服务 */
-  readonly service: string = "";
+  readonly serviceName: string = "";
   /** 房间id */
   abstract readonly id: string | number;
   /** 房间详情 */
@@ -119,8 +124,9 @@ export abstract class LiveRoom
   toData(): LiveRoomData {
     return {
       valid: this.valid,
+      pending: this.pending,
       platform: this.platform,
-      service: this.service,
+      serviceName: this.serviceName,
       id: this.id,
       detail: this.detail,
       stats: this.stats,
@@ -133,12 +139,17 @@ export abstract class LiveRoom
       available: this.available,
       connectionStatus: this.connectionStatus,
       key: this.key,
-      serviceId: this.serviceId,
+      service: this.service,
     };
   }
   get key(): string {
-    return `${this.serviceId}:${this.id}`;
+    return `${this.service}:${this.id}`;
   }
+}
+
+interface InvalidLiveRoomOptions {
+  pending?: boolean;
+  error?: { code: string; message: string } | null;
 }
 
 /** 无效房间 */
@@ -146,18 +157,27 @@ export class InvalidLiveRoom implements LiveRoomData {
   get valid(): false {
     return false;
   }
-  get serviceId() {
-    return this.service ? `${this.platform}.${this.service}` : this.platform;
+  get service() {
+    return this.serviceName
+      ? `${this.platform}.${this.serviceName}`
+      : this.platform;
   }
-  constructor(serviceId: string, id: string | number) {
-    const [platform, ...serviceIdArr] = serviceId.split(".");
+  constructor(
+    service: string,
+    id: string | number,
+    { pending = false, error = null } = {},
+  ) {
+    const [platform, ...serviceIdArr] = service.split(".");
     this.platform = platform;
     this.id = id;
-    this.service = serviceIdArr.join(".");
+    this.serviceName = serviceIdArr.join(".");
+    this.pending = pending;
+    this.error = error;
   }
   readonly platform: string;
   readonly id: string | number;
-  readonly service: string;
+  readonly serviceName: string;
+  pending: boolean;
   detail: LiveRoomDetailInfo = {};
   stats?: LiveRoomStatsInfo;
   anchor: UserInfo = { name: "", id: 0 };
@@ -166,6 +186,7 @@ export class InvalidLiveRoom implements LiveRoomData {
   connectionStatus: LiveConnectionStatus = LiveConnectionStatus.off;
   openStatus: LiveRoomOpenStatus = 0;
   liveId?: string;
+  error: { code: string; message: string } | null;
   get opened() {
     return this.openStatus == 2;
   }
@@ -175,8 +196,9 @@ export class InvalidLiveRoom implements LiveRoomData {
   toData(): LiveRoomData {
     return {
       valid: this.valid,
+      pending: this.pending,
       platform: this.platform,
-      service: this.service,
+      serviceName: this.serviceName,
       id: this.id,
       detail: this.detail,
       stats: this.stats,
@@ -188,12 +210,12 @@ export class InvalidLiveRoom implements LiveRoomData {
       opened: this.opened,
       available: this.available,
       connectionStatus: this.connectionStatus,
-      serviceId: this.serviceId,
+      service: this.service,
       key: this.key,
     };
   }
   get key(): string {
-    return `${this.serviceId}:${this.id}`;
+    return `${this.service}:${this.id}`;
   }
 }
 
@@ -228,14 +250,16 @@ export interface LiveRoom {
 export interface LiveRoomData {
   /** 房间有效性 */
   valid: boolean;
+  /** 房间待定状态 */
+  pending: boolean;
   /** 平台id */
   platform: string;
   /** API服务 */
-  service: string;
+  serviceName: string;
   /** 房间id */
   id: number | string;
   /** API服务id */
-  serviceId: string;
+  service: string;
   /** 房间key */
   key: string;
   /** 基本信息 */
@@ -258,6 +282,8 @@ export interface LiveRoomData {
   opened: boolean;
   /** 房间是否可用 */
   available: boolean;
+  /** 错误信息 */
+  error?: { code: string; message: string } | null;
 }
 
 /** 房间展示信息 */
@@ -322,6 +348,9 @@ export const LiveRoomOpenStatus = {
   opened: 2,
 } as const;
 export type LiveRoomOpenStatus = EnumValue<typeof LiveRoomOpenStatus>;
+
+export const LiveRoomValidStatus = {} as const;
+export type LiveRoomValidStatus = EnumValue<typeof LiveRoomValidStatus>;
 
 export interface LiveRoomEventMap {
   /**  */

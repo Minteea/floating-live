@@ -4,6 +4,7 @@ import type {
   CommandCallOptions,
   CommandFunction,
   AppCommandMap,
+  AppCommandAliasMap,
 } from "../../command";
 import {
   AppEventListener,
@@ -134,6 +135,14 @@ export class CommonPluginContext implements PluginContext {
     options?: CommandOptions,
   ): void {
     this.#app.registerCommand(name, func, options);
+    this.#registered.commands.add(name);
+  }
+  registerCommandAlias<T extends keyof AppCommandAliasMap>(
+    name: T,
+    targetName: AppCommandAliasMap[T],
+    options?: CommandOptions,
+  ): void {
+    this.#app.registerCommandAlias(name, targetName, options);
     this.#registered.commands.add(name);
   }
 

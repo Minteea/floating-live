@@ -5,8 +5,8 @@ export * from "./types";
 export interface AppError extends Error {
   /** 错误发生信息 */
   cause: {
-    /** 错误id */
-    id: string;
+    /** 错误代码 */
+    code: string;
     /** 错误目标对象 */
     target?: string;
     /** 错误原因 */
@@ -28,14 +28,14 @@ export interface AppErrorOptions {
 }
 
 export function appError(
-  id: string,
+  code: string,
   { message, target, reason, errorConstructor = Error }: AppErrorOptions,
-) {
+): AppError {
   return new errorConstructor(message, {
     cause: {
-      id,
+      code,
       target,
       reason,
     },
-  });
+  }) as AppError;
 }

@@ -14,7 +14,7 @@ export class ValueManager {
 
   constructor(app: App) {
     this.app = app;
-    app.registerCommand("value.snapshot", bindCommand(this.toSnapshot, this));
+    app.registerCommand("value.getData", bindCommand(this.getData, this));
   }
   /** 注册值 */
   register<T>(
@@ -78,7 +78,7 @@ export class ValueManager {
   }
 
   /** 获取注册的所有值 */
-  toSnapshot(): {
+  getData(): {
     name: string;
     value: string;
   }[] {
