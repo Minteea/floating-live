@@ -81,20 +81,6 @@ export class CommonPluginContext implements PluginContext {
     this.#accessApp = options?.accessApp ?? false;
   }
 
-  register<P extends PluginItem>(
-    plugin: PluginConstructor<P>,
-    options?: PluginInitOptions,
-  ): Promise<P> {
-    const p = this.#app.register(plugin, options);
-    this.#registered.plugins.add(plugin.name);
-    return p;
-  }
-
-  unregister(pluginName: string): void {
-    this.#app.unregister(pluginName);
-    this.#registered.plugins.delete(pluginName);
-  }
-
   getPluginExposes<K extends keyof AppPluginExposesMap>(
     pluginName: K,
   ): AppPluginExposesMap[K] {

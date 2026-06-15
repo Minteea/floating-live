@@ -57,21 +57,6 @@ export class SafePluginContext extends CommonPluginContext {
     });
   }
 
-  register<P extends PluginItem>(
-    plugin: PluginConstructor<P>,
-    options?: PluginInitOptions,
-  ): Promise<P> {
-    if (!this.#permissions["plugin.register"]) {
-      this.throwNotPermitted("plugin.register", "无插件安装权限");
-    }
-    return super.register(plugin, options);
-  }
-  unregister(pluginName: string): void {
-    if (!this.#permissions["plugin.register"]) {
-      this.throwNotPermitted("plugin.register", "无插件安装权限");
-    }
-    return super.unregister(pluginName);
-  }
   emit<K extends keyof AppEventDetailMap>(
     type: K,
     detail: AppEventDetailMap[K],

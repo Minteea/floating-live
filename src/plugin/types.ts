@@ -122,14 +122,6 @@ export interface PluginContext {
   ): void;
 
   //--- 插件机制 ---//
-  /** 注册插件 */
-  register<P extends PluginItem>(
-    plugin: PluginConstructor<P>,
-    options?: PluginInitOptions,
-  ): Promise<P>;
-
-  /** 注销插件 */
-  unregister(pluginName: string): void;
 
   /** 获取插件暴露对象 */
   getPluginExposes<K extends keyof AppPluginExposesMap>(
